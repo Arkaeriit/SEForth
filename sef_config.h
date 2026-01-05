@@ -82,11 +82,6 @@
 #define SEF_REGISTER_FORTH_FUNC 1
 #endif
 
-// Store name alongside word
-#ifndef SEF_STORE_NAME
-#define SEF_STORE_NAME 1
-#endif
-
 // Max number of digits in a number
 #ifndef SEF_MAX_NUMBER_DIGIT
 #define SEF_MAX_NUMBER_DIGIT 64
