@@ -34,10 +34,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 £define __FORTH_MEMORY_SIZE FORTH_MEMORY_SIZE 
 £define __SEF_PAD_SIZE SEF_PAD_SIZE 
 
->> Parser configuration
-£define __SEF_PARSER_BUFFER_SIZE SEF_PARSER_BUFFER_SIZE 
-£define __SEF_PARSER_CUSTOM_NAME_SIZE SEF_PARSER_CUSTOM_NAME_SIZE 
-
 >> Case-sensitivity
 £define __SEF_CASE_INSENSITIVE SEF_CASE_INSENSITIVE 
 
@@ -50,9 +46,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 
 >> Use words defined in Forth
 £define __SEF_REGISTER_FORTH_FUNC SEF_REGISTER_FORTH_FUNC 
-
->> Store name alongside word
-£define __SEF_STORE_NAME SEF_STORE_NAME 
 
 >> Max number of digits in a number
 £define __SEF_MAX_NUMBER_DIGIT SEF_MAX_NUMBER_DIGIT 

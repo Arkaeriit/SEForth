@@ -28,7 +28,13 @@ forth_state_t* sef_init_state(forth_state_t* fs) {
     fs->code_pointer = NULL;
     fs->error_encountered = false;
     reset_parser(fs);
+#if SEF_CASE_INSENSITIVE == 0
+    fs->register_both_cases = true;
+#endif
     // TODO: fill dictionary
+#if SEF_CASE_INSENSITIVE == 0
+    fs->register_both_cases = false;
+#endif
 }
 
 /* --------------------------- Stack manipulation --------------------------- */

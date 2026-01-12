@@ -29,10 +29,11 @@ The previous choice of requiring the use of malloc to build state was pretty poo
   - error encountered
 - Parser content (some of the parser state, such as a postponing flag, will be store in the colon sys)
   - input buffer size
-  - input buffer (will be a `char*`, no need to copy it)
+  - input buffer (will be a `char*` not owned by the state, no need to copy it)
   - parse area offset (see `>IN`)
   - input source
   - input refill
+  - register both cases (used in case-sensitive mode to register both case of a standard word)
 
 ## Ideas for improvement
 
@@ -53,6 +54,10 @@ The entries in the dictionary will be made of:
 - Padding if needed to align next entry to `sef_word_t`
 - Word execution function
 - parameters
+
+The name is written as a NULL terminated string in the dictionary, but it could have come from outside not NULL terminated. The NULL termination is handled inside of the dictionary entry writing. Similarly, if the forth should be case-insensitive, the name will be processed during writing to be uppercase.
+
+The need for NULL-terminated name means that NULL bytes are invalid in names, but I think I can live with that.
 
 ## Types of entries
 

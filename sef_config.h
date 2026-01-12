@@ -53,14 +53,6 @@
 #define SEF_PAD_SIZE 100
 #endif
 
-// Parser configuration
-#ifndef SEF_PARSER_BUFFER_SIZE
-#define SEF_PARSER_BUFFER_SIZE 10000
-#endif
-#ifndef SEF_PARSER_CUSTOM_NAME_SIZE
-#define SEF_PARSER_CUSTOM_NAME_SIZE 50
-#endif
-
 // Case-sensitivity
 #ifndef SEF_CASE_INSENSITIVE
 #define SEF_CASE_INSENSITIVE 1
@@ -80,11 +72,6 @@
 // Use words defined in Forth
 #ifndef SEF_REGISTER_FORTH_FUNC
 #define SEF_REGISTER_FORTH_FUNC 1
-#endif
-
-// Store name alongside word
-#ifndef SEF_STORE_NAME
-#define SEF_STORE_NAME 1
 #endif
 
 // Max number of digits in a number

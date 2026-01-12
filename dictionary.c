@@ -1,333 +1,151 @@
-
 #include "dictionary.h"
 #include "sef_debug.h"
 #include "string.h"
 #include "stdio.h"
 
-// Static functions
-static sef_error double_size(forth_dictionary_t* fd);
-static void sort_dic(forth_dictionary_t* fd);
-static void free_word(entry_t e);
+/* --------------------------- String manipulation -------------------------- */
 
-// This functions double the size of the dynamic array.
-static sef_error double_size(forth_dictionary_t* fd) {
-    entry_t* new = malloc(sizeof(entry_t) * fd->max * 2);
-    if (new == NULL) {
-        return sef_no_memory;
-    }
-    for (size_t i = 0; i < fd->n_entries; i++) {
-        new[i] = fd->entries[i];
-    }
-    free(fd->entries);
-    fd->entries = new;
-    fd->max = fd->max * 2;
-    return sef_OK;
-}
-
-// This functions assumes that all the element of the array but the last are sorted and sort the last one.
-static void sort_dic(forth_dictionary_t* fd) {
-    for (size_t i = fd->n_entries - 1; i > 0; i--) {
-        if (fd->entries[i].hash < fd->entries[i - 1].hash) {
-            entry_t tmp = fd->entries[i];
-            fd->entries[i] = fd->entries[i - 1];
-            fd->entries[i - 1] = tmp;
-        } else {
-            return;
+// Change lower case characters in the input string into their upper case versions
+static void to_upper(char* str) {
+    for (size_t i=0; i<strlen(str); i++) {
+        if ('a' <= str[i] && str[i] <= 'z') {
+            str[i] = str[i] - ('a' - 'A');
         }
     }
 }
 
-// This function frees the memory used in a word
-static void free_word(entry_t e) {
-#if SEF_STORE_NAME
-    free(e.name);
-#endif
-    switch (e.type) {
-        case FORTH_word:   // Part of those words are dynamically allocated
-            sef_clean_user_word(e.func.F_word);
-            break;
-        case string:
-            free(e.func.string.data);
-            break;
-        case compile_word:
-            free(e.func.compile_func.payload);
-            break;
-        case constant:
-        case defered:
-        case C_word:
-        case alias:
-            break;
+#if SEF_CASE_INSENSITIVE
+static bool name_match(const char* name_from_dictionary, const char* outside_name, size_t outside_name_size) {
+    if (strnlen(name_from_dictionary) != outside_name_size || strlen(name_from_dictionary) == 0) {
+        return false;
     }
-}
-
-// Global API
-
-// This functions initializes a dictionary of the minimum size.
-forth_dictionary_t* sef_init_dic(void) {
-    forth_dictionary_t* ret = malloc(sizeof(forth_dictionary_t));
-    ret->entries = malloc(sizeof(entry_t));
-    ret->max = 1;
-    ret->n_entries = 0;
-#if SEF_CASE_INSENSITIVE == 0
-    ret->case_insensitive = true;
-#endif
-    return ret;
-}
-
-// This function frees the memory used by a dictionary
-void sef_clean_dic(forth_dictionary_t* fd) {
-    for (size_t i = 0; i < fd->n_entries; i++) {
-        entry_t e = fd->entries[i];
-        free_word(e);
+    for (size_t i=0; i<strlen(name_from_dictionary); i++) {
+        char char_from_outside = outside_name[i];
+        if ('a' <= char_from_outside && char_from_outside <= 'z') {
+            char_from_outside -= 'a' - 'A';
+        }
+        if (char_from_outside != name_from_dictionary[i]) {
+            return false;
+        }
     }
-    free(fd->entries);
-    free(fd);
+    return true;
 }
-
-// Display nicely the content of a dictionary
-void sef_display_dictionary(forth_dictionary_t* dic) {
-    for (size_t i=0; i<dic->n_entries; i++) {
-        char buff[200];
-#if SEF_STORE_NAME
-        snprintf(buff, 199, "Entry %zu/%zu %s:\n", i+1, dic->n_entries, dic->entries[i].name);
 #else
-        snprintf(buff, 199, "Entry %zu/%zu:\n", i+1, dic->n_entries);
+static bool name_match(const char* name_from_dictionary, const char* outside_name, size_t outside_name_size) {
+    if (!name_from_dictionary[0]) { // Empty names should not match because they point to unfindable entries
+        return false;
+    }
+    return (strncmp(name_from_dictionary, outside_name, outside_name_size) == 0) &&
+           (strlen(name_from_dictionary) == outside_name_size);
+}
 #endif
-        sef_print_string(buff);
-        const char* type;
-        switch (dic->entries[i].type) {
-            case C_word:
-                type = "C word";
-                break;
-            case alias:
-                type = "alias";
-                break;
-            case FORTH_word:
-                type = "Forth word";
-                break;
-            case compile_word:
-                type = "compile word";
-                break;
-            case constant:
-                type = "constant";
-                break;
-            case string:
-                type = "string";
-                break;
-            case defered:
-                type = "defered word";
-                break;
-            default:
-                type = "!! INVALID TYPE !!";
-                break;
+
+/* -------------------------------- Name size ------------------------------- */
+
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+
+static size_t size_needed_to_store_string(size_t string_len) {
+    size_t effective_size = string_len + 1;
+    return SPACE_ALLIGNED_TO(effective_size, sizeof(sef_int_t));
+}
+
+/* --------------------------- Writing new entries -------------------------- */
+
+void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
+    // TODO: Register uppercase version of standard word. An idea to do so is
+    // the following.
+    // Fully register an alias with as its name the upper-case name.
+    // The lower-case version will be stored as what is now HERE, so we can
+    // put HERE as the alias-to and it will work.
+    // To do that, I must first implement aliases. And I will need them from C.
+
+    // Storing pointer to previous entry
+    dictionary_entry_t new_entry = (dictionary_entry_t*) fs->here;
+    *new_entry = (sef_int_t) fs->last_dictionary_enrty;
+    fs->last_dictionary_enrty = (uint8_t*) new_entry;
+    sef_allot_cell(fs);
+    // Storing name size
+    dictionary_entry_t name_len_field = sef_get_entry_name_len(new_entry);
+    *dictionary_entry_t = name_len;
+    sef_allot_cell(fs);
+    // Storing name
+    char* name_field = sef_get_entry_name(new_entry);
+    memcpy(name_field, name, name_len);
+    name_field[name_len] = 0;
+#if SEF_CASE_INSENSITIVE
+    to_upper(name_field);
+#endif
+    sef_allot(fs, size_needed_to_store_string(name_len));
+    // Storing wef
+    word_executing_function* wef_field = (word_executing_function*) fs->here;
+    *wef_field = wef;
+    sef_allot_cell(fs);
+}
+
+// Execution function for a string
+static void exec_string(forth_state_t* fs, void* parameter) {
+   sef_int_t* len_field = parameters;
+   sef_int_t* content = len_field + 1;
+   sef_push_data(fs, (sef_int_t) content);
+   sef_push_data(fs, *len_field);
+}
+    
+dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, size_t content_len) {
+    // Register empty dictionary entry
+    sef_register_new_word(fs, "", exec_string);
+    // Write in string size
+    sef_int_t* len_field = (sef_int_t*) fs->here;
+    *len_field = (sef_int_t) content_len;
+    sef_allot_cell();
+    // Write in string content
+    char* content_in_entry = (char*) fs->here;
+    sef_allot(fs, size_needed_to_store_string(content_len));
+    memcpy(content_in_entry, content, content_len);
+    content_in_entry[content_len] = 0;
+}
+
+/* ----------------------------- Reading entries ---------------------------- */
+
+dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t name_len) {
+    dictionary_entry_t searching = fs->last_dictionary_enrty;
+    while (searching != NULL) {
+        const char* entry_name = sef_get_entry_name(searching);
+        if (name_match(entry_name, name, name_len)) {
+            return searching;
         }
-        sprintf(buff, "type = %s, hash = %X\n\n", type, dic->entries[i].hash);
-        sef_print_string(buff);
+        searching = (dictionary_entry_t) (*searching);
     }
+    SEF_ERROR_OUT(fs, "Can't find \"%*s\" in the dictionary.\n", name_len, name);
+    return NULL;
 }
 
-// If there is an element in the dictionary with the desired hash,
-// put it in e, put its index in index and return sef_OK.
-// Otherwise, returns sef_not_found;
-// If e or index are NULL, the values are not copied.
-sef_error sef_find(forth_dictionary_t* fd, entry_t* e, size_t* index, hash_t hash) {
-    if (fd->n_entries == 0) {
-        return sef_not_found;
-    }
-    size_t lower_b = 0;
-    size_t upper_b = fd->n_entries;
-    size_t target = (lower_b + upper_b) / 2;
-    while (fd->entries[target].hash != hash) {
-        if (fd->entries[target].hash < hash) {
-            if (target == fd->n_entries - 1 || target == fd->n_entries) {
-                return sef_not_found;
-            }
-            if (fd->entries[target + 1].hash > hash) {
-                return sef_not_found;
-            }
-            lower_b = target;
-            target = (lower_b + upper_b) / 2;
-        } else {
-            if (target == 0) {
-                return sef_not_found;
-            }
-            upper_b = target;
-            target = (lower_b + upper_b) / 2;
+sef_int_t* sef_get_entry_name_len(dictionary_entry_t entry) {
+    return entry + 1;
+}
+
+char* sef_get_entry_name(dictionary_entry_t entry) {
+    return sef_get_entry_name_len(entry) + 1;
+}
+
+word_executing_function* sef_get_word_executing_function(dictionary_entry_t entry) {
+    size_t cells_taken_by_name = size_needed_to_store_string(*sef_get_entry_name_len(entry)) / sizeof(sef_int_t);
+    sef_int_t* ret = ((sef_int_t*) sef_get_entry_name(entry)) + cells_taken_by_name;
+    return (word_executing_function*) ret;
+}
+
+void* sef_get_entry_parameter(dictionary_entry_t entry) {
+    return (sef_int_t*) sef_get_word_executing_function(entry) + 1;
+}
+
+void sef_display_dictionary(forth_state_t* fs) {
+    dictionary_entry_t entry = fs->last_dictionary_enrty;
+    while (entry != NULL) {
+        const char* name = sef_get_entry_name(entry);
+        for (int i=0; i<strlen(name); i++) {
+            sef_output(name[i]);
         }
+        sef_output(' ');
+        entry = (dictionary_entry_t) (*entry);
     }
-    if (e != NULL) {
-        *e = fd->entries[target];
-    }
-    if (index != NULL) {
-        *index = target;
-    }
-    return sef_OK;
-}
-
-// hash_t have their MSB at 0 when they are regular hashes and at 1 when they
-// are special hashes (id to index a special content). Thin function returns an
-// unused special hash
-hash_t sef_unused_special_hash(forth_dictionary_t* fd) {
-    const hash_t first_special_hash = SEF_RAW_HASH_MASK + 1;
-    if (fd->n_entries == 0) {
-        return first_special_hash;
-    }
-    hash_t last_hash = fd->entries[fd->n_entries-1].hash;
-    // The special hashes are at the end of the dictionary. Thus, the last
-    // element in the dictionary have the highest special hash. The hash right
-    // after it have to be free
-    if (last_hash >= first_special_hash) {
-        return last_hash + 1;
-    } else {
-        return first_special_hash;
-    }
-}
-
-// Register a string in the dictionary under a special hash and return that
-// hash
-hash_t sef_register_string(forth_dictionary_t* fd, const char* str, size_t size) {
-    entry_t e = {
-        .type = string,
-        .hash = sef_unused_special_hash(fd),
-        .func.string.size = size,
-        .func.string.data = malloc(size+1),
-    };
-#if SEF_STORE_NAME
-    e.name = malloc(size+3);
-    memcpy(e.name+1, str, size);
-    e.name[0] = '"';
-    e.name[size+1] = '"';
-    e.name[size+2] = 0;
-#endif
-    memcpy(e.func.string.data, str, size);
-    e.func.string.data[size] = 0; // Null terminating
-    sef_add_elem(fd, e, "");
-    return e.hash;
-}
-
-// This function adds a new element to the dictionary.
-// The size is extended if needed and the dictionary is left sorted
-// If an element in the array got a similar hash, it is overwritten
-sef_error sef_add_elem(forth_dictionary_t* fd, entry_t e, const char* name) {
-    size_t index;
-    entry_t old_entry;
-    if (sef_find(fd, &old_entry, &index, e.hash) == sef_not_found) {  // We need to add a new element
-        if (fd->n_entries == fd->max) {
-            sef_error rc = double_size(fd);
-            if (rc != sef_OK) {
-                return rc;
-            }
-        }
-        fd->entries[fd->n_entries] = e;
-        fd->n_entries++;
-        sort_dic(fd);
-    } else {    // We need to overwrite an element
-        if (old_entry.type != defered) { // Devered words should be replaceble with no warnings
-#if SEF_STORE_NAME
-                warn_msg("Overwriting the word with hash %"PRIx32" named %s.\n", e.hash, old_entry.name);
-                if (strcmp(old_entry.name, e.name)) {
-                    error_msg("New entry named %s have the same name as old entry named %s. Hash algorithm should be changed.\n", old_entry.name, e.name);
-                }
-#else
-                warn_msg("Overwriting the word with hash %"PRIx32".\n", e.hash);
-#endif
-        }
-        entry_t old = fd->entries[index];
-        free_word(old);
-        fd->entries[index] = e;
-    }
-#if SEF_CASE_INSENSITIVE == 0   // Register upper case version of the name as well.
-    if (fd->case_insensitive) {
-        char name_upper[strlen(name) + 1];
-        for (size_t j = 0; j <= strlen(name); j++) {
-            if ('a' <= name[j] && name[j] <= 'z') {
-                name_upper[j] = name[j] - ('a' - 'A');
-            } else {
-                name_upper[j] = name[j];
-            }
-        }
-        if (strcmp(name_upper, name)) {
-            return sef_set_alias(fd, sef_hash(name_upper), e.hash, name_upper);
-        }
-    }
-#else
-    (void) name;
-#endif
-    return sef_OK;
-}
-
-// This function sets the first hash to be an alias to the second.
-sef_error sef_set_alias(forth_dictionary_t* fd, hash_t word_hash, hash_t alias_to, const char* name) {
-    entry_t new_entry;
-    new_entry.hash = word_hash;
-    new_entry.type = alias;
-    new_entry.func.alias_to = alias_to;
-#if SEF_STORE_NAME
-    new_entry.name = malloc(strlen(name) + 1);
-    strcpy(new_entry.name, name);
-#endif
-    return sef_add_elem(fd, new_entry, name);
-}
-
-
-// This function calls a known function from the dictionary, the effect will
-// vary depending on the type of the function. The function is id by its hash
-// If something is not found, print an error message
-sef_error sef_call_func(forth_state_t* fs, hash_t hash) {
-    entry_t e;
-    sef_error find_rc = sef_find(fs->dic, &e, NULL, hash);
-    if (find_rc != sef_OK) {
-        error_msg("Unable to find desired function with hash %" SEF_HASH_PRINT ".\n", hash);
-        return find_rc;
-    }
-#if SEF_STORE_NAME
-    debug_msg("Calling hash %" PRIdPTR " named %s\n", hash, e.name);
-#endif
-    switch (e.type) {
-        case C_word:
-            e.func.C_func(fs);
-            break;
-        case FORTH_word: {
-            code_pointer_t old_pos = fs->pos;
-            fs->pos.current_word = hash;
-            fs->pos.pos_in_word = 0;
-            fs->current_word_copy = e.func.F_word;
-            sef_push_code(fs, sef_code_pointer_to_int(&old_pos));
-            }
-            break;
-        case alias:
-            return sef_call_func(fs, e.func.alias_to);
-        case constant:
-            sef_push_data(fs, e.func.constant);
-            break;
-        case defered:
-            error_msg("Calling word %s%s%swhich is defered but not defined.\n",
-#if SEF_STORE_NAME
-                    "\"", e.name, "\" "
-#else
-                    "", "", ""
-#endif
-                    );
-            return sef_not_found;
-        case compile_word:
-            error_msg("compile_word not used yet.\n");
-            return sef_impossible_error;
-        case string:
-            sef_push_data(fs, (sef_int_t) e.func.string.data);
-            sef_push_data(fs, (sef_int_t) e.func.string.size);
-            debug_msg("Pushing string `%s` of size %zu\n", e.func.string.data, e.func.string.size);
-            break;
-    }
-    return sef_OK;
-}
-
-// Try to call a function by its name
-sef_error sef_call_name(forth_state_t* fs, const char* name) {
-    hash_t hash = sef_hash(name);
-    sef_error rc = sef_call_func(fs, hash);
-    if (rc != sef_OK) {
-        error_msg("Can't call function %s.\n", name);
-    }
-    return rc;
 }
 

@@ -16,6 +16,7 @@ sef_int_t sef_pop_control_flow(forth_state_t* fs);
 void sef_run(forth_state_t* fs);
 void sef_quit(forth_state_t* fs);
 void sef_abort(forth_state_t* fs);
+void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry);
 
 #define SEF_ERROR_OUT(fs, error_msg...) \
     error_msg(fs, error_msg);           \
@@ -31,6 +32,9 @@ typedef enum {
 possible_states_t sef_is_idle(forth_state_t* fs);
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);
+static inline void sef_allot_cell(forth_state_t* fs) {
+    sef_allot(fs, sizeof(sef_int_t));
+}
 
 #endif
 

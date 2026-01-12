@@ -14,6 +14,7 @@ typedef enum {
 #define SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size) \
     (alignment_size - (base_size % alignment_size))
 
+// TODO: do I really need that or should I let the C compiler align everything ?
 #define SPACE_ALLIGNED_TO(base_size, alignment_size) \
     (base_size + SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size))
 
@@ -22,7 +23,8 @@ typedef enum {
 // it or declare a static instance.
 // TODO: Maybe I should have the declaration internal, and in the public API, describe
 // it as an array of amf_int_t, with a static assert to ensure both are of the same
-// size...
+// size... In that case, the public function could take the bytes as input and return
+// a pointer to the state...
 typedef struct forth_state_s {
     // Memory spaces
     uint8_t forth_memory[SPACE_ALLIGNED_TO(SEF_FORTH_MEMORY_SIZE, sizeof(sef_int_t))];
@@ -32,7 +34,7 @@ typedef struct forth_state_s {
     sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK];
     // Memory pointer and indexes
     uint8_t* here;
-    uint8_t* last_dictionary_entry;
+    last_dictionary_entry last_dictionary_entry;
     sef_int_t data_stack_index;
     sef_int_t code_stack_index;
     sef_int_t control_flow_stack_index;
@@ -47,6 +49,9 @@ typedef struct forth_state_s {
     sef_int_t parse_area_offset;
     void* input_source;
     bool (*input_source_refill)(struct forth_state_s* state, void* input_source);
+#if SEF_CASE_INSENSITIVE == 0
+    bool register_both_cases;
+#endif
 } forth_state_t;
 
 forth_state_t* sef_init(void);
