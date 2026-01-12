@@ -94,7 +94,78 @@ void sef_abort(forth_state_t* fs) {
 
 /* ----------------------------- Word execution ----------------------------- */
 
-static void sef_execute_code_pointer(forth_state_t* fs) {
+// Executes the code pointer. Return true if it was executed and false if it
+// wasn't because it is NULL.
+static bool sef_execute_code_pointer(forth_state_t* fs) {
+    if (fs->code_pointer == NULL) {
+        return false;
+    }
+
+    sef_int_t word_tag = *code_pointer;
+    sef_int_t word_content = *code_pointer + 1;
+
+    bool can_execute = true;
+    switch (sef_get_current_state(fs)) {
+        case STATE_COMPILING:
+            can_execute = word_tag & WTM_COMPILE_TIME;
+            break;
+
+        case STATE_EXECUTING:
+            can_execute = !(word_tag & WTM_COMPILE_TIME);
+            break;
+
+        case STATE_INTERPRETING:
+        default:
+            SEF_ERROR_OUT("Invalid state in execute code pointer: %i\n", sef_get_current_state(fs));
+            return false;
+    }
+
+    if (!can_execute) {
+        SEF_ERROR_OUT("Invalid state for word. TODO: proper error message with word name or literal value.\n");
+        return false;
+    }
+
+    if (word_tag & WTM_POSTPONED) {
+        sef_int_t new_word_tag = word_tag & WTL_NUMBER_LITERAL;
+        sef_int_t* in_progress_definition = (sef_int_t*) here;
+        in_progress_definition[0] = new_word_tag;
+        in_progress_definition[1] = word_content;
+        sef_allot_cell();
+        sef_allot_cell();
+        // TODO: Does that works or should I do something smarter, like getting the name and searching it or something...
+    } else if (word_tag & WTL_NUMBER_LITERAL) {
+        sef_push_data(fs, word_content);
+    } else {
+        dictionary_entry_t entry = (dictionary_entry_t) word_content;
+        sef_call_entry(fs, entry);
+    }
+
+    fs->code_pointer += 2;
+    return true;
+}
+
+void sef_run(forth_state_t* fs) {
+    while (sef_execute_code_pointer(fs));
+}
+
+void sef_exit(forth_state_t* fs) {
+    fs->code_pointer = sef_pop_code(fs);
+}
+
+void sef_call_entry(fs, dictionary_entry_t entry) {
+    void* parameters = sef_get_entry_parameter(entry);
+    word_executing_function wef = *(sef_get_word_executing_function(entry));
+    wef(fs, parameters);
+}
+
+possible_states_t sef_get_current_state(forth_state_t* fs) {
+    if (fs->compiling) {
+        return STATE_COMPILING;
+    } else if (fs->code_pointer != NULL) {
+        return STATE_EXECUTING;
+    } else {
+        return STATE_INTERPRETING;
+    }
 }
 
 /* ------------------------- Forth memory management ------------------------ */

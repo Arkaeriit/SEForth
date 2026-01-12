@@ -15,6 +15,7 @@ sef_int_t sef_pop_control_flow(forth_state_t* fs);
 
 void sef_run(forth_state_t* fs);
 void sef_quit(forth_state_t* fs);
+void sef_exit(forth_state_t* fs);
 void sef_abort(forth_state_t* fs);
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry);
 
@@ -29,7 +30,13 @@ typedef enum {
     STATE_EXECUTING,
 } possible_states_t;
 
-possible_states_t sef_is_idle(forth_state_t* fs);
+possible_states_t sef_get_current_state(forth_state_t* fs);
+
+typedef enum {
+    WTM_COMPILE_TIME   = 1 << 0;
+    WTM_POSTPONED      = 1 << 1;
+    WTM_NUMBER_LITERAL = 1 << 2;
+} word_tag_mask;
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);
 static inline void sef_allot_cell(forth_state_t* fs) {
