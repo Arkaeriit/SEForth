@@ -4,94 +4,33 @@
 
 #include "stdbool.h"
 
-// Define what kind of content con be found in a word definition
-enum sef_int_type {
-    normal_word,                // Words found in the dictionary
-    raw_number,                 // User-inputed word such as 3, 6, 8
-};
+void sef_state_init(forth_state_t* fs);
 
-// This struct rpresunt each words called in a word definition
-typedef struct word_node_s {
-    enum sef_int_type type;
-    union {
-        hash_t hash;            // To find the word in the dictionary
-        sef_int_t value;        // When used as a raw number
-    } content;
-} word_node_t;
-
-// When stored in the stack, the code pointer is serialized to an sef_int_t.
-typedef struct {
-    hash_t current_word;
-    size_t pos_in_word;
-} code_pointer_t;
-
-#define SEF_POS_IN_WORD_MASK ((1 << SEF_WORD_CONTENT_SIZE_BITS) - 1)
-#define SEF_IDLE_POS_IN_WORD (size_t) (~0 & SEF_POS_IN_WORD_MASK)
-
-static inline code_pointer_t sef_int_to_code_pointer(sef_int_t i) {
-    code_pointer_t ret;
-    ret.current_word = i & SEF_HASH_MASK;
-    ret.pos_in_word = (i >> SEF_HASH_SIZE_BITS) & SEF_POS_IN_WORD_MASK;
-    return ret;
-}
-
-static inline sef_int_t sef_code_pointer_to_int(code_pointer_t* code) {
-    sef_int_t ret = code->pos_in_word & SEF_POS_IN_WORD_MASK;
-    ret <<= SEF_HASH_SIZE_BITS;
-    ret |= code->current_word & SEF_HASH_MASK;
-    return ret;
-}
-
-// The interpreter's state
-struct seforth_state_s {
-    // A parser used for "evaluate" and the likes
-    struct parser_state_s* parser;
-    // The two stack used by the interpreter
-    sef_stack_t* data;
-    sef_stack_t* code;
-    // The forth memory used for allot and variables
-    char* forth_memory;
-    size_t forth_memory_index;
-    char* pad;
-    // The dictionary
-    struct forth_dictionary_s* dic;
-    // A copy of the word being processed, to ensure fast access
-    struct sef_compiled_forth_word_s* current_word_copy;
-    // The current word being processed, its hash and the position in it
-    code_pointer_t pos;
-    // The base internal variable used by words such as . and when inputing numbers
-    sef_int_t base;
-    // True by default, set to false when running exit when the code stack is empty
-    bool running;
-    // False by default, set to true when running into exit or quit
-    bool quit;
-#if SEF_PROGRAMMING_TOOLS
-    sef_int_t argc;
-    char** argv;
-    int exit_code;
-#endif
-};
-
-forth_state_t* sef_init_state(struct parser_state_s* parser);
-void sef_clean_state(forth_state_t* fs);
-
-void sef_push_code(forth_state_t* fs, sef_int_t p);
+void sef_push_data(forth_state_t* fs, sef_int_t data);
+void sef_push_code(forth_state_t* fs, sef_int_t data);
+void sef_push_control_flow(forth_state_t* fs, sef_int_t data);
+sef_int_t sef_pop_data(forth_state_t* fs);
 sef_int_t sef_pop_code(forth_state_t* fs);
-sef_int_t sef_peek_loop(forth_state_t* fs, int loop_depth);
+sef_int_t sef_pop_control_flow(forth_state_t* fs);
 
-bool sef_run_step(forth_state_t* fs);
-sef_error sef_executes_node(forth_state_t* fs, struct word_node_s* node);
 void sef_run(forth_state_t* fs);
-void sef_exit(forth_state_t* fs);
-bool sef_can_execute(forth_state_t* fs);
-void sef_reset(forth_state_t* fs);
+void sef_quit(forth_state_t* fs);
+void sef_abort(forth_state_t* fs);
+
+#define SEF_ERROR_OUT(fs, error_msg...) \
+    error_msg(fs, error_msg);           \
+    sef_abort(fs)                        
+
+typedef enum {
+    STATE_IDLE,
+    STATE_COMPILING,
+    STATE_INTERPRETING,
+    STATE_EXECUTING,
+} possible_states_t;
+
+possible_states_t sef_is_idle(forth_state_t* fs);
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);
-
-#if SEF_STACK_TRACE
-void sef_stack_trace(forth_state_t* fs);
-#endif
-
 
 #endif
 

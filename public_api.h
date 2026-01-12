@@ -11,8 +11,43 @@ typedef enum {
     sef_config_error = 6,
 } sef_error;
 
-struct seforth_state_s;
-typedef struct seforth_state_s forth_state_t;
+#define SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size) \
+    (alignment_size - (base_size % alignment_size))
+
+#define SPACE_ALLIGNED_TO(base_size, alignment_size) \
+    (base_size + SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size))
+
+// Forth state definition. It is not meant to be manipulated directly from outside,
+// but it is included here to let SEForth users know the size of the state, to malloc
+// it or declare a static instance.
+// TODO: Maybe I should have the declaration internal, and in the public API, describe
+// it as an array of amf_int_t, with a static assert to ensure both are of the same
+// size...
+typedef struct forth_state_s {
+    // Memory spaces
+    uint8_t forth_memory[SPACE_ALLIGNED_TO(SEF_FORTH_MEMORY_SIZE, sizeof(sef_int_t))];
+    uint8_t pad[SPACE_ALLIGNED_TO(SEF_PAD_SIZE, sizeof(sef_int_t))];
+    sef_int_t data_stack[SEF_DATA_STACK_SIZE];
+    sef_int_t code_stack[SEF_CODE_STACK_SIZE];
+    sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK];
+    // Memory pointer and indexes
+    uint8_t* here;
+    uint8_t* last_dictionary_entry;
+    sef_int_t data_stack_index;
+    sef_int_t code_stack_index;
+    sef_int_t control_flow_stack_index;
+    // Internal variables
+    bool compiling;
+    sef_int_t base;
+    sef_int_t* code_pointer;
+    bool error_encountered;
+    // Parser
+    sef_int_t input_buffer_size;
+    char* input_buffer;
+    sef_int_t parse_area_offset;
+    void* input_source;
+    bool (*input_source_refill)(struct forth_state_s* state, void* input_source);
+} forth_state_t;
 
 forth_state_t* sef_init(void);
 void sef_free(forth_state_t* state);
