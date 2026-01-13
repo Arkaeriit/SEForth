@@ -33,7 +33,7 @@ The previous choice of requiring the use of malloc to build state was pretty poo
   - parse area offset (see `>IN`)
   - input source
   - input refill
-  - register both cases (used in case-sensitive mode to register both case of a standard word)
+  - compiling system word (set to true at init and then back to false just before giving the hand to the user, used to set the system word flag if needed)
 
 ## Ideas for improvement
 
@@ -52,6 +52,7 @@ The entries in the dictionary will be made of:
 - size of the name
 -  content of the name (null terminated to make it easier to process in C)
 - Padding if needed to align next entry to `sef_word_t`
+- Word tags
 - Word execution function
 - parameters
 
@@ -59,13 +60,20 @@ The name is written as a NULL terminated string in the dictionary, but it could 
 
 The need for NULL-terminated name means that NULL bytes are invalid in names, but I think I can live with that.
 
+The word tags is a bitfield with the following entries:
+1. Immediate word: set to 1 if the word should be run at compile time.
+2. Special execution: if set to 0, the word is executed by calling its word execution function, this is the normal case. If set to 1, it means that the word has a special meaning given by `DOES>`. The word execution function will be replaced by an address to the list of subwords from an other word in the dictionary. To execute the current word, we must push the code pointer (as in a word call) and replace it with the address at the place of the word executing function. To ensure execution of the desired word, `DOES>` will set its own address as the word executing function replacement, and the execution will set the code pointer to it. Then, the execution will slide it to the word we want to execute (right after the `DOES>`).
+3. System word: if set to 1, it means that this is a system word, that can't be removed by `FORGET` and that should use a case-insensitive matching function.
+
 ## Types of entries
 
 ### Literal-ish
 
-Constants and string-literal will be stored in the dictionary, with the word executing function fetching the content from the parameters and putting it on the state's stack. Variable will be built around constants with a Forth definition. Number literal won't need to be put in the dictionary, as they don't need to be fetched.
+Number literal will be stored on the sub word list as a special `(LITERAL)` word followed by the raw value of the number literal on the next cell. `(LITTERAL)` will perform the reading from the sub-word list.
 
-I know that I can implement `VARIABLE` out of `CONSTANT`. I also saw on the forth standard website a definition of `CONSTANT` witch uses `POSTPONE` and `LITERAL`, so I might not need to define special behavior for constant at all. I still want strings to be handled from the C side, as I need to copy them anyway to give memory ownership to the forth state.
+String-literal will be stored in the dictionary, with the word executing function fetching the content from the parameters and putting it on the state's stack. This is the best way to ensure that we give to the forth state an owned copy of the string. I could have a mechanism similar to `(LITTERAL)` for strings, but I'm afraid this would prevent me from manipulating owned strings from the interpreting state.
+
+`VARIABLE` and `CONSTANT` will be defined in forth, no need for a special type of entry.
 
 ### C words
 
@@ -79,20 +87,12 @@ See the Forth word for the word-tag definition.
 ### Forth words
 
 Forth words will be a bit more complex. The entry parameter will be like this:
-- word-tags
-  word-content
-- word-tags
-  word-content
+- sub word
+- sub word
 [...]
-- word-tags for both compile and run time
-  exit
+- exit subword
 
-The word-tags will be a bit field with the following values
-1. Compile-time word. 1 if the word should be called at compile time and 0 if it should be called at run time. This flag will be present on every sub-word, but is only relevant for the first one.
-2. Postponed word. 1 if the word was defined after a `POSTPONE` and 0 otherwise. I feel like having a flag to tell if a word was postponed would be more comfortable that carrying a postpone execution in compiled words.
-3. Number literal. 0 if the word is a normal word to call (word-content is an address), 1 if it as a number literal (word-content is a number as-is).
-
-The word-content is either the value of the number literal, or the address of the dictionary entry of the word to call.
+In special case, such as the handling of `(LITTERAL)`, the sub word is replaced by a literal.
 
 # Executing words
 
@@ -130,6 +130,10 @@ Control flow will use at compile time the control flow stack.
 At compile-time, `IF` is replaced by an blank number literal and a `if-runtime` word. The address of the blank number is added to the control flow stack. The next time `ELSE` or `THEN` are encountered, the address of the closing word is put inside the number literal. The runtime `if` pops the two elements from the stack (the flag and the injected address) and jumps if needed. `ELSE` will have a similar behavior but always jump to `THEN`. `THEN` doesn't needs to do anything. Note that the code pointer increasing after a subword execution is taken into account.
  
 Similar mechanism will be used for loops.
+
+## Postpone
+
+I'm pretty sure that parsing the next word, getting its dictionary entry, and appending it to the list of subwords from the currently being defined word would work just fine as long as we don't try to execute it if it were a compile time word.
 
 # Interpreting
 

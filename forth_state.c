@@ -28,13 +28,9 @@ forth_state_t* sef_init_state(forth_state_t* fs) {
     fs->code_pointer = NULL;
     fs->error_encountered = false;
     reset_parser(fs);
-#if SEF_CASE_INSENSITIVE == 0
-    fs->register_both_cases = true;
-#endif
+    fs->compiling_system_words = true;
     // TODO: fill dictionary
-#if SEF_CASE_INSENSITIVE == 0
-    fs->register_both_cases = false;
-#endif
+    fs->compiling_system_words = false;
 }
 
 /* --------------------------- Stack manipulation --------------------------- */
@@ -101,46 +97,9 @@ static bool sef_execute_code_pointer(forth_state_t* fs) {
         return false;
     }
 
-    sef_int_t word_tag = *code_pointer;
-    sef_int_t word_content = *code_pointer + 1;
-
-    bool can_execute = true;
-    switch (sef_get_current_state(fs)) {
-        case STATE_COMPILING:
-            can_execute = word_tag & WTM_COMPILE_TIME;
-            break;
-
-        case STATE_EXECUTING:
-            can_execute = !(word_tag & WTM_COMPILE_TIME);
-            break;
-
-        case STATE_INTERPRETING:
-        default:
-            SEF_ERROR_OUT("Invalid state in execute code pointer: %i\n", sef_get_current_state(fs));
-            return false;
-    }
-
-    if (!can_execute) {
-        SEF_ERROR_OUT("Invalid state for word. TODO: proper error message with word name or literal value.\n");
-        return false;
-    }
-
-    if (word_tag & WTM_POSTPONED) {
-        sef_int_t new_word_tag = word_tag & WTL_NUMBER_LITERAL;
-        sef_int_t* in_progress_definition = (sef_int_t*) here;
-        in_progress_definition[0] = new_word_tag;
-        in_progress_definition[1] = word_content;
-        sef_allot_cell();
-        sef_allot_cell();
-        // TODO: Does that works or should I do something smarter, like getting the name and searching it or something...
-    } else if (word_tag & WTL_NUMBER_LITERAL) {
-        sef_push_data(fs, word_content);
-    } else {
-        dictionary_entry_t entry = (dictionary_entry_t) word_content;
-        sef_call_entry(fs, entry);
-    }
-
-    fs->code_pointer += 2;
+    sef_int_t entry = *code_pointer;
+    sef_call_entry(fs, entry);
+    fs->code_pointer += 1;
     return true;
 }
 
@@ -153,11 +112,21 @@ void sef_exit(forth_state_t* fs) {
 }
 
 void sef_call_entry(fs, dictionary_entry_t entry) {
+    sef_int_t word_tags = *(sef_get_word_tag_field(entry))
     void* parameters = sef_get_entry_parameter(entry);
     word_executing_function wef = *(sef_get_word_executing_function(entry));
-    wef(fs, parameters);
+
+    if (word_tags & WTM_DOES_EXECUTION) {
+        sef_int_t* new_code_pointer = (sef_int_t*) wef;
+        sef_push_code(fs, fs->code_pointer);
+        sef_push_data(fs, (sef_int_t) parameters);
+        fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
+    } else {
+        wef(fs, parameters);
+    }
 }
 
+// TODO: Do I realy need that?
 possible_states_t sef_get_current_state(forth_state_t* fs) {
     if (fs->compiling) {
         return STATE_COMPILING;
@@ -172,9 +141,9 @@ possible_states_t sef_get_current_state(forth_state_t* fs) {
 
 // Request some bytes from the forth memory and align the index
 void sef_allot(forth_state_t* fs, size_t byte_requested) {
-    fs->here += byte_requested;
+    fs->here->byte += byte_requested;
 #if SEF_STACK_BOUND_CHECKS
-    if (fs->here - &fs->forth_memory > FORTH_MEMORY_SIZE) {
+    if (fs->here->byte - &fs->forth_memory[0] > FORTH_MEMORY_SIZE) {
         SEF_ERROR_OUT(fs, "Forth memory overflowed by %i bytes.\n", fs->forth_memory_index - FORTH_MEMORY_SIZE);
     }
 #endif

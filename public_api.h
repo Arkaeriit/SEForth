@@ -33,7 +33,10 @@ typedef struct forth_state_s {
     sef_int_t code_stack[SEF_CODE_STACK_SIZE];
     sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK];
     // Memory pointer and indexes
-    uint8_t* here;
+    union here {
+        uint8_t* byte;
+        sef_int_t* cell;
+    };
     last_dictionary_entry last_dictionary_entry;
     sef_int_t data_stack_index;
     sef_int_t code_stack_index;
@@ -49,9 +52,7 @@ typedef struct forth_state_s {
     sef_int_t parse_area_offset;
     void* input_source;
     bool (*input_source_refill)(struct forth_state_s* state, void* input_source);
-#if SEF_CASE_INSENSITIVE == 0
-    bool register_both_cases;
-#endif
+    bool compiling_system_words;
 } forth_state_t;
 
 forth_state_t* sef_init(void);

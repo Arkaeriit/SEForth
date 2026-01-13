@@ -33,9 +33,9 @@ typedef enum {
 possible_states_t sef_get_current_state(forth_state_t* fs);
 
 typedef enum {
-    WTM_COMPILE_TIME   = 1 << 0;
-    WTM_POSTPONED      = 1 << 1;
-    WTM_NUMBER_LITERAL = 1 << 2;
+    WTM_IMMEDIATE      = 1 << 0;
+    WTM_DOES_EXECUTION = 1 << 1;
+    WTM_SYSTEM_WORD    = 1 << 2;
 } word_tag_mask;
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);

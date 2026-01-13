@@ -24,6 +24,7 @@ dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t na
 // Get the various constituent of an entry.
 char* sef_get_entry_name(dictionary_entry_t entry);
 sef_int_t* sef_get_entry_name_len(dictionary_entry_t entry);
+sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry);
 word_executing_function* sef_get_word_executing_function(dictionary_entry_t entry);
 void* sef_get_entry_parameter(dictionary_entry_t entry);
 
