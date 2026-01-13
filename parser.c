@@ -1,5 +1,21 @@
 #include "parser.h"
 
+static void exec_forth_word(forth_state_t* fs, void* parameter) {
+    sef_int_t* first_sub_word = (sef_int_t*) parameter;
+    sef_push_code(fs, (sef_int_t) fs->code_pointer);
+    fs->code_pointer = first_sub_word - 1;
+}
+
+static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry);
+
+// Add the NULL-terminated word to the current definition. Must be called from
+// compilation context with a run-time word.
+// If not called from compilation context, will call the given word.
+static void add_word_to_current_definition(forth_state_t* fs, const char* word) {
+        dictionary_entry_t entry = sef_find_entry(fs, word, strlen(word));
+        inter_compil_entry(fs, entry);
+}
+
 /* ------------------------- Input source management ------------------------ */
 
 void sef_push_input_source(forth_state_t* fs) {
@@ -47,6 +63,8 @@ static void refill(forth_state_t* fs) {
 /* ------------------------------ Parsing words ----------------------------- */
 
 static void parse(forth_state_t* fs) {
+    // TODO: test if there is nothing to parse such as in ":\n name". It should
+    // fail gracefully.
     char delimiter = sef_pop_data(fs);
     char* content = NULL;
     sef_int_t content_size = 0;
@@ -76,16 +94,73 @@ static void parse_word(forth_state_t* fs) {
 
 /* ----------------------------- Compiling words ---------------------------- */
 
+static void leave_compilation(forth_state_t* fs) {
+    if (fs->compiling) {
+        SEF_ERROR_OUT(fs, "Trying to enter compiling while already compiling.\n");
+    }
+    fs->compiling = true;
+}
+
+static void enter_compilation(forth_state_t* fs) {
+    if (!fs->compiling) {
+        SEF_ERROR_OUT(fs, "Trying to leave compiling while not compiling.\n");
+    }
+    fs->compiling = false;
+}
+
+// Part of the colon-sys used to ensure stack integrity during compilation
+#define COLON_SYS_MAGIC 0x5EF
+static void colon(forth_state_t* fs) {
+    parse_word(fs);
+    char* name = (char*) sef_pop_data(fs);
+    size_t name_len = (size_t) sef_pop_data(fs);
+    sef_push_data(fs, COLON_SYS_MAGIC);
+    enter_compilation(fs);
+    sef_register_new_word(fs, name, name_len, exec_forth_word);
+}
+
+static void semicolon(forth_state_t* fs) {
+    leave_compilation(fs);
+    sef_int_t magic = sef_pop_data(fs);
+    if (magic != COLON_SYS_MAGIC) {
+        SEF_ERROR_OUT(fs, "Imbalanced stack when compiling \"%s\".\n", sef_get_word_name(fs->last_dictionary_entry));
+    }
+}
+
 /* --------------------------- Control-flow words --------------------------- */
+
+/* ----------------------------- String parsing ----------------------------- */
+
+static void s(forth_state_t* fs) {
+    sef_push_data(fs, '"');
+    parse(fs);
+    char* str = (char*) sef_pop_data(fs);
+    size_t str_len = (size_t) sef_pop_data(fs);
+    if (fs->compiling) {
+        add_word_to_current_definition(fs, "(string)");
+        sef_add_strinf_to_current_definition(fs, str, str_len);
+    } else {
+        sef_call_entry(fs, sef_register_string(fs, str, str_len));
+    }
+}
+
+// TODO: this could probably be made easier if written from Forth.
+static void dot_string(forth_state_t* fs) {
+    s(fs);
+    const char* type = "type";
+    add_word_to_current_definition(fs, type);
+}
+
+/* ---------------------- Exporting compile time words ---------------------- */
 
 /* ------------------------ Compile/Interpret routine ----------------------- */
 
-// Convert a sting to a number. Return true if it worked. As strtoll stops at
+// Convert a sting to a number. Return true if it worked. As strtol stops at
 // the first non valid char, we can use it even if the string is not
 // null-terminated, as we can expect to have some random non-number data after.
 static bool str_to_num(const char* str, sef_int_t* num, int base) {
     char* end;
-    *num = strtoll(str, &end, base);
+    *num = strtol(str, &end, base);
     return end != str;
 }
 
@@ -106,9 +181,7 @@ static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry) {
 static void inter_compil_number(forth_state_t* fs, sef_int_t number) {
     if (fs->compiling) {
         // TODO: replace all finds as here with a cache
-        const char* literal = "(literal)";
-        dictionary_entry_t literal_entry = sef_find_entry(fs, literal_entry, strlen(literal));
-        inter_compil_entry(fs, literal_entry); // We are compiling and (literal) is not immediate, so it will be added to the current definition
+        add_word_to_current_definition(fs, "(literal)");
         *fs->here.cell = number;
         sef_allot_cell(fs);
     } else {

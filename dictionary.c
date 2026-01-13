@@ -98,6 +98,10 @@ dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, s
     *len_field = (sef_int_t) content_len;
     sef_allot_cell();
     // Write in string content
+    sef_add_string_to_current_definition(fs, content, content_len);
+}
+
+void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len) {
     char* content_in_entry = (char*) fs->here->byte;
     sef_allot(fs, size_needed_to_store_string(content_len));
     memcpy(content_in_entry, content, content_len);

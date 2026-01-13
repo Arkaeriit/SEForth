@@ -71,7 +71,9 @@ The word tags is a bitfield with the following entries:
 
 Number literal will be stored on the sub word list as a special `(LITERAL)` word followed by the raw value of the number literal on the next cell. `(LITTERAL)` will perform the reading from the sub-word list.
 
-String-literal will be stored in the dictionary, with the word executing function fetching the content from the parameters and putting it on the state's stack. This is the best way to ensure that we give to the forth state an owned copy of the string. I could have a mechanism similar to `(LITTERAL)` for strings, but I'm afraid this would prevent me from manipulating owned strings from the interpreting state.
+During interpretation, string-literal will be stored in the dictionary, with the word executing function fetching the content from the parameters and putting it on the state's stack. This is the best way to ensure that we give to the forth state an owned copy of the string. During compilation, they will be appended to the current definition after a `(string)` word that behave similarly to `(LITERAL)`. Registering a string inside of `[ ... ]` would corrupt the current definition.
+
+Conted strings could probably be managed with `CREATE` in interpreted mode and like normal strings, in some way, in compiling mode.
 
 `VARIABLE` and `CONSTANT` will be defined in forth, no need for a special type of entry.
 
@@ -102,9 +104,9 @@ The loop execution process for normal runtime is the following:
 - Increase the code pointer by two step, to point to the tag of the next word in the current forth word.
 
 When calling a new forth word, the process of the word execution function is the following:
-- Push the current word pointer to the return stack (don't forget to cache it).
+- Push the current word pointer to the return stack.
 - Read the address of the word to be executed and put it in the code pointer.
-- Decreasing the code pointer by two step, so that the end of the word execution would make it point to the first element of the callee word.
+- Decreasing the code pointer by one step, so that the end of the word execution would make it point to the first element of the callee word.
 
 The exit word will have a very simple behavior:
 - Pop the top element of the return stack.
