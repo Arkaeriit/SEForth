@@ -4,8 +4,11 @@
 
 typedef void (*C_callback_t)(forth_state_t*);
 
-void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func);
-void sef_register_default_C_func(forth_state_t* fs);
+// Add a new word defined in C into the dictionary. name must be NULL terminated.
+void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func, bool is_imediate);
+
+// Register run-time system words defined in C.
+void sef_register_default_cfunc(forth_state_t* fs);
 
 #endif
 

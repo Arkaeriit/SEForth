@@ -10,17 +10,20 @@
 
 // Functions used to manipulate C_fun
 
+static void exec_cfunc(forth_state_t* fs, void* parameters) {
+    C_callback_t* func= parameters;
+    func(fs);
+}
+
 // Register a new C function
-void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func) {
-    entry_t e;
-    e.type = C_word;
-    e.hash = sef_hash(name);
-    e.func.C_func = func;
-#if SEF_STORE_NAME
-    e.name = malloc(strlen(name) + 1);
-    strcpy(e.name, name);
-#endif
-    sef_add_elem(fs->dic, e, name);
+void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func, bool is_immediate) {
+    sef_register_new_word(fs, name, strlen(name), exec_cfunc);
+    *fs->here.cell = (sef_int_t) func;
+    sef_allot_cell(fs);
+    if (is_immediate) {
+        sef_int_t* word_tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
+        *word_tag_field |= WTM_IMMEDIATE;
+    }
 }
 
 // List of default C_func
@@ -214,238 +217,74 @@ static void xor(forth_state_t* fs) {
 
 // Flow control
 
-#define CHECK_BEING_IN_WORD(fs)                                             \
-    if (fs->pos.current_word == SEF_IDLE_CURRENT_WORD) {                    \
-        error_msg("Control flow impossible outside of word definition.\n"); \
-        return;                                                             \
-    }                                                                        
-
-// Check the i-th word in the current executed word against two hashes
-#define CHECK_AGAINST_HASH(fs, i, hash1, hash2) ({                \
-    (fs->current_word_copy->content[i].type == normal_word) &&    \
-    ((fs->current_word_copy->content[i].content.hash == hash1) || \
-    (fs->current_word_copy->content[i].content.hash == hash2)); }) 
-
 // if
 static void IF(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    sef_int_t w1 = sef_pop_data(fs);
-    if (!w1) {  // If w1 is not true, we want to get to the next else or the next then
-        hash_t else_hash = sef_hash("else");
-        hash_t then_hash = sef_hash("then");
-        hash_t if_hash = sef_hash("if");
-        hash_t ELSE_hash = sef_hash("ELSE");
-        hash_t THEN_hash = sef_hash("THEN");
-        hash_t IF_hash = sef_hash("IF");
-        size_t i = fs->pos.pos_in_word;
-        int if_depth = 1;
-        while (if_depth) {
-            if (CHECK_AGAINST_HASH(fs, i, if_hash, IF_hash)) {
-                if_depth++;
-            } else if (CHECK_AGAINST_HASH(fs, i, then_hash, THEN_hash)) {
-                if_depth--;
-            } else if (CHECK_AGAINST_HASH(fs, i, else_hash, ELSE_hash) && (if_depth == 1)) { // Elses are a valid exit point only if we are not in a nested if
-                if_depth--;
-            }
-            i++;
-        }
-        fs->pos.pos_in_word = i;
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // else
-// If we meet that word, it means that we were in an if block, thus we need to jump to the next then
 static void ELSE(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    hash_t then_hash = sef_hash("then");
-    hash_t if_hash = sef_hash("if");
-    hash_t THEN_hash = sef_hash("THEN");
-    hash_t IF_hash = sef_hash("IF");
-    size_t i = fs->pos.pos_in_word;
-    int if_depth = 1;
-    while (if_depth) {  // Note: not finding matching then cause a fault
-        if (CHECK_AGAINST_HASH(fs, i, then_hash, THEN_hash)) {
-            if_depth--;
-        } else if (CHECK_AGAINST_HASH(fs, i, if_hash, IF_hash)) {
-            if_depth++;
-        }
-        i++;
-    }
-    fs->pos.pos_in_word = i;
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // then
 static void then(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-};
+    SEF_ERROR_OUT(fs, "TODO!\n");
+}
 
 // begin
 static void begin(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-};
+    SEF_ERROR_OUT(fs, "TODO!\n");
+}
 
 // until
 static void until(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    if (!sef_pop_data(fs)) {
-        // Jumping to the corresponding until
-        hash_t begin_hash = sef_hash("begin");
-        hash_t until_hash = sef_hash("until");
-        hash_t BEGIN_hash = sef_hash("BEGIN");
-        hash_t UNTIL_hash = sef_hash("UNTIL");
-        size_t i = fs->pos.pos_in_word - 2;
-        int loop_depth = 1;
-        while (loop_depth) {    // Note: if no matching begin is found, there is a fault
-            if (CHECK_AGAINST_HASH(fs, i, begin_hash, BEGIN_hash)) {
-                loop_depth--;
-            } else if (CHECK_AGAINST_HASH(fs, i, until_hash, UNTIL_hash)) {
-                loop_depth++;
-            }
-            i--;
-        }
-        fs->pos.pos_in_word = i + 1;
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // do
 static void DO(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    sef_int_t start_index = sef_pop_data(fs);
-    sef_int_t end_index = sef_pop_data(fs);
-    sef_push_code(fs, end_index);
-    sef_push_code(fs, start_index);
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // I
 static void I(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    sef_push_data(fs, sef_peek_loop(fs, 0));
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // J
 static void J(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    sef_push_data(fs, sef_peek_loop(fs, 1));
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // +loop
 static void plus_loop(forth_state_t* fs) {
-    CHECK_BEING_IN_WORD(fs);
-    sef_unsigned_t current_index = sef_pop_code(fs);
-    sef_unsigned_t end_index = sef_pop_code(fs);
-    sef_int_t increment = sef_pop_data(fs);
-    debug_msg("loop % 4li % 4li % 4li % 4zi.\n", current_index, end_index, increment, fs->code->stack_pointer);
-    current_index += increment;
-    if ( ((increment >= 0) && (current_index < end_index)) || ((increment < 0) && (current_index >= end_index)) ) { // Increment of 0 should do an infinite loop
-        sef_push_code(fs, end_index);
-        sef_push_code(fs, current_index);
-        // Jumping to the corresponding do
-        hash_t do_hash = sef_hash("do");
-        hash_t q_do_hash = sef_hash("?do");
-        hash_t plus_loop_hash = sef_hash("+loop");
-        hash_t DO_hash = sef_hash("DO");
-        hash_t Q_DO_hash = sef_hash("?DO");
-        hash_t plus_LOOP_hash = sef_hash("+LOOP");
-        size_t i = fs->pos.pos_in_word - 2;
-        int loop_depth = 1;
-        while (loop_depth) {    // Note: if no matching do is found, there is a fault
-            if (CHECK_AGAINST_HASH(fs, i, do_hash, DO_hash) || CHECK_AGAINST_HASH(fs, i, q_do_hash, Q_DO_hash)) {
-                loop_depth--;
-            } else if (CHECK_AGAINST_HASH(fs, i, plus_loop_hash, plus_LOOP_hash)) {
-                loop_depth++;
-            }
-            i--;
-        }
-        fs->pos.pos_in_word = i + 2;
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // unloop
 static void unloop(forth_state_t* fs) {
-    sef_pop_code(fs);
-    sef_pop_code(fs);
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // leave
 static void leave(forth_state_t* fs) {
-    unloop(fs);
-    hash_t do_hash = sef_hash("do");
-    hash_t q_do_hash = sef_hash("?do");
-    hash_t plus_loop_hash = sef_hash("+loop");
-    hash_t DO_hash = sef_hash("DO");
-    hash_t Q_DO_hash = sef_hash("?DO");
-    hash_t plus_LOOP_hash = sef_hash("+LOOP");
-    size_t i = fs->pos.pos_in_word;
-    int loop_depth = 1;
-    while (loop_depth) {
-        if (CHECK_AGAINST_HASH(fs, i, do_hash, DO_hash) || CHECK_AGAINST_HASH(fs, i, q_do_hash, Q_DO_hash)) {
-            loop_depth++;
-        } else if (CHECK_AGAINST_HASH(fs, i, plus_loop_hash, plus_LOOP_hash)) {
-            loop_depth--;
-        }
-        i++;
-    }
-    fs->pos.pos_in_word = i;
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // ?do
 static void question_do(forth_state_t* fs) {
-    sef_int_t w1 = sef_pop_data(fs);
-    sef_int_t w2 = sef_pop_data(fs);
-    if (w1 == w2) {
-        sef_push_code(fs, w2);
-        sef_push_code(fs, w1);
-        leave(fs);
-    } else {
-        sef_push_data(fs, w2);
-        sef_push_data(fs, w1);
-        DO(fs);
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // of
 static void of(forth_state_t* fs) {
-    sef_int_t test_case = sef_pop_data(fs);
-    sef_int_t value = sef_pop_data(fs);
-    if (test_case != value) {
-        hash_t endof_hash = sef_hash("endof");
-        hash_t ENDOF_hash = sef_hash("ENDOF");
-        hash_t endcase_hash = sef_hash("endcase");
-        hash_t ENDCASE_hash = sef_hash("ENDCASE");
-        hash_t case_hash = sef_hash("case");
-        hash_t CASE_hash = sef_hash("CASE");
-        int case_depth = 0;
-        size_t i = fs->pos.pos_in_word;
-        while ((!CHECK_AGAINST_HASH(fs, i, endof_hash, ENDOF_hash)) || (case_depth > 0)) {
-            if (CHECK_AGAINST_HASH(fs, i, case_hash, CASE_hash)) {
-                case_depth++;
-            } else if (CHECK_AGAINST_HASH(fs, i, endcase_hash, ENDCASE_hash)) {
-                case_depth--;
-            }
-            i++;
-        }
-        fs->pos.pos_in_word = i+1;
-        sef_push_data(fs, value);
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // endof
 static void endof(forth_state_t* fs) {
-    hash_t endcase_hash = sef_hash("endcase");
-    hash_t ENDCASE_hash = sef_hash("ENDCASE");
-    hash_t case_hash = sef_hash("case");
-    hash_t CASE_hash = sef_hash("CASE");
-    int case_depth = 1;
-    size_t i = fs->pos.pos_in_word;
-    while (case_depth) {
-        if (CHECK_AGAINST_HASH(fs, i, case_hash, CASE_hash)) {
-            case_depth++;
-        } else if (CHECK_AGAINST_HASH(fs, i, endcase_hash, ENDCASE_hash)) {
-            case_depth--;
-        }
-        i++;
-    }
-    fs->pos.pos_in_word = i;
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // Memory management
@@ -457,7 +296,7 @@ static void cells(forth_state_t* fs) {
 
 // here
 static void here(forth_state_t* fs) {
-    sef_push_data(fs, ((sef_int_t) fs->forth_memory) + fs->forth_memory_index);
+    sef_push_data(fs, (sef_int_t) fs->here.byte);
 }
 
 // allot
@@ -517,9 +356,8 @@ static void cstore(forth_state_t* fs) {
 
 // unused
 static void unused(forth_state_t* fs) {
-    sef_push_data(fs, FORTH_MEMORY_SIZE - fs->forth_memory_index);
+    sef_push_data(fs, FORTH_MEMORY_SIZE - (fs->here.byte - fs->forth_memory));
 }
-
 
 // C strings
 
@@ -759,45 +597,13 @@ static void base(forth_state_t* fs) {
 
 // execute
 static void execute(forth_state_t* fs) {
-    hash_t exec_tocken = sef_pop_data(fs);
+    dictionary_entry_t exec_tocken = (dictionary_entry_t) sef_pop_data(fs);
     sef_call_func(fs, exec_tocken);
-}
-
-// Parse a word and ensure that the execution will stop right after it.
-// This is needed to ensure correct behavior when using evaluate recursively.
-static void extra_safe_parse(forth_state_t* fs, char c) {
-    if (!sef_can_execute(fs)) {
-        return;
-    }
-
-    code_pointer_t pos_copy = fs->pos;
-    fs->pos.current_word = SEF_IDLE_CURRENT_WORD;
-    fs->pos.pos_in_word = SEF_IDLE_POS_IN_WORD;
-    struct sef_compiled_forth_word_s* current_word_copy = fs->current_word_copy;
-
-    sef_parser_parse_char(fs->parser, c);
-
-    fs->pos = pos_copy;
-    fs->current_word_copy = current_word_copy;
-
-    if (!sef_can_execute(fs)) {
-        fs->pos.pos_in_word = SEF_IDLE_POS_IN_WORD;
-        fs->pos.current_word = SEF_IDLE_CURRENT_WORD;
-    }
 }
 
 // evaluate
 static void evaluate(forth_state_t* fs) {
-    size_t len = (size_t) sef_pop_data(fs);
-    const char* str = (const char *) sef_pop_data(fs);
-    for (size_t i=0; i<len; i++) {
-        extra_safe_parse(fs, str[i]);
-    }
-}
-
-// Recurse
-static void recurse(forth_state_t* fs) {
-    sef_call_func(fs, fs->pos.current_word);
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // pad
@@ -807,22 +613,12 @@ static void pad(forth_state_t* fs) {
 
 // defer@
 static void defer_fetch(forth_state_t* fs) {
-    hash_t exec_tocken = (hash_t) sef_pop_data(fs);
-    entry_t entry;
-    if (sef_find(fs->dic, &entry, NULL, exec_tocken) != sef_OK || entry.type != alias) {
-        error_msg("Using defer@ on invalid value.");
-        sef_abort(fs);
-    }
-    sef_push_data(fs, (sef_int_t) entry.func.alias_to);
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // defer!
 static void defer_store(forth_state_t* fs) {
-    hash_t alias_token = (hash_t) sef_pop_data(fs);
-    hash_t alias_to_token = (hash_t) sef_pop_data(fs);
-    if (sef_set_alias(fs->dic, alias_token, alias_to_token, "from defer!") != sef_OK) {
-        error_msg("Using defer! on invalid values.");
-    }
+    SEF_ERROR_OUT(fs, "TODO!\n");
 }
 
 // Given a string, return true if i's a valid query for environment?
@@ -971,7 +767,6 @@ struct c_func_s all_default_c_func[] = {
     {"base", base},
     {"execute", execute},
     {"(evaluate)", evaluate},
-    {"recurse", recurse},
     {"pad", pad},
     {"defer@", defer_fetch},
     {"defer!", defer_store},
@@ -979,7 +774,7 @@ struct c_func_s all_default_c_func[] = {
 };
 
 // Register all the default C_func
-void sef_register_default_C_func(forth_state_t* fs) {
+void sef_register_default_cfunc(forth_state_t* fs) {
     for (size_t i = 0; i < sizeof(all_default_c_func) / sizeof(struct c_func_s); i++) {
         const char* name = all_default_c_func[i].name;
         sef_register_cfunc(fs, name, all_default_c_func[i].func);
