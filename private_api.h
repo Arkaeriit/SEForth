@@ -15,7 +15,6 @@
 #include "errors.h"
 #include "forth_state.h"
 #include "C_func.h"
-#include "user_words.h"
 #include "dictionary.h"
 #include "parser.h"
 

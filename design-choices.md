@@ -115,11 +115,18 @@ The word execution will point to the next word on its own.
 
 ## Base process
 
-`:` will put a colon-sys on the stack. Probably a single `sef_int_t`. Bit 0 of this number tells if we are postponing a word or not. I'll probably find more things to add to it in the future.
+`:` will put a colon-sys on the stack. Probably a single `sef_int_t`. I don't think I need any data, but I should probably add a magic word to check the integrity of the stack during a definition.
 
 `:` reads the next word for the name to use, and create the new entry in the dictionary. Subsequent words are read and added to the definition until `;` or `[` unset the compiling flag. This will be done in a while loop checking the compiling flag. This C function will be called as-is by `]`, it will also be called after creating the dictionary entry by `:` and `:noname`. `:noname` will create the new entry and put the execution token on the stack before the colon-sys token.
 
 When compiling `RECURSE`, the address to use will be read from the last dictionary entry field from the state. That entry must be set by whichever words put the state in compiling mode.
+
+The interpretation/compilation process will be the following.
+- Try to read a word. If this fail, try to refill and retry. If refill fails, the process can stop.
+- Find the word in the dictionary, if not found, decode it as a number literal. If it doesn't convert, complain and abbort.
+- Execute the word or add it to the definition being run depending on the compiling state and the imediate tag of the word.
+- Let the execution run until we are back into an interpreting/compiling state.
+- Restart this process.
 
 ## Control flow
 

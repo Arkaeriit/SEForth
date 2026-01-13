@@ -18,6 +18,8 @@ typedef enum {
 #define SPACE_ALLIGNED_TO(base_size, alignment_size) \
     (base_size + SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size))
 
+
+typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_source);
 // Forth state definition. It is not meant to be manipulated directly from outside,
 // but it is included here to let SEForth users know the size of the state, to malloc
 // it or declare a static instance.
@@ -51,7 +53,7 @@ typedef struct forth_state_s {
     char* input_buffer;
     sef_int_t parse_area_offset;
     void* input_source;
-    bool (*input_source_refill)(struct forth_state_s* state, void* input_source);
+    input_source_refill_t input_source_refill;
     bool compiling_system_words;
 } forth_state_t;
 

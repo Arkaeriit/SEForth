@@ -117,7 +117,6 @@ dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t na
         }
         searching = (dictionary_entry_t) (*searching);
     }
-    SEF_ERROR_OUT(fs, "Can't find \"%*s\" in the dictionary.\n", name_len, name);
     return NULL;
 }
 
