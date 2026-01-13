@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "string.h"
 
 static void exec_forth_word(forth_state_t* fs, void* parameter) {
     sef_int_t* first_sub_word = (sef_int_t*) parameter;
@@ -47,10 +48,11 @@ static bool c_string_refill(forth_state_t* fs, void* input_source) {
     fs->input_buffer_size = 0;
     for (size_t i=0; i<strlen(fs->input_buffer); i++) {
         if (fs->input_buffer[i] == '\n') {
-            return;
+            break;
         }
         fs->input_buffer_size++;
     }
+    return true;
 }
 
 static void refill(forth_state_t* fs) {
@@ -58,6 +60,14 @@ static void refill(forth_state_t* fs) {
     fs->parse_area_offset = 0;
     // TODO C bool to Forth bool
     sef_push_data(fs, refill_rc);
+}
+
+void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
+    sef_push_input_source(fs);
+    fs->input_source = (char*) str; // I won't edit it with c_string refill, so no biggie with const.
+    fs->input_buffer_size = 0;
+    fs->parse_area_offset = 1;
+    fs->input_source_refill = c_string_refill;
 }
 
 /* ------------------------------ Parsing words ----------------------------- */
@@ -72,7 +82,7 @@ static void parse(forth_state_t* fs) {
         bool found_content = content != NULL;
         bool on_delimiter = fs->input_buffer[fs->parse_area_offset] == delimiter;
         if (!found_content && on_delimiter) { // Check that we started to find something interesting
-            found_content = fs->input_buffer + fs->parse_area_offset;
+            content = fs->input_buffer + fs->parse_area_offset;
         } else if (!found_content && !on_delimiter) { // Starting to find interesting content
             content = fs->input_buffer + fs->parse_area_offset;
             content_size = 1;
@@ -84,7 +94,7 @@ static void parse(forth_state_t* fs) {
         fs->parse_area_offset++;
     }
     sef_push_data(fs, (sef_int_t) content);
-    sef_pop_data(content_size);
+    sef_push_data(fs, content_size);
 }
 
 static void parse_word(forth_state_t* fs) {
@@ -123,7 +133,7 @@ static void semicolon(forth_state_t* fs) {
     leave_compilation(fs);
     sef_int_t magic = sef_pop_data(fs);
     if (magic != COLON_SYS_MAGIC) {
-        SEF_ERROR_OUT(fs, "Imbalanced stack when compiling \"%s\".\n", sef_get_word_name(fs->last_dictionary_entry));
+        SEF_ERROR_OUT(fs, "Imbalanced stack when compiling \"%s\".\n", sef_get_entry_name(fs->last_dictionary_entry));
     }
 }
 
@@ -138,7 +148,7 @@ static void s(forth_state_t* fs) {
     size_t str_len = (size_t) sef_pop_data(fs);
     if (fs->compiling) {
         add_word_to_current_definition(fs, "(string)");
-        sef_add_strinf_to_current_definition(fs, str, str_len);
+        sef_add_string_to_current_definition(fs, str, str_len);
     } else {
         sef_call_entry(fs, sef_register_string(fs, str, str_len));
     }
@@ -153,6 +163,34 @@ static void dot_string(forth_state_t* fs) {
 
 /* ---------------------- Exporting compile time words ---------------------- */
 
+struct c_func_s {
+    const char* name;
+    void (*func)(forth_state_t*);
+    // TODO: Do I need immediate flag here?
+};
+
+struct c_func_s all_default_parser_c_func[] = {
+    {"parse", parse},
+    {"parse-word", parse_word},
+
+    {"[", leave_compilation},
+    {"]", enter_compilation},
+    {":", colon},
+    {";", semicolon},
+
+    {"s\"", s},
+    {".\"", dot_string},
+
+    {"refill", refill},
+};
+
+void sef_register_parser_cfunc(forth_state_t* fs) {
+    for (size_t i = 0; i < sizeof(all_default_parser_c_func) / sizeof(struct c_func_s); i++) {
+        const char* name = all_default_parser_c_func[i].name;
+        sef_register_cfunc(fs, name, all_default_parser_c_func[i].func, true);
+    }
+}
+
 /* ------------------------ Compile/Interpret routine ----------------------- */
 
 // Convert a sting to a number. Return true if it worked. As strtol stops at
@@ -166,7 +204,7 @@ static bool str_to_num(const char* str, sef_int_t* num, int base) {
 
 // Handle compilation of interpretation of a word found in the dictionary.
 static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry) {
-    sef_int_t tags = *(sef_int_t* sef_get_word_tag_field(entry));
+    sef_int_t tags = *(sef_get_word_tag_field(entry));
     bool should_execute = (!fs->compiling) || (tags & WTM_IMMEDIATE);
     if (should_execute) {
         sef_call_entry(fs, entry);
@@ -206,17 +244,21 @@ static void inter_compil_step(forth_state_t* fs) {
 
     sef_int_t read_number;
     if (str_to_num(name, &read_number, fs->base)) {
-        inter_compil_number(fs, entry);
+        inter_compil_number(fs, read_number);
         return;
     }
 
-    SEF_ERROR_OUT("Trying to compile \"%*s\" which is neither a valid word nor a number.\n", name_len, name);
+    SEF_ERROR_OUT(fs, "Trying to compile \"%*s\" which is neither a valid word nor a number.\n", name_len, name);
 }
 
-static inter_compil_run(forth_state_t* fs) {
-    while (fs->input_source_refill(fs, fs->input_source)) {
+void sef_inter_compil_run(forth_state_t* fs) {
+    refill(fs);
+    bool refilled = sef_pop_data(fs);
+    while (refilled) {
         while (fs->parse_area_offset < fs->input_buffer_size) {
             inter_compil_step(fs);
         }
+        refill(fs);
+        refilled = sef_pop_data(fs);
     }
 }
