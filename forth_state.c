@@ -122,6 +122,7 @@ void sef_call_entry(fs, dictionary_entry_t entry) {
         sef_push_data(fs, (sef_int_t) parameters);
         fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
     } else {
+        // TODO: segfault catching
         wef(fs, parameters);
     }
 }

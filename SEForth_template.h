@@ -9,10 +9,6 @@
 typedef SEF_INT_T sef_int_t;
 typedef SEF_UNSIGNED_T sef_unsigned_t;
 
->> Size used to encode the word identifier and the index of each subword in a word
-£define __SEF_HASH_SIZE_BITS         SEF_HASH_SIZE_BITS         
-£define __SEF_WORD_CONTENT_SIZE_BITS SEF_WORD_CONTENT_SIZE_BITS 
-
 >> Optional features and words. Set to 1 to enable and to 0 to disable
 
 >> Enable reading source files

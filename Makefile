@@ -2,7 +2,7 @@
 CFLAGS ?= -Wall -Wextra -g -Wno-error=cpp
 
 # Files lists
-C_SRC := hash.c dictionary.c forth_state.c C_func.c parser.c utils.c sef_stack.c public_api.c sef_io.c
+C_SRC := dictionary.c forth_state.c C_func.c parser.c utils.c sef_stack.c public_api.c sef_io.c
 FRT_SRC := base_forth_func.frt file_forth_func.frt string_forth_func.frt programming_forth_func.frt
 C_HEADER := sef_io.h SEForth.h C_func.h dictionary.h errors.h forth_state.h hash.h parser.h user_words.h utils.h sef_debug.h private_api.h
 TARGET := seforth

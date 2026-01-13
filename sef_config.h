@@ -6,34 +6,26 @@
 #define SEF_UNSIGNED_T uintptr_t
 #endif
 
-// Size used to encode the word identifier and the index of each subword in a word
-#ifndef SEF_HASH_SIZE_BITS
-#define SEF_HASH_SIZE_BITS         24
-#endif
-#ifndef SEF_WORD_CONTENT_SIZE_BITS
-#define SEF_WORD_CONTENT_SIZE_BITS 24
-#endif
-
 // Optional features and words. Set to 1 to enable and to 0 to disable
 
 // Enable reading source files
 #ifndef SEF_USE_SOURCE_FILE
-#define SEF_USE_SOURCE_FILE 1
+#define SEF_USE_SOURCE_FILE 0
 #endif
 
 // Enable words related to file manipulation
 #ifndef SEF_FILE
-#define SEF_FILE 1
+#define SEF_FILE 0
 #endif
 
 // Enable words related to string manipulation
 #ifndef SEF_STRING
-#define SEF_STRING 1
+#define SEF_STRING 0
 #endif
 
 // Enable programing tools words
 #ifndef SEF_PROGRAMMING_TOOLS
-#define SEF_PROGRAMMING_TOOLS 1
+#define SEF_PROGRAMMING_TOOLS 0
 #endif
 
 // Depth of the memory blocks
