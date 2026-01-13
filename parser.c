@@ -44,7 +44,10 @@ static bool c_string_refill(forth_state_t* fs, void* input_source) {
     if (chars_left == 0) {
         return false;
     }
-    fs->input_buffer = input_left_to_parse + 1; // +1 as we assume refill was called because a \n was encountered in the input string. So we can safely try to reach the next char to see if it is more interesting than \n
+    fs->input_buffer = input_left_to_parse;
+    while (*fs->input_buffer == '\n') {
+        fs->input_buffer++;
+    }
     fs->input_buffer_size = 0;
     for (size_t i=0; i<strlen(fs->input_buffer); i++) {
         if (fs->input_buffer[i] == '\n') {
@@ -66,7 +69,7 @@ void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
     sef_push_input_source(fs);
     fs->input_source = (char*) str; // I won't edit it with c_string refill, so no biggie with const.
     fs->input_buffer_size = 0;
-    fs->parse_area_offset = 1;
+    fs->parse_area_offset = 0;
     fs->input_source_refill = c_string_refill;
 }
 
@@ -81,8 +84,8 @@ static void parse(forth_state_t* fs) {
     while (fs->parse_area_offset < fs->input_buffer_size) {
         bool found_content = content != NULL;
         bool on_delimiter = fs->input_buffer[fs->parse_area_offset] == delimiter;
-        if (!found_content && on_delimiter) { // Check that we started to find something interesting
-            content = fs->input_buffer + fs->parse_area_offset;
+        if (!found_content && on_delimiter) { // We haven't reach the content
+            // Nothing to do
         } else if (!found_content && !on_delimiter) { // Starting to find interesting content
             content = fs->input_buffer + fs->parse_area_offset;
             content_size = 1;
@@ -122,8 +125,8 @@ static void enter_compilation(forth_state_t* fs) {
 #define COLON_SYS_MAGIC 0x5EF
 static void colon(forth_state_t* fs) {
     parse_word(fs);
-    char* name = (char*) sef_pop_data(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
+    char* name = (char*) sef_pop_data(fs);
     sef_push_data(fs, COLON_SYS_MAGIC);
     enter_compilation(fs);
     sef_register_new_word(fs, name, name_len, exec_forth_word);
@@ -144,8 +147,8 @@ static void semicolon(forth_state_t* fs) {
 static void s(forth_state_t* fs) {
     sef_push_data(fs, '"');
     parse(fs);
-    char* str = (char*) sef_pop_data(fs);
     size_t str_len = (size_t) sef_pop_data(fs);
+    char* str = (char*) sef_pop_data(fs);
     if (fs->compiling) {
         add_word_to_current_definition(fs, "(string)");
         sef_add_string_to_current_definition(fs, str, str_len);
@@ -230,8 +233,8 @@ static void inter_compil_number(forth_state_t* fs, sef_int_t number) {
 // Compile a single word. Does nothing if there is nothing in the input buffer.
 static void inter_compil_step(forth_state_t* fs) {
     parse_word(fs);
-    char* name = (char*) sef_pop_data(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
+    char* name = (char*) sef_pop_data(fs);
     if (name_len == 0) {
         return;
     }
@@ -248,7 +251,7 @@ static void inter_compil_step(forth_state_t* fs) {
         return;
     }
 
-    SEF_ERROR_OUT(fs, "Trying to compile \"%*s\" which is neither a valid word nor a number.\n", name_len, name);
+    SEF_ERROR_OUT(fs, "Trying to compile \"%.*s\" which is neither a valid word nor a number.\n", name_len, name);
 }
 
 void sef_inter_compil_run(forth_state_t* fs) {

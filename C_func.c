@@ -27,6 +27,13 @@ void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func, 
     }
 }
 
+// TODO: Remove to keep the forth one
+static void dot(forth_state_t* fs) {
+    // I don't care about base as this is a debug word.
+    sef_int_t w = sef_pop_data(fs);
+    printf("%li ", w);
+}
+
 // List of default C_func
 
 // Stack manipulation
@@ -674,6 +681,7 @@ struct c_func_s {
 };
 
 struct c_func_s all_default_c_func[] = {
+    {".", dot},
     // Stack manipulation
     {"swap", swap},
     {"rot", rot},

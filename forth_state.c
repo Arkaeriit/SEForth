@@ -17,7 +17,7 @@ static void reset_parser(forth_state_t* fs) {
 }
 
 // Init the interpreter
-void sef_init_state(forth_state_t* fs) {
+void sef_state_init(forth_state_t* fs) {
     fs->here.byte = &fs->forth_memory[0];
     fs->last_dictionary_entry = NULL;
     fs->data_stack_index = 0;
@@ -30,36 +30,37 @@ void sef_init_state(forth_state_t* fs) {
     fs->bye = false;
     reset_parser(fs);
     fs->compiling_system_words = true;
-    // TODO: fill dictionary
+    sef_register_default_cfunc(fs);
+    sef_register_parser_cfunc(fs);
     fs->compiling_system_words = false;
 }
 
 /* --------------------------- Stack manipulation --------------------------- */
 
 #if SEF_STACK_BOUND_CHECKS
-#define STACK_BOUND_CHECK(fs, stack_name, stack_size)                                  \
-    if (!(fs->stack_name ## _index < 0 || fs->stack_name ## _index >= stack_size)) {   \
-        SEF_ERROR_OUT(fs, "Stack '%s' out of bound. Resetting state.\n", #stack_name); \
-    }                                                                                   
+#define STACK_BOUND_CHECK(fs, stack_name, stack_size)                                         \
+    if (fs->stack_name ## _stack_index < 0 || fs->stack_name ## _stack_index >= stack_size) { \
+        SEF_ERROR_OUT(fs, "Stack '%s' out of bound. Resetting state.\n", #stack_name);        \
+    }                                                                                          
 #else
 #define STACK_BOUND_CHECK(fs, stack_name, stack_size)
 #endif
 
-#define STACK_OPERATIONS(stack_name, stack_size)                  \
-void sef_push_ ## stack_name(forth_state_t* fs, sef_int_t data) { \
-    fs->stack_name[fs->stack_name ## _index++] = data;            \
-    STACK_BOUND_CHECK(fs, stack_name, stack_size)                 \
-}                                                                 \
-                                                                  \
-sef_int_t sef_pop_ ## stack_name(forth_state_t* fs) {             \
-    sef_int_t ret = fs->stack_name[fs->stack_name ## _index--];   \
-    STACK_BOUND_CHECK(fs, stack_name, stack_size)                 \
-    return ret;                                                   \
-}                                                                  
+#define STACK_OPERATIONS(stack_name, stack_size)                                \
+void sef_push_ ## stack_name(forth_state_t* fs, sef_int_t data) {               \
+    fs->stack_name ## _stack[fs->stack_name ## _stack_index++] = data;          \
+    STACK_BOUND_CHECK(fs, stack_name, stack_size)                               \
+}                                                                               \
+                                                                                \
+sef_int_t sef_pop_ ## stack_name(forth_state_t* fs) {                           \
+    sef_int_t ret = fs->stack_name ## _stack[--fs->stack_name ## _stack_index]; \
+    STACK_BOUND_CHECK(fs, stack_name, stack_size)                               \
+    return ret;                                                                 \
+}                                                                                
 
-STACK_OPERATIONS(data_stack, SEF_DATA_STACK_SIZE)
-STACK_OPERATIONS(code_stack, SEF_CODE_STACK_SIZE)
-STACK_OPERATIONS(control_flow_stack, SEF_CONTROL_FLOW_STACK_SIZE)
+STACK_OPERATIONS(data, SEF_DATA_STACK_SIZE)
+STACK_OPERATIONS(code, SEF_CODE_STACK_SIZE)
+STACK_OPERATIONS(control_flow, SEF_CONTROL_FLOW_STACK_SIZE)
 
 /* ---------------------------- Taking down state --------------------------- */
 
