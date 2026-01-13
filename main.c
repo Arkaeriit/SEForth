@@ -1,6 +1,7 @@
 #include "SEForth.h"
 #include "stdio.h"
 
+#if 0
 extern const char* shell;
 
 int main(int argc, char** argv) {
@@ -34,5 +35,13 @@ int main(int argc, char** argv) {
     sef_parse_string(fs, "(repl-buffer) 1- free ");
     sef_free(fs);
     return rc;
+}
+#endif
+
+int main(void) {
+    static forth_state_t fs;
+    sef_init(&fs);
+    sef_parse_string(&fs, "123 . ");
+    return fs.error_encountered;
 }
 

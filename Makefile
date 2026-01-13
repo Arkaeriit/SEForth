@@ -1,5 +1,5 @@
 # Flags
-CFLAGS ?= -Wall -Wextra -g -Wno-error=cpp
+CFLAGS ?= -Wall -Wextra -g -Werror -Wno-error=cpp
 
 # Files lists
 C_SRC := dictionary.c forth_state.c C_func.c parser.c utils.c public_api.c sef_io.c
