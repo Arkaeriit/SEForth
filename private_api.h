@@ -9,9 +9,8 @@
 
 #include "SEForth.h"
 #include "stdlib.h"
-#include "sef_stack.h"
 #include "sef_io.h"
-#include "hash.h"
+#include "sef_debug.h"
 #include "errors.h"
 #include "forth_state.h"
 #include "C_func.h"
