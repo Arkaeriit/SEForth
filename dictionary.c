@@ -1,5 +1,4 @@
 #include "dictionary.h"
-#include "sef_debug.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -17,7 +16,7 @@ static void to_upper(char* str) {
 #endif
 
 static bool case_insensitive_name_match(const char* name_from_dictionary, const char* outside_name, size_t outside_name_size) {
-    if (strnlen(name_from_dictionary) != outside_name_size || strlen(name_from_dictionary) == 0) {
+    if (strlen(name_from_dictionary) != outside_name_size || strlen(name_from_dictionary) == 0) {
         return false;
     }
     for (size_t i=0; i<strlen(name_from_dictionary); i++) {
@@ -56,13 +55,13 @@ static size_t size_needed_to_store_string(size_t string_len) {
 // safety...
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
     // Storing pointer to previous entry
-    dictionary_entry_t new_entry = fs->here->cell;
-    *new_entry = (sef_int_t) fs->last_dictionary_enrty;
-    fs->last_dictionary_enrty = (uint8_t*) new_entry;
+    dictionary_entry_t new_entry = fs->here.cell;
+    *new_entry = (sef_int_t) fs->last_dictionary_entry;
+    fs->last_dictionary_entry = new_entry;
     sef_allot_cell(fs);
     // Storing name size
     dictionary_entry_t name_len_field = sef_get_entry_name_len(new_entry);
-    *dictionary_entry_t = name_len;
+    *name_len_field = name_len;
     sef_allot_cell(fs);
     // Storing name
     char* name_field = sef_get_entry_name(new_entry);
@@ -77,13 +76,13 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     *word_tags_field = fs->compiling_system_words ? WTM_SYSTEM_WORD : 0;
     sef_allot(fs, size_needed_to_store_string(name_len));
     // Storing wef
-    word_executing_function* wef_field = (word_executing_function*) fs->here->cell;
+    word_executing_function* wef_field = (word_executing_function*) fs->here.cell;
     *wef_field = wef;
     sef_allot_cell(fs);
 }
 
 // Execution function for a string
-static void exec_string(forth_state_t* fs, void* parameter) {
+static void exec_string(forth_state_t* fs, void* parameters) {
    sef_int_t* len_field = parameters;
    sef_int_t* content = len_field + 1;
    sef_push_data(fs, (sef_int_t) content);
@@ -92,17 +91,18 @@ static void exec_string(forth_state_t* fs, void* parameter) {
     
 dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, size_t content_len) {
     // Register empty dictionary entry
-    sef_register_new_word(fs, "", exec_string);
+    sef_register_new_word(fs, "", 0, exec_string);
     // Write in string size
-    sef_int_t* len_field = fs->here->cell;
+    sef_int_t* len_field = fs->here.cell;
     *len_field = (sef_int_t) content_len;
-    sef_allot_cell();
+    sef_allot_cell(fs);
     // Write in string content
     sef_add_string_to_current_definition(fs, content, content_len);
+    return fs->last_dictionary_entry;
 }
 
 void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len) {
-    char* content_in_entry = (char*) fs->here->byte;
+    char* content_in_entry = (char*) fs->here.byte;
     sef_allot(fs, size_needed_to_store_string(content_len));
     memcpy(content_in_entry, content, content_len);
     content_in_entry[content_len] = 0;
@@ -111,10 +111,10 @@ void sef_add_string_to_current_definition(forth_state_t* fs, const char* content
 /* ----------------------------- Reading entries ---------------------------- */
 
 dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t name_len) {
-    dictionary_entry_t searching = fs->last_dictionary_enrty;
+    dictionary_entry_t searching = fs->last_dictionary_entry;
     while (searching != NULL) {
         const char* entry_name = sef_get_entry_name(searching);
-        sef_int_t word_tags_field = sef_get_word_tag_field(searching);
+        sef_int_t* word_tags_field = sef_get_word_tag_field(searching);
         bool (*name_match)(const char*, const char*, size_t) = *word_tags_field & WTM_SYSTEM_WORD ? case_insensitive_name_match : case_sensitive_name_match;
         if (name_match(entry_name, name, name_len)) {
             return searching;
@@ -129,7 +129,7 @@ sef_int_t* sef_get_entry_name_len(dictionary_entry_t entry) {
 }
 
 char* sef_get_entry_name(dictionary_entry_t entry) {
-    return sef_get_entry_name_len(entry) + 1;
+    return (char*) (sef_get_entry_name_len(entry) + 1);
 }
 
 sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry) {
@@ -148,11 +148,11 @@ void* sef_get_entry_parameter(dictionary_entry_t entry) {
 }
 
 void sef_display_dictionary(forth_state_t* fs) {
-    dictionary_entry_t entry = fs->last_dictionary_enrty;
+    dictionary_entry_t entry = fs->last_dictionary_entry;
     while (entry != NULL) {
         const char* name = sef_get_entry_name(entry);
         if (name[0]) {
-            for (int i=0; i<strlen(name); i++) {
+            for (size_t i=0; i<strlen(name); i++) {
                 sef_output(name[i]);
             }
             sef_output(' ');

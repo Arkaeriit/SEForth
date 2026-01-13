@@ -16,11 +16,12 @@ sef_int_t sef_pop_control_flow(forth_state_t* fs);
 void sef_run(forth_state_t* fs);
 void sef_quit(forth_state_t* fs);
 void sef_exit(forth_state_t* fs);
+void sef_reset(forth_state_t* fs);
 void sef_abort(forth_state_t* fs);
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry);
 
-#define SEF_ERROR_OUT(fs, error_msg...) \
-    error_msg(fs, error_msg);           \
+#define SEF_ERROR_OUT(fs, error_txt...) \
+    error_msg(error_txt);               \
     sef_abort(fs)                        
 
 typedef enum {
@@ -33,9 +34,9 @@ typedef enum {
 possible_states_t sef_get_current_state(forth_state_t* fs);
 
 typedef enum {
-    WTM_IMMEDIATE      = 1 << 0;
-    WTM_DOES_EXECUTION = 1 << 1;
-    WTM_SYSTEM_WORD    = 1 << 2;
+    WTM_IMMEDIATE      = 1 << 0,
+    WTM_DOES_EXECUTION = 1 << 1,
+    WTM_SYSTEM_WORD    = 1 << 2,
 } word_tag_mask;
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);

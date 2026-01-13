@@ -2,8 +2,6 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-typedef sef_int_t* dictionary_entry_t;
-
 /* --------------------------- Writing new entries -------------------------- */
 
 typedef void (*word_executing_function)(forth_state_t* fs, void* parameters);

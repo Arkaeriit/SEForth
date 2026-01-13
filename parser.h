@@ -9,5 +9,8 @@ void sef_inter_compil_run(forth_state_t* fs);
 // Register parser's compile time words writtens in C.
 void sef_register_parser_cfunc(forth_state_t* fs);
 
+// Set a C string as the input source.
+void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str);
+
 #endif
 

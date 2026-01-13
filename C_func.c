@@ -11,7 +11,8 @@
 // Functions used to manipulate C_fun
 
 static void exec_cfunc(forth_state_t* fs, void* parameters) {
-    C_callback_t* func= parameters;
+    C_callback_t* func_field = parameters;
+    C_callback_t func = *func_field;
     func(fs);
 }
 
@@ -88,13 +89,12 @@ static void roll(forth_state_t* fs) {
 // pick
 static void pick(forth_state_t* fs) {
     sef_int_t pos = sef_pop_data(fs);
-    sef_push_data(fs,
-            fs->data->stack[fs->data->stack_pointer - pos - 1]);
+    sef_push_data(fs, fs->data_stack[fs->data_stack_index - pos - 1]);
 }
 
 // depth
 static void depth(forth_state_t* fs) {
-    sef_push_data(fs, fs->data->stack_pointer);
+    sef_push_data(fs, fs->data_stack_index);
 }
 
 // Basic maths
@@ -356,7 +356,7 @@ static void cstore(forth_state_t* fs) {
 
 // unused
 static void unused(forth_state_t* fs) {
-    sef_push_data(fs, FORTH_MEMORY_SIZE - (fs->here.byte - fs->forth_memory));
+    sef_push_data(fs, SEF_FORTH_MEMORY_SIZE - (fs->here.byte - fs->forth_memory));
 }
 
 // C strings
@@ -598,7 +598,7 @@ static void base(forth_state_t* fs) {
 // execute
 static void execute(forth_state_t* fs) {
     dictionary_entry_t exec_tocken = (dictionary_entry_t) sef_pop_data(fs);
-    sef_call_func(fs, exec_tocken);
+    sef_call_entry(fs, exec_tocken);
 }
 
 // evaluate
@@ -777,7 +777,7 @@ struct c_func_s all_default_c_func[] = {
 void sef_register_default_cfunc(forth_state_t* fs) {
     for (size_t i = 0; i < sizeof(all_default_c_func) / sizeof(struct c_func_s); i++) {
         const char* name = all_default_c_func[i].name;
-        sef_register_cfunc(fs, name, all_default_c_func[i].func);
+        sef_register_cfunc(fs, name, all_default_c_func[i].func, false);
     }
 }
 
