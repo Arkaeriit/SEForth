@@ -19,6 +19,9 @@ dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, s
 // also work with counted strings.
 void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len);
 
+// Tell how much room a string takes in the dictionary. Needed to retrieve it.
+size_t sef_size_needed_to_store_string(size_t string_len);
+
 /* ----------------------------- Reading entries ---------------------------- */
 
 // Return a pointer to an entry. Return NULL and error out if it is not found.

@@ -41,9 +41,7 @@ static bool case_sensitive_name_match(const char* name_from_dictionary, const ch
 
 /* -------------------------------- Name size ------------------------------- */
 
-#define MIN(a, b) ((a) > (b) ? (b) : (a))
-
-static size_t size_needed_to_store_string(size_t string_len) {
+size_t sef_size_needed_to_store_string(size_t string_len) {
     size_t effective_size = string_len + 1;
     return SPACE_ALLIGNED_TO(effective_size, sizeof(sef_int_t));
 }
@@ -68,7 +66,7 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     char* name_field = sef_get_entry_name(new_entry);
     memcpy(name_field, name, name_len);
     name_field[name_len] = 0;
-    sef_allot(fs, size_needed_to_store_string(name_len));
+    sef_allot(fs, sef_size_needed_to_store_string(name_len));
 #if SEF_CASE_INSENSITIVE
     to_upper(name_field);
 #endif
@@ -93,18 +91,18 @@ static void exec_string(forth_state_t* fs, void* parameters) {
 dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, size_t content_len) {
     // Register empty dictionary entry
     sef_register_new_word(fs, "", 0, exec_string);
-    // Write in string size
-    sef_int_t* len_field = fs->here.cell;
-    *len_field = (sef_int_t) content_len;
-    sef_allot_cell(fs);
-    // Write in string content
     sef_add_string_to_current_definition(fs, content, content_len);
     return fs->last_dictionary_entry;
 }
 
 void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len) {
+    // Write in string size
+    sef_int_t* len_field = fs->here.cell;
+    *len_field = (sef_int_t) content_len;
+    sef_allot_cell(fs);
+    // Write in string content
     char* content_in_entry = (char*) fs->here.byte;
-    sef_allot(fs, size_needed_to_store_string(content_len));
+    sef_allot(fs, sef_size_needed_to_store_string(content_len));
     memcpy(content_in_entry, content, content_len);
     content_in_entry[content_len] = 0;
 }
@@ -134,7 +132,7 @@ char* sef_get_entry_name(dictionary_entry_t entry) {
 }
 
 sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry) {
-    size_t cells_taken_by_name = size_needed_to_store_string(*sef_get_entry_name_len(entry)) / sizeof(sef_int_t);
+    size_t cells_taken_by_name = sef_size_needed_to_store_string(*sef_get_entry_name_len(entry)) / sizeof(sef_int_t);
     sef_int_t* ret = ((sef_int_t*) sef_get_entry_name(entry)) + cells_taken_by_name;
     return ret;
 }

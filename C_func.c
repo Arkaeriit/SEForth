@@ -33,6 +33,11 @@ static void dot(forth_state_t* fs) {
     sef_int_t w = sef_pop_data(fs);
     printf("%li ", w);
 }
+static void type(forth_state_t* fs) {
+    sef_int_t str_len = sef_pop_data(fs);
+    char* str = (char*) sef_pop_data(fs);
+    printf("%.*s<-", (int) str_len, str);
+}
 
 // List of default C_func
 
@@ -225,18 +230,18 @@ static void xor(forth_state_t* fs) {
 // Flow control
 
 // if
-static void IF(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+static void if_runtine(forth_state_t* fs) {
+    sef_int_t destination_address = sef_pop_data(fs);
+    sef_int_t flag = sef_pop_data(fs);
+    if (!flag) {
+        fs->code_pointer = (sef_int_t*) destination_address;
+    }
 }
 
 // else
-static void ELSE(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// then
-static void then(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+static void else_runtime(forth_state_t* fs) {
+    sef_int_t destination_address = sef_pop_data(fs);
+    fs->code_pointer = (sef_int_t*) destination_address;
 }
 
 // begin
@@ -682,6 +687,7 @@ struct c_func_s {
 
 struct c_func_s all_default_c_func[] = {
     {".", dot},
+    {"type", type},
     // Stack manipulation
     {"swap", swap},
     {"rot", rot},
@@ -710,9 +716,8 @@ struct c_func_s all_default_c_func[] = {
     {"or", or},
     {"xor", xor},
     // Flow control
-    {"if", IF},
-    {"else", ELSE},
-    {"then", then},
+    {"(if)", if_runtine}, // TODO: if a cache is made for this kind of words (used in the parser), I could stop take new name and use name shadowing instead.
+    {"(else)", else_runtime},
     {"begin", begin},
     {"until", until},
     {"do", DO},
@@ -737,6 +742,7 @@ struct c_func_s all_default_c_func[] = {
     {"c!", cstore},
     {"unused", unused},
     // C strings
+    // TODO: get rid of that?
     {"print", put_str},
     {"strlen", str_len},
 #if SEF_FILE

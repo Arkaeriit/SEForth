@@ -41,7 +41,13 @@ int main(int argc, char** argv) {
 int main(void) {
     static forth_state_t fs;
     sef_init(&fs);
-    sef_parse_string(&fs, "123 . ");
+    sef_parse_string(&fs, " : test-prt .\" printing works if I get a 5\" 5 . ; test-prt ");
+    printf("----\n");
+    sef_parse_string(&fs, " : test-literals 5 . 15 . 18 . ; test-literals ");
+    printf("----\n");
+    sef_parse_string(&fs, " : test if .\" oui\" else .\" non\" then .\"  enfin\" ; ");
+    printf("----\n");
+    sef_parse_string(&fs, " 5 test 0 test");
     return fs.error_encountered;
 }
 

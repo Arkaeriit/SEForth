@@ -95,12 +95,14 @@ static void parse(forth_state_t* fs) {
             content = fs->input_buffer + fs->parse_area_offset;
             content_size = 1;
         } else if (found_content && on_delimiter) { // End of the value to parse
+            fs->parse_area_offset++;
             break;
         } else { // Simply parsing the content
             content_size++;
         }
         fs->parse_area_offset++;
     }
+    debug_msg("Parsed `%.*s` of size %i.\n", (int) content_size, content, (int) content_size);
     sef_push_data(fs, (sef_int_t) content);
     sef_push_data(fs, content_size);
 }
@@ -151,15 +153,56 @@ static void literal(forth_state_t* fs) {
     sef_push_data(fs, number);
 }
 
+static void string(forth_state_t* fs) {
+    sef_int_t str_len = *(++fs->code_pointer);
+    sef_int_t str = (sef_int_t) ++fs->code_pointer;
+    size_t size_taken_by_string_in_cells = sef_size_needed_to_store_string(str_len) / sizeof(sef_int_t);
+    fs->code_pointer += size_taken_by_string_in_cells - 1;
+    sef_push_data(fs, str);
+    sef_push_data(fs, str_len);
+}
+
+static void immediate(forth_state_t* fs) {
+    SEF_ERROR_OUT(fs, "TODO, this one is important.\n");
+}
+
+static void does(forth_state_t* fs) {
+    SEF_ERROR_OUT(fs, "TODO, this one is important.\n");
+}
+
 /* --------------------------- Control-flow words --------------------------- */
 
 static void if_compile_time(forth_state_t* fs) {
     // We start by adding an empty number, it will be edited by else or then.
     inter_compil_number(fs, 0);
     // We push the address of the number to fill in in the control flow stack.
-    sef_push_control_flow(fs, (sef_int_t) fs->here.cell);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
     // Then we add the runtime word
     add_word_to_current_definition(fs, "(if)");
+}
+
+static void else_compile_time(forth_state_t* fs) {
+    // Pop the address of the if-targeted address.
+    sef_int_t* empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
+    // Add an empty number to the control flow stack to target THEN
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    // Fill in the empty address with where we are putting (else)
+    debug_msg(">>>Else wrote in if the value 0x%lX.\n", (long) *empty_cell);
+    *empty_cell = (sef_int_t) fs->here.cell;
+    debug_msg("Else wrote in if the value 0x%lX.\n", (long) *empty_cell);
+    add_word_to_current_definition(fs, "(else)");
+}
+
+static void then(forth_state_t* fs) {
+    // For THEN, we don't need to put in a word, as then does nothing.
+    // We only need to fill-in the address for if or else.
+    // But we need to decrease it by one so that the end-of-execution for
+    // (if) or (else) make it point to the correct sub-word.
+    sef_int_t* empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
+    debug_msg(">>Then wrote in if the value 0x%lX.\n", (long) *empty_cell);
+    *empty_cell = (sef_int_t) (fs->here.cell - 1);
+    debug_msg("Then wrote in if the value 0x%lX.\n", (long) *empty_cell);
 }
 
 /* ----------------------------- String parsing ----------------------------- */
@@ -201,8 +244,13 @@ struct c_func_s all_default_parser_c_func[] = {
     {":", colon, false},
     {";", semicolon, true},
     {"(literal)", literal, false},
+    {"(string)", string, false},
+    {"immediate", immediate, false},
+    {"does>", does, false},
 
     {"if", if_compile_time, true},
+    {"else", else_compile_time, true},
+    {"then", then, true},
 
     {"s\"", s, true},
     {".\"", dot_string, true},

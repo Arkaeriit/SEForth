@@ -127,6 +127,7 @@ void sef_exit(forth_state_t* fs) {
 }
 
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+    debug_msg("Calling %s\n", sef_get_entry_name(entry));
     sef_int_t word_tags = *(sef_get_word_tag_field(entry));
     void* parameters = sef_get_entry_parameter(entry);
     word_executing_function wef = *(sef_get_word_executing_function(entry));
