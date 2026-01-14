@@ -4,10 +4,15 @@
 static void exec_forth_word(forth_state_t* fs, void* parameter) {
     sef_int_t* first_sub_word = (sef_int_t*) parameter;
     sef_push_code(fs, (sef_int_t) fs->code_pointer);
-    fs->code_pointer = first_sub_word - 1;
+    if (fs->code_pointer == NULL) {
+        fs->code_pointer = first_sub_word; // Executing from the interpreting/compiling state, we want to start executing the given word.
+    } else {
+        fs->code_pointer = first_sub_word - 1; // From the executing state, sef_execute_code_pointer will increment the code pointer so we pro-actively decrement it.
+    }
 }
 
 static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry);
+static void inter_compil_number(forth_state_t* fs, sef_int_t number);
 
 // Add the NULL-terminated word to the current definition. Must be called from
 // compilation context with a run-time word.
@@ -107,14 +112,14 @@ static void parse_word(forth_state_t* fs) {
 
 /* ----------------------------- Compiling words ---------------------------- */
 
-static void leave_compilation(forth_state_t* fs) {
+static void enter_compilation(forth_state_t* fs) {
     if (fs->compiling) {
         SEF_ERROR_OUT(fs, "Trying to enter compiling while already compiling.\n");
     }
     fs->compiling = true;
 }
 
-static void enter_compilation(forth_state_t* fs) {
+static void leave_compilation(forth_state_t* fs) {
     if (!fs->compiling) {
         SEF_ERROR_OUT(fs, "Trying to leave compiling while not compiling.\n");
     }
@@ -133,6 +138,7 @@ static void colon(forth_state_t* fs) {
 }
 
 static void semicolon(forth_state_t* fs) {
+    add_word_to_current_definition(fs, "exit");
     leave_compilation(fs);
     sef_int_t magic = sef_pop_data(fs);
     if (magic != COLON_SYS_MAGIC) {
@@ -140,7 +146,21 @@ static void semicolon(forth_state_t* fs) {
     }
 }
 
+static void literal(forth_state_t* fs) {
+    sef_int_t number = *(++fs->code_pointer);
+    sef_push_data(fs, number);
+}
+
 /* --------------------------- Control-flow words --------------------------- */
+
+static void if_compile_time(forth_state_t* fs) {
+    // We start by adding an empty number, it will be edited by else or then.
+    inter_compil_number(fs, 0);
+    // We push the address of the number to fill in in the control flow stack.
+    sef_push_control_flow(fs, (sef_int_t) fs->here.cell);
+    // Then we add the runtime word
+    add_word_to_current_definition(fs, "(if)");
+}
 
 /* ----------------------------- String parsing ----------------------------- */
 
@@ -169,28 +189,31 @@ static void dot_string(forth_state_t* fs) {
 struct c_func_s {
     const char* name;
     void (*func)(forth_state_t*);
-    // TODO: Do I need immediate flag here?
+    bool immediate;
 };
 
 struct c_func_s all_default_parser_c_func[] = {
-    {"parse", parse},
-    {"parse-word", parse_word},
+    {"parse", parse, true},
+    {"parse-word", parse_word, true},
 
-    {"[", leave_compilation},
-    {"]", enter_compilation},
-    {":", colon},
-    {";", semicolon},
+    {"[", leave_compilation, true},
+    {"]", enter_compilation, false},
+    {":", colon, false},
+    {";", semicolon, true},
+    {"(literal)", literal, false},
 
-    {"s\"", s},
-    {".\"", dot_string},
+    {"if", if_compile_time, true},
 
-    {"refill", refill},
+    {"s\"", s, true},
+    {".\"", dot_string, true},
+
+    {"refill", refill, false},
 };
 
 void sef_register_parser_cfunc(forth_state_t* fs) {
     for (size_t i = 0; i < sizeof(all_default_parser_c_func) / sizeof(struct c_func_s); i++) {
         const char* name = all_default_parser_c_func[i].name;
-        sef_register_cfunc(fs, name, all_default_parser_c_func[i].func, true);
+        sef_register_cfunc(fs, name, all_default_parser_c_func[i].func, all_default_parser_c_func[i].immediate);
     }
 }
 

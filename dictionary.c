@@ -53,6 +53,7 @@ static size_t size_needed_to_store_string(size_t string_len) {
 // TODO: To ensure memory safety, I should probably move the allocation before
 // the memory use, and return if an error was detected. But Forth and memory
 // safety...
+// TODO: maybe warning in case of word redefinition.
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
     // Storing pointer to previous entry
     dictionary_entry_t new_entry = fs->here.cell;
@@ -74,7 +75,7 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     // Storing tags. For now the only one we can be sure of if the sytem word tag.
     sef_int_t* word_tags_field = sef_get_word_tag_field(new_entry);
     *word_tags_field = fs->compiling_system_words ? WTM_SYSTEM_WORD : 0;
-    sef_allot(fs, size_needed_to_store_string(name_len));
+    sef_allot_cell(fs);
     // Storing wef
     word_executing_function* wef_field = (word_executing_function*) fs->here.cell;
     *wef_field = wef;
@@ -115,7 +116,7 @@ dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t na
     while (searching != NULL) {
         const char* entry_name = sef_get_entry_name(searching);
         sef_int_t* word_tags_field = sef_get_word_tag_field(searching);
-        bool (*name_match)(const char*, const char*, size_t) = *word_tags_field & WTM_SYSTEM_WORD ? case_insensitive_name_match : case_sensitive_name_match;
+        bool (*name_match)(const char*, const char*, size_t) = *word_tags_field & WTM_SYSTEM_WORD || SEF_CASE_INSENSITIVE ? case_insensitive_name_match : case_sensitive_name_match;
         if (name_match(entry_name, name, name_len)) {
             return searching;
         }
