@@ -163,11 +163,28 @@ static void string(forth_state_t* fs) {
 }
 
 static void immediate(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO, this one is important.\n");
+    sef_int_t* tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
+    *tag_field |= WTM_IMMEDIATE;
 }
 
 static void does(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO, this one is important.\n");
+    sef_int_t* tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
+    *tag_field |= WTM_DOES_EXECUTION;
+    sef_int_t* wef_field = tag_field + 1; // I have to change this as well as the dictionary if I ever change entry layout
+    *wef_field = (sef_int_t) fs->here.cell;
+}
+
+/* --------------------------------- Create --------------------------------- */
+
+static void exec_create(forth_state_t* fs, void* parameter) {
+    sef_push_data(fs, (sef_int_t) parameter);
+}
+
+static void create(forth_state_t* fs) {
+    parse_word(fs);
+    size_t name_len = (size_t) sef_pop_data(fs);
+    char* name = (char*) sef_pop_data(fs);
+    sef_register_new_word(fs, name, name_len, exec_create);
 }
 
 /* --------------------------- Control-flow words --------------------------- */
@@ -247,6 +264,7 @@ struct c_func_s all_default_parser_c_func[] = {
     {"(string)", string, false},
     {"immediate", immediate, false},
     {"does>", does, false},
+    {"create", create, false},
 
     {"if", if_compile_time, true},
     {"else", else_compile_time, true},
