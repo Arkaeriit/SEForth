@@ -172,6 +172,8 @@ static void does(forth_state_t* fs) {
 
 /* --------------------------- Control-flow words --------------------------- */
 
+// TODO: Maybe add a check that we are in a word definition for all those words.
+
 static void if_compile_time(forth_state_t* fs) {
     // We start by adding an empty number, it will be edited by else or then.
     inter_compil_number(fs, 0);
@@ -188,7 +190,6 @@ static void else_compile_time(forth_state_t* fs) {
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
     // Fill in the empty address with where we are putting (else)
-    debug_msg(">>>Else wrote in if the value 0x%lX.\n", (long) *empty_cell);
     *empty_cell = (sef_int_t) fs->here.cell;
     debug_msg("Else wrote in if the value 0x%lX.\n", (long) *empty_cell);
     add_word_to_current_definition(fs, "(else)");
@@ -200,7 +201,6 @@ static void then(forth_state_t* fs) {
     // But we need to decrease it by one so that the end-of-execution for
     // (if) or (else) make it point to the correct sub-word.
     sef_int_t* empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
-    debug_msg(">>Then wrote in if the value 0x%lX.\n", (long) *empty_cell);
     *empty_cell = (sef_int_t) (fs->here.cell - 1);
     debug_msg("Then wrote in if the value 0x%lX.\n", (long) *empty_cell);
 }

@@ -132,6 +132,7 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
     void* parameters = sef_get_entry_parameter(entry);
     word_executing_function wef = *(sef_get_word_executing_function(entry));
 
+    // TODO: consider the proposition about this in the design choices document.
     if (word_tags & WTM_DOES_EXECUTION) {
         sef_int_t* new_code_pointer = (sef_int_t*) wef;
         sef_push_code(fs, (sef_int_t) fs->code_pointer);
