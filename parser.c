@@ -222,6 +222,30 @@ static void then(forth_state_t* fs) {
     debug_msg("Then wrote in if the value 0x%lX.\n", (long) *empty_cell);
 }
 
+static void begin(forth_state_t* fs) {
+    // Begin does nothing when executing so we to push the address of HERE which
+    // will be used by WHILE and REPEAT
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1)); // -1 as there won't be a runtime begin
+}
+
+static void while_compile_time(forth_state_t* fs) {
+    // While needs a black address that will be filled-in by repeat
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    add_word_to_current_definition(fs, "(while)");
+}
+
+static void repeat_compile_time(forth_state_t* fs) {
+    sef_int_t* while_empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
+    sef_int_t begin_address = sef_pop_control_flow(fs);
+    // Putting the address of begin as a literal, the runtime repeat will go to it.
+    inter_compil_number(fs, begin_address);
+    // Filling in the blank word from while with repeat address
+    *while_empty_cell = (sef_int_t) (fs->here.cell);
+    add_word_to_current_definition(fs, "(repeat)");
+
+}
+
 /* ----------------------------- String parsing ----------------------------- */
 
 static void s(forth_state_t* fs) {
@@ -269,6 +293,9 @@ struct c_func_s all_default_parser_c_func[] = {
     {"if", if_compile_time, true},
     {"else", else_compile_time, true},
     {"then", then, true},
+    {"begin", begin, true},
+    {"while", while_compile_time, true},
+    {"repeat", repeat_compile_time, true},
 
     {"s\"", s, true},
     {".\"", dot_string, true},

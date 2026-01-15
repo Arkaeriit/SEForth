@@ -48,6 +48,8 @@ int main(void) {
     sef_parse_string(&fs, " : test if .\" oui\" else .\" non\" then .\"  enfin\" ; ");
     printf("----\n");
     sef_parse_string(&fs, " 5 test 0 test");
+    printf("----\n");
+    sef_parse_string(&fs, ": test-loop 5 begin dup . dup while 1 - repeat ; test-loop ");
     return fs.error_encountered;
 }
 

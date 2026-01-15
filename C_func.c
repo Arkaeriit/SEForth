@@ -244,49 +244,19 @@ static void else_runtime(forth_state_t* fs) {
     fs->code_pointer = (sef_int_t*) destination_address;
 }
 
-// begin
-static void begin(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+// while
+static void while_runtime(forth_state_t* fs) {
+    dictionary_entry_t repeat_address = (dictionary_entry_t) sef_pop_data(fs);
+    sef_int_t flag = sef_pop_data(fs);
+    if (!flag) {
+        fs->code_pointer = repeat_address;
+    }
 }
 
-// until
-static void until(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// do
-static void DO(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// I
-static void I(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// J
-static void J(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// +loop
-static void plus_loop(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// unloop
-static void unloop(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// leave
-static void leave(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
-// ?do
-static void question_do(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+// repeat
+static void repeat_runtime(forth_state_t* fs) {
+    dictionary_entry_t begin_address = (dictionary_entry_t) sef_pop_data(fs);
+    fs->code_pointer = begin_address;
 }
 
 // of
@@ -718,15 +688,8 @@ struct c_func_s all_default_c_func[] = {
     // Flow control
     {"(if)", if_runtine}, // TODO: if a cache is made for this kind of words (used in the parser), I could stop take new name and use name shadowing instead.
     {"(else)", else_runtime},
-    {"begin", begin},
-    {"until", until},
-    {"do", DO},
-    {"i", I},
-    {"j", J},
-    {"+loop", plus_loop},
-    {"unloop", unloop},
-    {"leave", leave},
-    {"?do", question_do},
+    {"(while)", while_runtime},
+    {"(repeat)", repeat_runtime},
     {"of", of},
     {"endof", endof},
     // Memory management
