@@ -43,16 +43,16 @@ void sef_pop_input_source(forth_state_t* fs) {
 /* -------------------------- C string input source ------------------------- */
 
 static bool c_string_refill(forth_state_t* fs, void* input_source) {
-    char* full_input = input_source;
-    char* input_left_to_parse = full_input + fs->parse_area_offset;
-    size_t chars_left = strlen(input_left_to_parse);
+    char* left_to_fill = ((char*) input_source) + fs->input_buffer_size;
+    size_t chars_left = strlen(left_to_fill);
     if (chars_left == 0) {
         return false;
     }
-    fs->input_buffer = input_left_to_parse;
-    while (*fs->input_buffer == '\n') {
-        fs->input_buffer++;
+    while (*left_to_fill == '\n') {
+        left_to_fill++;
     }
+    fs->input_buffer = left_to_fill;
+    fs->input_source = left_to_fill;
     fs->input_buffer_size = 0;
     for (size_t i=0; i<strlen(fs->input_buffer); i++) {
         if (fs->input_buffer[i] == '\n') {
