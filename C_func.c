@@ -649,6 +649,24 @@ static void environment_query(forth_state_t* fs) {
     }
 }
 
+// (find) like find but with normal string instead of counted strings
+// In the not-found case, return the address -1 to help with find defintion
+static void find(forth_state_t* fs) {
+    size_t name_size = (size_t) sef_pop_data(fs);
+    const char* name = (const char*) sef_pop_data(fs);
+    dictionary_entry_t entry = sef_find_entry(fs, name, name_size);
+
+    if (entry == NULL) {
+        sef_push_data(fs, (sef_int_t) (name-1));
+        sef_push_data(fs, 0);
+    } else {
+        sef_int_t* word_tag_field = sef_get_word_tag_field(entry);
+        sef_int_t return_flag = *word_tag_field & WTM_IMMEDIATE ? 1 : -1;
+        sef_push_data(fs, (sef_int_t) entry);
+        sef_push_data(fs, return_flag);
+    }
+
+}
 
 struct c_func_s {
     const char* name;
@@ -748,6 +766,7 @@ struct c_func_s all_default_c_func[] = {
     {"defer@", defer_fetch},
     {"defer!", defer_store},
     {"environment?", environment_query},
+    {"(find)", find}
 };
 
 // Register all the default C_func
