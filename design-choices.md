@@ -140,7 +140,11 @@ Control flow will use at compile time the control flow stack.
 
 At compile-time, `IF` is replaced by an blank number literal and a `if-runtime` word. The address of the blank number is added to the control flow stack. The next time `ELSE` or `THEN` are encountered, the address of the closing word is put inside the number literal. The runtime `if` pops the two elements from the stack (the flag and the injected address) and jumps if needed. `ELSE` will have a similar behavior but always jump to `THEN`. `THEN` doesn't needs to do anything. Note that the code pointer increasing after a subword execution is taken into account.
  
-Similar mechanism will be used for loops.
+Similar mechanism will be used for `BEGIN` loops.
+
+### Do-loop
+
+Because of `?DO`, do loops can't be made simply in Forth by building uppon the while loop. Maybe I can put wether in it is a `DO` or a `?DO` as a litteral flag between the `BEGIN` and the `WHILE`. I'll need to check this flag and the value of the loop context. Before the `BEGIN` I put the loop limits in the return stack. Then I do the checks, then the loop content.
 
 ## Postpone
 
