@@ -24,20 +24,40 @@ static void add_word_to_current_definition(forth_state_t* fs, const char* word) 
 
 /* ------------------------- Input source management ------------------------ */
 
+#define CELL_USED_FOR_INPUT_SOURCE 5
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+
 void sef_push_input_source(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) fs->input_buffer_size);
     sef_push_data(fs, (sef_int_t) fs->input_buffer);
     sef_push_data(fs, (sef_int_t) fs->parse_area_offset);
     sef_push_data(fs, (sef_int_t) fs->input_source);
     sef_push_data(fs, (sef_int_t) fs->input_source_refill);
+    sef_push_data(fs, CELL_USED_FOR_INPUT_SOURCE);
 }
 
 void sef_pop_input_source(forth_state_t* fs) {
-    fs->input_source_refill = (input_source_refill_t) sef_pop_data(fs);
-    fs->input_source = (void*) sef_pop_data(fs);
-    fs->parse_area_offset = sef_pop_data(fs);
-    fs->input_buffer = (char*) sef_pop_data(fs);
-    fs->input_buffer_size = sef_pop_data(fs);
+    sef_int_t input_source_storage[CELL_USED_FOR_INPUT_SOURCE];
+    sef_int_t cells_in_stack = sef_pop_data(fs);
+
+    for (int i=0; i<MIN(cells_in_stack, CELL_USED_FOR_INPUT_SOURCE); i++) {
+        input_source_storage[i] = sef_pop_data(fs);
+    }
+    for (int i=MIN(cells_in_stack, CELL_USED_FOR_INPUT_SOURCE); i<cells_in_stack; i++) {
+        sef_pop_data(fs);
+    }
+
+    if (cells_in_stack == CELL_USED_FOR_INPUT_SOURCE) {
+        fs->input_source_refill = (input_source_refill_t) input_source_storage[0];
+        fs->input_source = (void*) input_source_storage[1];
+        fs->parse_area_offset = input_source_storage[2];
+        fs->input_buffer = (char*) input_source_storage[3];
+        fs->input_buffer_size = input_source_storage[4];
+        // TODO: bool
+    } else {
+        // TODO: bool
+        sef_push_data(fs, 0);
+    }
 }
 
 /* -------------------------- C string input source ------------------------- */
@@ -72,6 +92,7 @@ static void refill(forth_state_t* fs) {
 
 void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
     sef_push_input_source(fs);
+    sef_pop_data(fs); // We know the previous call returned true
     fs->input_source = (char*) str; // I won't edit it with c_string refill, so no biggie with const.
     fs->input_buffer_size = 0;
     fs->parse_area_offset = 0;
@@ -301,6 +322,8 @@ struct c_func_s all_default_parser_c_func[] = {
     {".\"", dot_string, true},
 
     {"refill", refill, false},
+    {"save-input", sef_push_input_source, false},
+    {"restore-input", sef_pop_input_source, false},
 };
 
 void sef_register_parser_cfunc(forth_state_t* fs) {
