@@ -298,8 +298,8 @@ struct c_func_s {
 };
 
 struct c_func_s all_default_parser_c_func[] = {
-    {"parse", parse, true},
-    {"parse-word", parse_word, true},
+    {"parse", parse, false},
+    {"parse-word", parse_word, false},
 
     {"[", leave_compilation, true},
     {"]", enter_compilation, false},
