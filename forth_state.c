@@ -111,7 +111,9 @@ static bool sef_execute_code_pointer(forth_state_t* fs) {
 
     sef_int_t entry = *fs->code_pointer;
     sef_call_entry(fs, (dictionary_entry_t) entry);
-    fs->code_pointer += 1;
+    if (fs->code_pointer != NULL) { // If we aborted, we don't want to increament the code pointer
+        fs->code_pointer += 1;
+    }
     return true;
 }
 
@@ -121,9 +123,6 @@ void sef_run(forth_state_t* fs) {
 
 void sef_exit(forth_state_t* fs) {
     fs->code_pointer = (sef_int_t*) sef_pop_code(fs);
-    if (fs->code_pointer == NULL) { // If the code pointer is NULL, we don't want sef_execute_code_pointer to bring us to the next word. We want it to point back to NULL so that the next loop of sef_run exits.
-        fs->code_pointer -= 1;
-    }
 }
 
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
