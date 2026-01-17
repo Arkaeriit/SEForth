@@ -148,7 +148,7 @@ Because of `?DO`, do loops can't be made simply in Forth by building uppon the w
 
 ## Postpone
 
-I'm pretty sure that parsing the next word, getting its dictionary entry, and appending it to the list of subwords from the currently being defined word would work just fine as long as we don't try to execute it if it were a compile time word.
+Postpone would be hard to define for forth only. Indeed, it would benefit from writing literals of the execution token, but defining `LITERAL` can be done with `POSTPONE`. I could try to bypass the use of `LITERAL` and `POSTPONE`, but that would make it hard to read. And writing it in C makes it easier to display error messages if `POSTPONE` couldn't find what to do.
 
 # Interpreting
 

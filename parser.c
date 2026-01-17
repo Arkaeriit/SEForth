@@ -289,6 +289,48 @@ static void dot_string(forth_state_t* fs) {
     add_word_to_current_definition(fs, type);
 }
 
+/* -------------------------------- Postpone -------------------------------- */
+
+// Convert a sting to a number. Return true if it worked. As strtol stops at
+// the first non valid char, we can use it even if the string is not
+// null-terminated, as we can expect to have some random non-number data after.
+// TODO: fix cases like "70abcd" being parsed as "70". Maybe feed-in str len.
+static bool str_to_num(const char* str, sef_int_t* num, int base) {
+    char* end;
+    *num = strtol(str, &end, base);
+    return end != str;
+}
+
+static void postpone_compile_time(forth_state_t* fs) {
+    parse_word(fs);
+    size_t name_len = (size_t) sef_pop_data(fs);
+    char* name = (char*) sef_pop_data(fs);
+
+    dictionary_entry_t entry = sef_find_entry(fs, name, name_len);
+    if (entry != NULL) {
+        inter_compil_number(fs, (sef_int_t) entry);
+        add_word_to_current_definition(fs, "(postpone)");
+    } else {
+        SEF_ERROR_OUT(fs, "Error can't parse %.*s with POSTPONE.\n", name_len, name);
+    }
+}
+
+// Takes from the stack one entry.
+// If it is immediate, execute it with state as compiling.
+// If it is not, add it to the current definition.
+static void postpone_runtime(forth_state_t* fs) {
+    dictionary_entry_t entry = (dictionary_entry_t) sef_pop_data(fs);
+    sef_int_t tags = *(sef_get_word_tag_field(entry));
+    if (tags & WTM_IMMEDIATE) {
+        bool old_state = fs->compiling;
+        fs->compiling = true;
+        sef_call_entry(fs, entry);
+        fs->compiling = old_state;
+    } else {
+        *fs->here.cell++ = (sef_int_t) entry;
+    }
+}
+
 /* ---------------------- Exporting compile time words ---------------------- */
 
 struct c_func_s {
@@ -324,6 +366,9 @@ struct c_func_s all_default_parser_c_func[] = {
     {"refill", refill, false},
     {"save-input", sef_push_input_source, false},
     {"restore-input", sef_pop_input_source, false},
+
+    {"postpone", postpone_compile_time, true},
+    {"(postpone)", postpone_runtime, false},
 };
 
 void sef_register_parser_cfunc(forth_state_t* fs) {
@@ -334,15 +379,6 @@ void sef_register_parser_cfunc(forth_state_t* fs) {
 }
 
 /* ------------------------ Compile/Interpret routine ----------------------- */
-
-// Convert a sting to a number. Return true if it worked. As strtol stops at
-// the first non valid char, we can use it even if the string is not
-// null-terminated, as we can expect to have some random non-number data after.
-static bool str_to_num(const char* str, sef_int_t* num, int base) {
-    char* end;
-    *num = strtol(str, &end, base);
-    return end != str;
-}
 
 // Handle compilation of interpretation of a word found in the dictionary.
 static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry) {
