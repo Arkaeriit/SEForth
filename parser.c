@@ -231,7 +231,8 @@ static void does(forth_state_t* fs) {
     sef_int_t* tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
     *tag_field |= WTM_DOES_EXECUTION;
     sef_int_t* wef_field = tag_field + 1; // I have to change this as well as the dictionary if I ever change entry layout
-    *wef_field = (sef_int_t) fs->here.cell;
+    *wef_field = (sef_int_t) (fs->code_pointer + 1);
+    sef_exit(fs); // We don't want to execute what is made for the other word.
 }
 
 /* --------------------------------- Create --------------------------------- */
