@@ -117,6 +117,7 @@ static bool forth_string_refill(forth_state_t* fs, void* input_source) {
 static void set_forth_string_as_input_source(forth_state_t* fs) {
     size_t str_len = (size_t) sef_pop_data(fs);
     char* str = (char*) sef_pop_data(fs);
+    debug_msg("Evaluating '%.*s'.\n", str_len, str);
     sef_push_input_source(fs);
     fs->input_source = str;
     fs->input_buffer_size = str_len;
@@ -130,7 +131,10 @@ static void evaluate(forth_state_t* fs) {
     for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
         sef_push_code(fs, sef_pop_data(fs));
     }
+    sef_push_code(fs, (sef_int_t) fs->code_pointer);
+    fs->code_pointer = NULL;
     sef_inter_compil_run(fs);
+    fs->code_pointer = (dictionary_entry_t) sef_pop_code(fs);
     for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
         sef_push_data(fs, sef_pop_code(fs));
     }
