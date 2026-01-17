@@ -1,16 +1,5 @@
 £include <stdbool.h>
 
->> This type defines the various errors we might encounter
-typedef enum {
-    sef_OK = 0,
-    sef_no_memory = 1,
-    sef_not_found = 2,
-    sef_invalid_file = 3,
-    sef_impossible_error = 4,
-    sef_segfault = 5,
-    sef_config_error = 6,
-} sef_error;
-
 £define SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size) \\
     (alignment_size - (base_size % alignment_size))
 

@@ -2,7 +2,6 @@
 #include "C_func.h"
 #include "string.h"
 #include "stdio.h"
-#include "utils.h"
 
 #define UNUSED(x) (void)(x)
 #define FORTH_TRUE ((sef_int_t) ~0)
