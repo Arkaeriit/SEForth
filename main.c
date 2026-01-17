@@ -52,6 +52,10 @@ int main(void) {
     sef_parse_string(&fs, ": test-loop 5 begin dup . dup while 1 - repeat ; test-loop ");
     printf("----\n");
     sef_parse_string(&fs, ": line1 1 . ;\n: line2 20 . ;\n: line3 300 . ;\nline3 line2 line1\n\n\n");
+    printf("----\n");
+    sef_parse_string(&fs, ": im-2 + . ; immediate : im-1 5 6 postpone im-2 ; immediate : nrm im-1 ;");
+    printf("----\n");
+    sef_parse_string(&fs, ": say-coucou .\" coucou\" ; s\" say-coucou\" evaluate");
     return fs.error_encountered;
 }
 

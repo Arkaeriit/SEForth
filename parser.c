@@ -60,6 +60,13 @@ void sef_pop_input_source(forth_state_t* fs) {
     }
 }
 
+static void refill(forth_state_t* fs) {
+    bool refill_rc = fs->input_source_refill(fs, fs->input_source);
+    fs->parse_area_offset = 0;
+    // TODO C bool to Forth bool
+    sef_push_data(fs, refill_rc);
+}
+
 /* -------------------------- C string input source ------------------------- */
 
 static bool c_string_refill(forth_state_t* fs, void* input_source) {
@@ -83,13 +90,7 @@ static bool c_string_refill(forth_state_t* fs, void* input_source) {
     return true;
 }
 
-static void refill(forth_state_t* fs) {
-    bool refill_rc = fs->input_source_refill(fs, fs->input_source);
-    fs->parse_area_offset = 0;
-    // TODO C bool to Forth bool
-    sef_push_data(fs, refill_rc);
-}
-
+// TODO: I probably need to pop the input source for whoever is calling this function
 void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
     sef_push_input_source(fs);
     sef_pop_data(fs); // We know the previous call returned true
@@ -98,6 +99,44 @@ void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
     fs->parse_area_offset = 0;
     fs->input_source_refill = c_string_refill;
 }
+
+/* -------------------- Forth string input (for evaluate) ------------------- */
+
+// Forth string as parsed as a single buffer, and don't need refill.
+// But we still want to perform one refill to kickstart the parsing loop.
+static bool forth_string_refill(forth_state_t* fs, void* input_source) {
+    if (fs->input_buffer == NULL) {
+        fs->input_buffer = input_source;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// The forth string is assumed to be on the stack
+static void set_forth_string_as_input_source(forth_state_t* fs) {
+    size_t str_len = (size_t) sef_pop_data(fs);
+    char* str = (char*) sef_pop_data(fs);
+    sef_push_input_source(fs);
+    fs->input_source = str;
+    fs->input_buffer_size = str_len;
+    fs->parse_area_offset = 0;
+    fs->input_buffer = NULL;
+    fs->input_source_refill = forth_string_refill;
+}
+
+static void evaluate(forth_state_t* fs) {
+    set_forth_string_as_input_source(fs);
+    for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
+        sef_push_code(fs, sef_pop_data(fs));
+    }
+    sef_inter_compil_run(fs);
+    for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
+        sef_push_data(fs, sef_pop_code(fs));
+    }
+    sef_pop_input_source(fs);
+}
+
 
 /* ------------------------------ Parsing words ----------------------------- */
 
@@ -342,6 +381,7 @@ struct c_func_s {
 struct c_func_s all_default_parser_c_func[] = {
     {"parse", parse, false},
     {"parse-word", parse_word, false},
+    {"evaluate", evaluate, false},
 
     {"[", leave_compilation, true},
     {"]", enter_compilation, false},
