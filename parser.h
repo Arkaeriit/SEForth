@@ -12,5 +12,8 @@ void sef_register_parser_cfunc(forth_state_t* fs);
 // Set a C string as the input source.
 void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str);
 
+// Reset the input source as before the last set.
+void sef_pop_input_source(forth_state_t* fs);
+
 #endif
 

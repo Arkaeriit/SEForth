@@ -26,6 +26,7 @@ bool sef_is_compiling(forth_state_t* state) {
 void sef_parse_string(forth_state_t* state, const char* s) {
     sef_set_c_string_as_input_source(state, s);
     sef_inter_compil_run(state);
+    sef_pop_input_source(state);
 }
 
 #if SEF_USE_SOURCE_FILE
