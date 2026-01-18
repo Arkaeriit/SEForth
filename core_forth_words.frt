@@ -75,6 +75,7 @@ macro: do 2dup = if swap 1- swap then ?do ;
 macro: loop 1 +loop ;
 macro: until 0= while repeat ;
 macro: again 0 until ;
+macro: unloop 2drop drop ;
 
 ( -------------------------- Compiling-related words ------------------------- )
 
