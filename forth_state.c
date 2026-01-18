@@ -18,8 +18,8 @@ static void reset_parser(forth_state_t* fs) {
 
 static void compile_system_forth_words(forth_state_t* fs) {
     (void) fs;
-    extern const char* base_forth_func;
-    sef_parse_string(fs, base_forth_func);
+    extern const char* core_forth_words;
+    sef_parse_string(fs, core_forth_words);
 }
 
 // Init the interpreter
