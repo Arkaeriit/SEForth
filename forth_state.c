@@ -20,6 +20,9 @@ static void compile_system_forth_words(forth_state_t* fs) {
     (void) fs;
     extern const char* core_forth_words;
     sef_parse_string(fs, core_forth_words);
+    // The pre-processor would corrupt comments definitions
+    sef_parse_string(fs, ": ( [char] ) parse 2drop ; immediate");
+    sef_parse_string(fs, ": \\ 10 parse 2drop ; immediate");
 #if SEF_PROGRAMMING_TOOLS
     extern const char* tools_forth_words;
     sef_parse_string(fs, tools_forth_words);

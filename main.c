@@ -60,7 +60,7 @@ int main(void) {
     printf("----\n");
     sef_parse_string(&fs, "variable my-var 55 my-var ! my-var @ . cr ");
     printf("----\n");
-    sef_parse_string(&fs, "words");
+    sef_parse_string(&fs, ".\" Not calling words\" ( words) cr \\ cr cr cr cr");
     return fs.error_encountered;
 }
 
