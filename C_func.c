@@ -608,8 +608,10 @@ static void defer_store(forth_state_t* fs) {
 }
 
 // Given a string, return true if i's a valid query for environment?
-// Also put in the return pointer the constant to put on the stack.
-static bool environment_reply(const char* query, size_t size, sef_int_t* ret) {
+// Also put in the return pointer the constants to put on the stack.
+// ret[0] is the first element to put on the stack.
+static bool environment_reply(const char* query, size_t size, sef_int_t ret[static 2], size_t* number_of_returned_values) {
+    *number_of_returned_values = 1;
     if (!strncmp(query, "/COUNTED-STRING", size)) {
         *ret = 0xFF;
     } else if (!strncmp(query, "/HOLD", size)) {
@@ -624,20 +626,23 @@ static bool environment_reply(const char* query, size_t size, sef_int_t* ret) {
     } else if (!strncmp(query, "MAX-CHAR", size)) {
         *ret = 0xFF;
     } else if (!strncmp(query, "MAX-D", size)) {
-        sef_push_data(fs, 0); // A bit hacky as I depend on only being called by environment_querry
-        *ret = ((sef_unsigned_t) ~0) >> 1;
+        ret[0] = ((sef_unsigned_t) ~0) >> 1;
+        ret[1] = 0;
+        *number_of_returned_values = 2;
     } else if (!strncmp(query, "MAX-N", size)) {
         *ret = ((sef_unsigned_t) ~0) >> 1;
     } else if (!strncmp(query, "MAX-U", size)) {
         *ret = ~0;
     } else if (!strncmp(query, "MAX-UD", size)) {
-        sef_push_data(fs, ~0); // A bit hacky as I depend on only being called by environment_querry
-        *ret = ~0;
+        ret[0] = ~0;
+        ret[1] = 0;
+        *number_of_returned_values = 2;
     } else if (!strncmp(query, "RETURN-STACK-CELLS", size)) {
         *ret = SEF_CODE_STACK_SIZE;
     } else if (!strncmp(query, "STACK-CELLS", size)) {
         *ret = SEF_DATA_STACK_SIZE;
     } else {
+        *number_of_returned_values = 0;
         return false;
     }
     return true;
@@ -647,11 +652,12 @@ static bool environment_reply(const char* query, size_t size, sef_int_t* ret) {
 static void environment_query(forth_state_t* fs) {
     size_t size = (size_t) sef_pop_data(fs);
     const char* str = (const char*) sef_pop_data(fs);
-    sef_int_t ret;
-    bool query_ret = environment_reply(str, size, &ret);
+    sef_int_t ret[2];
+    size_t number_of_returned_values = 0;
+    bool query_ret = environment_reply(str, size, ret, &number_of_returned_values);
     sef_push_data(fs, FORTH_BOOL(query_ret));
-    if (query_ret) {
-        sef_push_data(fs, ret);
+    for (size_t i=0; i<number_of_returned_values; i++) {
+        sef_push_data(fs, ret[i]);
     }
 }
 
