@@ -61,11 +61,6 @@
 #define SEF_LOG_OVER_STDERR 0
 #endif
 
-// Use words defined in Forth
-#ifndef SEF_REGISTER_FORTH_FUNC
-#define SEF_REGISTER_FORTH_FUNC 1
-#endif
-
 // Max number of digits in a number
 #ifndef SEF_MAX_NUMBER_DIGIT
 #define SEF_MAX_NUMBER_DIGIT 64

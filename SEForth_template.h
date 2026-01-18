@@ -40,9 +40,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Writing logs to stderr instead of the usual canals
 £define __SEF_LOG_OVER_STDERR SEF_LOG_OVER_STDERR 
 
->> Use words defined in Forth
-£define __SEF_REGISTER_FORTH_FUNC SEF_REGISTER_FORTH_FUNC 
-
 >> Max number of digits in a number
 £define __SEF_MAX_NUMBER_DIGIT SEF_MAX_NUMBER_DIGIT 
 
