@@ -352,12 +352,6 @@ static void unused(forth_state_t* fs) {
 
 // C strings
 
-// print
-static void put_str(forth_state_t* fs) {
-    char* str = (char *) sef_pop_data(fs);
-    sef_print_string(str);
-}
-
 // strlen
 static void str_len(forth_state_t* fs) {
     char* str = (char *) sef_pop_data(fs);
@@ -522,36 +516,9 @@ static void _stderr(forth_state_t* fs) {
 #endif
 
 #if SEF_PROGRAMMING_TOOLS
-// Programming tools
-
-// exit-code
-static void exit_code(forth_state_t* fs) {
-    sef_push_data(fs, (sef_int_t) &fs->exit_code);
-}
-
-// bye
-static void bye(forth_state_t* fs) {
-    fs->running = false;
-    fs->pos.pos_in_word = SEF_IDLE_POS_IN_WORD;
-    fs->pos.current_word = SEF_IDLE_CURRENT_WORD;
-}
-
 // words
 static void words(forth_state_t* fs) {
-    sef_display_dictionary(fs->dic);
-}
-// Arguments
-
-// argc
-static void argc(forth_state_t* fs) {
-    sef_push_data(fs, (sef_int_t) &fs->argc);
-}
-
-// arg
-static void arg(forth_state_t* fs) {
-    sef_int_t index = sef_pop_data(fs);
-    sef_push_data(fs, (sef_int_t) fs->argv[index]);
-    sef_push_data(fs, (sef_int_t) strlen(fs->argv[index]));
+    sef_display_dictionary(fs);
 }
 #endif
 
@@ -734,9 +701,6 @@ struct c_func_s all_default_c_func[] = {
     {"c@", cfetch},
     {"c!", cstore},
     {"unused", unused},
-    // C strings
-    // TODO: get rid of that?
-    {"print", put_str},
     {"strlen", str_len},
 #if SEF_FILE
     // File manipulation
@@ -757,12 +721,7 @@ struct c_func_s all_default_c_func[] = {
 #endif
 #if SEF_PROGRAMMING_TOOLS
     // Programming tools
-    {"exit-code", exit_code},
-    {"bye", bye},
     {"words", words},
-    // Arguments
-    {"argc", argc},
-    {"arg", arg},
 #endif
     // Misc
     {"emit", emit},

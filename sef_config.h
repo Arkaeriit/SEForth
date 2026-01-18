@@ -25,7 +25,12 @@
 
 // Enable programing tools words
 #ifndef SEF_PROGRAMMING_TOOLS
-#define SEF_PROGRAMMING_TOOLS 0
+#define SEF_PROGRAMMING_TOOLS 1
+#endif
+
+// Enable Forth getting cli argument and setting exit code
+#ifndef SEF_ARG_AND_EXIT_CODE
+#define SEF_ARG_AND_EXIT_CODE 1
 #endif
 
 // Depth of the memory blocks

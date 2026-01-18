@@ -23,6 +23,9 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Enable programing tools words
 £define __SEF_PROGRAMMING_TOOLS SEF_PROGRAMMING_TOOLS 
 
+>> Enable Forth getting cli argument and setting exit code
+£define __SEF_ARG_AND_EXIT_CODE SEF_ARG_AND_EXIT_CODE
+
 >> Depth of the memory blocks
 £define __SEF_CODE_STACK_SIZE SEF_CODE_STACK_SIZE 
 £define __SEF_DATA_STACK_SIZE SEF_DATA_STACK_SIZE 

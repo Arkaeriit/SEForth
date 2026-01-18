@@ -20,6 +20,17 @@ static void compile_system_forth_words(forth_state_t* fs) {
     (void) fs;
     extern const char* core_forth_words;
     sef_parse_string(fs, core_forth_words);
+#if SEF_PROGRAMMING_TOOLS
+    extern const char* tools_forth_words;
+    sef_parse_string(fs, tools_forth_words);
+#endif
+#if SEF_ARG_AND_EXIT_CODE
+    extern const char* arg_and_exit_code_forth_words;
+    sef_parse_string(fs, arg_and_exit_code_forth_words);
+#endif
+#if SEF_PROGRAMMING_TOOLS && SEF_ARG_AND_EXIT_CODE
+    sef_parse_string(fs, ": (bye) exit-code ! bye ;");
+#endif
 }
 
 // Init the interpreter
