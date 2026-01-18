@@ -64,7 +64,7 @@
 
 \ Not standard, but quite handy to define standard words
 
-: char ( "word" -- c ) parse-word if c@ else drop 0 then ;
+: char ( "word" -- c ) parse-name if c@ else drop 0 then ;
 : save-here ( c-addr u -- ) dup , 0 ?do dup c@ c, char+ 1 +loop drop align ;
 : read-mem-saved-here ( addr  -- c-addr u ) dup @ swap cell+ swap ;
 : macro: ( "read a definition until ;" -- ) create immediate (literal) [ char ; , ] parse save-here does> read-mem-saved-here evaluate ;
@@ -103,7 +103,7 @@ loop 2drop ;
 
 ( --------------------------------- Execution -------------------------------- )
 
-: ' ( "name" -- xt ) parse-word (find) 0= if abort ( TODO better error message ) then ;
+: ' ( "name" -- xt ) parse-name (find) 0= if abort ( TODO better error message ) then ;
 : ['] ( -- xt ) ( consume a name ) ' postpone literal ; immediate
 
 ( ---------------------------------- Strings --------------------------------- )

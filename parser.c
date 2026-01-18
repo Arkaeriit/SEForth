@@ -171,7 +171,7 @@ static void parse(forth_state_t* fs) {
     sef_push_data(fs, content_size);
 }
 
-static void parse_word(forth_state_t* fs) {
+static void parse_name(forth_state_t* fs) {
     sef_push_data(fs, ' ');
     parse(fs);
 }
@@ -195,7 +195,7 @@ static void leave_compilation(forth_state_t* fs) {
 // Part of the colon-sys used to ensure stack integrity during compilation
 #define COLON_SYS_MAGIC 0x5EF
 static void colon(forth_state_t* fs) {
-    parse_word(fs);
+    parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     sef_push_data(fs, COLON_SYS_MAGIC);
@@ -246,7 +246,7 @@ static void exec_create(forth_state_t* fs, void* parameter) {
 }
 
 static void create(forth_state_t* fs) {
-    parse_word(fs);
+    parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     sef_register_new_word(fs, name, name_len, exec_create);
@@ -401,7 +401,7 @@ static bool str_to_num(const char* str, sef_int_t* num, int base) {
 }
 
 static void postpone_compile_time(forth_state_t* fs) {
-    parse_word(fs);
+    parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
 
@@ -440,7 +440,7 @@ struct c_func_s {
 
 struct c_func_s all_default_parser_c_func[] = {
     {"parse", parse, false},
-    {"parse-word", parse_word, false},
+    {"parse-name", parse_name, false},
     {"evaluate", evaluate, false},
 
     {"[", leave_compilation, true},
@@ -512,7 +512,7 @@ static void inter_compil_number(forth_state_t* fs, sef_int_t number) {
 
 // Compile a single word. Does nothing if there is nothing in the input buffer.
 static void inter_compil_step(forth_state_t* fs) {
-    parse_word(fs);
+    parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     if (name_len == 0) {
