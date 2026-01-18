@@ -364,6 +364,57 @@ static void leave(forth_state_t* fs) {
     fs->code_pointer = end_off_loop;
 }
 
+static void case_compile_time(forth_state_t* fs) {
+    // Case only pushes a case-sys. Which is the number of endof clauses on top
+    // followed by one address for each of them.
+    sef_push_control_flow(fs, 0);
+}
+
+static void of_compile_time(forth_state_t* fs) {
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    add_word_to_current_definition(fs, "(of)");
+}
+
+static void of_run_time(forth_state_t* fs) {
+    dictionary_entry_t endof_pointer = (dictionary_entry_t) sef_pop_data(fs);
+    sef_int_t reference = sef_pop_data(fs);
+    sef_int_t element = sef_pop_data(fs);
+    if (reference != element) {
+        sef_push_data(fs, element);
+        fs->code_pointer = endof_pointer;
+    }
+}
+
+static void endof_compile_time(forth_state_t* fs) {
+    sef_int_t* of_pointer = (sef_int_t*) sef_pop_control_flow(fs);
+    sef_int_t number_of_cases = sef_pop_control_flow(fs);
+    // Putting the address of endcase as a literal and putting it on the stack
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    sef_push_control_flow(fs, number_of_cases+1);
+    // Runtime effect
+    add_word_to_current_definition(fs, "(endof)");
+    // Filling in the address for the of word
+    *of_pointer = (sef_int_t) (fs->here.cell - 1);
+}
+
+static void endof_run_time(forth_state_t* fs) {
+    dictionary_entry_t endcase_pointer = (dictionary_entry_t) sef_pop_data(fs);
+    fs->code_pointer = endcase_pointer;
+}
+
+static void endcase(forth_state_t* fs) {
+    // Filling in all the addresses for the endofs
+    sef_int_t number_of_cases = sef_pop_control_flow(fs);
+    for (sef_int_t i=0; i<number_of_cases; i++) {
+        sef_int_t** endcase_pointer = (sef_int_t**) sef_pop_control_flow(fs);
+        *endcase_pointer = fs->here.cell;
+    }
+    // The runtime is the same as drop
+    add_word_to_current_definition(fs, "drop");
+}
+
 /* ----------------------------- String parsing ----------------------------- */
 
 static void s(forth_state_t* fs) {
@@ -462,6 +513,12 @@ struct c_func_s all_default_parser_c_func[] = {
     {"+loop", plus_loop_compile_time, true},
     {"(+loop)", plus_loop_run_time, false},
     {"leave", leave, false},
+    {"case", case_compile_time, true},
+    {"of", of_compile_time, true},
+    {"(of)", of_run_time, false},
+    {"endof", endof_compile_time, true},
+    {"(endof)", endof_run_time, false},
+    {"endcase", endcase, true},
 
     {"s\"", s, true},
     {".\"", dot_string, true},

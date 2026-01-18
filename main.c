@@ -63,6 +63,8 @@ int main(void) {
     sef_parse_string(&fs, ".\" Not calling words\" ( words) cr \\ cr cr cr cr");
     printf("----\n");
     sef_parse_string(&fs, ": msg .\" Printing second \".( Printing first ) cr ; msg");
+    printf("----\n");
+    sef_parse_string(&fs, ": test-case ( x -- ) case 5 of .\" five\" endof 6 of .\" six\" endof .\" nyet\" endcase cr ; 6 test-case 4 test-case 5 test-case");
     return fs.error_encountered;
 }
 
