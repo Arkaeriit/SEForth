@@ -123,7 +123,6 @@ swap >r swap >r over c! 1+ r> r> 1+
 : true  ( -- n ) 0 0= ;
 
 ( ---------------------------- Numeric conversion ---------------------------- )
-quit
 64 constant <#-buff-len
 variable <#-buff <#-buff-len allot
 variable <#-cnt
@@ -134,17 +133,17 @@ variable <#-cnt
 : hold ( c -- ) 1 <#-cnt +! <#-addr c! ;
 : holds ( addr n -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;
 : sign ( n -- ) 0 < if [char] - hold then ;
-: # ( u -- u ) base @ u/mod swap (#) hold ;
-: #s ( u -- u ) begin # dup 0= until ;
-: #n ( n -- u ) dup abs #s swap sign ;
-: #> ( u -- addr n ) drop <#-addr <#-cnt @ ;
+: # ( ud -- ud ) base @ um/mod swap (#) hold s>d ;
+: #s ( ud -- ud ) begin # 2dup d>s 0= until ;
+: #n ( n -- ud ) dup abs s>d #s swap sign ;
+: #> ( du -- addr n ) 2drop <#-addr <#-cnt @ ;
 : . ( n -- ) <# #n #> type space ;
 : u. ( u -- ) <# #s #> type space ;
 : (x.r) ( n -- addr n ) <#-cnt @ - dup 0 > if
     0 do bl hold loop 0
     then #> ;
-: u.r swap <# #s #> 2drop (x.r) type ;
-: .r swap <# #n #> 2drop (x.r) type ;
+: u.r ( u n -- )swap s>d <# #s #> 2drop (x.r) type ;
+: .r ( n n -- ) swap <# #n #> 2drop (x.r) type ;
 
 : (to-digit) ( c -- n )
     dup [char] a < 0= if 10 + [char] a - exit then
@@ -152,11 +151,12 @@ variable <#-cnt
     dup [char] 9 >  if drop -1       exit then
                             [char] 0 - ;
 : (is-digit?) ( c -- b ) (to-digit) dup 0 < 0= swap base @ < and ;
-: >number ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) dup 0 do
+: (>number) ( u1 c-addr1 u1 -- u2 c-addr2 u2 ) dup 0 do
     over c@ (is-digit?) 0= if leave then
     1- rot rot dup c@ swap char+ swap
     ( u1- ud1 ca+ char )
     (to-digit) rot base @ * +
     ( u1- ca+ ud1+ )
     swap rot loop ;
+: >number ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) 2>r d>s 2r> (>number) 2>r s>d 2r> ;
 
