@@ -124,11 +124,19 @@ static void sub(forth_state_t* fs) {
     sef_push_data(fs, w2 - w1);
 }
 
+// I don't really want to do double words. One cell is big enough on modern
+// system. To stick with the standard, I'll still have double words on the
+// stack, But the'll just Be dumb sign extentions.
+#define POP_DOUBLE_WORD(fs, simple_word) \
+    sef_pop_data(fs);                    \
+    simple_word = sef_pop_data(fs);       
+
 // SM/REM
 static void sm_slash_rem(forth_state_t* fs) {
     // C gives symetric division
     sef_int_t w1 = sef_pop_data(fs);
-    sef_int_t w2 = sef_pop_data(fs);
+    sef_int_t w2;
+    POP_DOUBLE_WORD(fs, w2);
     sef_int_t quotient = w2 / w1;
     sef_int_t rem = w2 % w1;
     sef_push_data(fs, rem);
@@ -138,7 +146,8 @@ static void sm_slash_rem(forth_state_t* fs) {
 // FM/MOD
 static void fm_slash_mod(forth_state_t* fs) {
     sef_int_t w1 = sef_pop_data(fs);
-    sef_int_t w2 = sef_pop_data(fs);
+    sef_int_t w2;
+    POP_DOUBLE_WORD(fs, w2);
     sef_int_t quotient = w2 / w1;
     sef_int_t rem = w2 % w1;
     if (w1 * w2 < 0 && rem != 0) {
@@ -150,10 +159,11 @@ static void fm_slash_mod(forth_state_t* fs) {
     sef_push_data(fs, quotient);
 }
 
-// U/MOD
-static void u_slash_mod(forth_state_t* fs) {
+// UM/MOD
+static void um_slash_mod(forth_state_t* fs) {
     sef_unsigned_t w1 = (sef_unsigned_t) sef_pop_data(fs);
-    sef_unsigned_t w2 = (sef_unsigned_t) sef_pop_data(fs);
+    sef_unsigned_t w2;
+    POP_DOUBLE_WORD(fs, w2);
     sef_unsigned_t quotient = w2 / w1;
     sef_unsigned_t rem = w2 % w1;
     sef_push_data(fs, (sef_int_t) rem);
@@ -614,12 +624,14 @@ static bool environment_reply(const char* query, size_t size, sef_int_t* ret) {
     } else if (!strncmp(query, "MAX-CHAR", size)) {
         *ret = 0xFF;
     } else if (!strncmp(query, "MAX-D", size)) {
+        sef_push_data(fs, 0); // A bit hacky as I depend on only being called by environment_querry
         *ret = ((sef_unsigned_t) ~0) >> 1;
     } else if (!strncmp(query, "MAX-N", size)) {
         *ret = ((sef_unsigned_t) ~0) >> 1;
     } else if (!strncmp(query, "MAX-U", size)) {
         *ret = ~0;
     } else if (!strncmp(query, "MAX-UD", size)) {
+        sef_push_data(fs, ~0); // A bit hacky as I depend on only being called by environment_querry
         *ret = ~0;
     } else if (!strncmp(query, "RETURN-STACK-CELLS", size)) {
         *ret = SEF_CODE_STACK_SIZE;
@@ -686,7 +698,7 @@ struct c_func_s all_default_c_func[] = {
     {"*", mult},
     {"sm/rem", sm_slash_rem},
     {"fm/mod", fm_slash_mod},
-    {"u/mod", u_slash_mod},
+    {"um/mod", um_slash_mod},
     {"abs", abs_word},
     {"<", less_than},
     {"u<", u_less_than},

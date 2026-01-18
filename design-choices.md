@@ -43,6 +43,10 @@ Adding a cache of words used by the compiler (such as `EXIT` or the run-time eff
 
 If an error was encountered, the effect of `ABORT` are applied, and the `error encountered` field is set so that the user of sef as a library can see that something went wrong. The system is both too simple and too flexible for error bubbling to make much sense. 
 
+## Double cell numbers
+
+As I intend to for sef to run on 32-bit systems for embedded task and on 64-bit systems for applicative tasks, I don't think I need double cell numbers. I'll still store some numbers on two cells to comply with the standard, but the high-cell will only be a dumb sign extention.
+
 # Dictionary
 
 ## Entries

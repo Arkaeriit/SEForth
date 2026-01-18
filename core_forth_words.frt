@@ -13,6 +13,13 @@
 : 2r> ( -- x1 x2 ) ( x1 x2 -- ) postpone r> postpone r> postpone swap ; immediate
 : 2r@ ( -- x1 x2 ) ( x1 x2 -- x1 x2 ) postpone 2r> postpone 2dup postpone 2>r ; immediate
 
+( --------------------------- Double words emulation ------------------------- )
+
+: s>d ( n -- d ) dup 0 < if 1 else 0 then ;
+: d>s ( d -- n ) drop ;
+: um* ( u u -- d ) * 0 ;
+:  m* ( u u -- d ) * s>d ;
+
 ( ----------------------------------- Math ----------------------------------- )
 
 : 1+ ( n -- n ) 1 + ;
@@ -22,7 +29,7 @@
 : > ( n1 n2 -- b ) 2dup < 0= rot rot <> and ;
 : 0> ( n1 -- b ) 0 > ;
 : max ( n1 n2 -- n1 | n2 ) 2dup < if swap then drop ;
-: /mod ( n1 n2 -- n3 n4 ) sm/rem ;
+: /mod ( n1 n2 -- n3 n4 ) swap s>d rot sm/rem ;
 : mod ( n n -- n ) /mod drop ;
 : / ( n n -- n ) /mod swap drop ;
 : */mod ( n n n -- n n ) >r * r> /mod ;
@@ -74,13 +81,6 @@ macro: until 0= while repeat ;
 : variable ( "name -- ) align cell buffer: ;
 : constant ( n "name" -- ) create , does> @ ;
 : literal postpone (literal) , ; immediate
-
-( --------------------------- Double words emulation ------------------------- )
-
-: s>d ( n1 -- n1 ) ;
-: d>s ( n1 -- n1 ) ;
-: um* ( u u -- u ) * ;
-:  m* ( u u -- u ) * ;
 
 ( ---------------------------- Memory manipulation --------------------------- )
 

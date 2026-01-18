@@ -41,21 +41,20 @@ int main(int argc, char** argv) {
 int main(void) {
     static forth_state_t fs;
     sef_init(&fs);
-    sef_parse_string(&fs, " : test-prt .\" printing works if I get a 5\" 5 . ; test-prt ");
+    sef_parse_string(&fs, " : test-prt .\" printing works if I get a 5 \" 5 . ; test-prt cr ");
     printf("----\n");
-    sef_parse_string(&fs, " : test-literals 5 . 15 . 18 . ; test-literals ");
+    sef_parse_string(&fs, " : test-literals 5 . 15 . 18 . ; test-literals cr");
     printf("----\n");
-    sef_parse_string(&fs, " : test if .\" oui\" else .\" non\" then .\"  enfin\" ; ");
-    printf("----\n");
+    sef_parse_string(&fs, " : test if .\" oui \" else .\" non \" then .\"  enfin \" cr ; ");
     sef_parse_string(&fs, " 5 test 0 test");
     printf("----\n");
-    sef_parse_string(&fs, ": test-loop 5 begin dup . dup while 1 - repeat ; test-loop ");
+    sef_parse_string(&fs, ": test-loop 5 begin dup . dup while 1 - repeat cr ; test-loop ");
     printf("----\n");
-    sef_parse_string(&fs, ": line1 1 . ;\n: line2 20 . ;\n: line3 300 . ;\nline3 line2 line1\n\n\n");
+    sef_parse_string(&fs, ": line1 1 . ;\n: line2 20 . ;\n: line3 300 . ;\nline3 line2 line1\ncr\n\n");
     printf("----\n");
-    sef_parse_string(&fs, ": im-2 + . ; immediate : im-1 5 6 postpone im-2 ; immediate : nrm im-1 ;");
+    sef_parse_string(&fs, ": im-2 + . cr ; immediate : im-1 5 6 postpone im-2 ; immediate : nrm im-1 ;");
     printf("----\n");
-    sef_parse_string(&fs, ": say-coucou .\" coucou\" ; s\" say-coucou\" evaluate");
+    sef_parse_string(&fs, ": say-coucou .\" coucou\" cr ; s\" say-coucou\" evaluate");
     printf("----\n");
     sef_parse_string(&fs, ": test-does create here ! 64 allot does> @ 5 + . ; 5 test-does abc abc ");
     return fs.error_encountered;
