@@ -77,12 +77,29 @@ macro: until 0= while repeat ;
 macro: again 0 until ;
 macro: unloop 2drop drop ;
 
+( ---------------------------------- Strings --------------------------------- )
+
+: count ( addr -- addr n ) dup char+ swap c@ ;
+\ TODO not sure it's working
+: accept ( addr n -- n ) 1- dup 0 > 0= if 2drop 0 exit then
+0 begin
+key dup 10 = if drop nip nip exit then
+( addr n1 n2 c )
+swap >r swap >r over c! 1+ r> r> 1+
+( addr n1 n2 )
+2dup = if nip nip exit then until ;
+\ Writes the given string as a counted string a few bytes away from HERE.
+: (uncount-loop) ( addr c-addr -- addr+1 c-addr+1 ) 1+ >r dup c@ swap 1+ swap r@ c! r> ;
+: uncount ( addr u -- c-addr ) HERE 8 cells + >r r@ 2dup c! swap 0 ?do (uncount-loop) loop 2drop r> ;
+
 ( -------------------------- Compiling-related words ------------------------- )
 
 : buffer: ( u "name" -- ) create allot ;
 : variable ( "name -- ) align cell buffer: ;
 : constant ( n "name" -- ) create , does> @ ;
-: literal postpone (literal) , ; immediate
+: literal ( x -- ) ( -- x ) postpone (literal) , ; immediate
+: word ( c "parse a word" -- c-addr ) parse uncount ;
+: find ( c-addr -- xt f ) count (find) ;
 
 ( ---------------------------- Memory manipulation --------------------------- )
 
@@ -106,18 +123,6 @@ loop 2drop ;
 
 : ' ( "name" -- xt ) parse-name (find) 0= if abort ( TODO better error message ) then ;
 : ['] ( -- xt ) ( consume a name ) ' postpone literal ; immediate
-
-( ---------------------------------- Strings --------------------------------- )
-
-: count ( addr -- addr n ) dup char+ swap c@ ;
-\ TODO not sure it's working
-: accept ( addr n -- n ) 1- dup 0 > 0= if 2drop 0 exit then
-0 begin
-key dup 10 = if drop nip nip exit then
-( addr n1 n2 c )
-swap >r swap >r over c! 1+ r> r> 1+
-( addr n1 n2 )
-2dup = if nip nip exit then until ;
 
 ( ----------------------------------- Misc. ---------------------------------- )
 
