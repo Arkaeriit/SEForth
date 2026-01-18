@@ -1,13 +1,3 @@
-( ------------------------------- Flow control ------------------------------- )
-
-:macro while ( n -- ) if ;
-:macro repeat ( -- ) 0 until then ;
-:macro loop ( -- ) 1 +loop ;
-:macro again ( -- ) 0 until ;
-
-: case ( -- ) ;
-: endcase ( x -- ) drop ;
-
 ( ---------------------------- Stack manipulation ---------------------------- )
 
 : 2dup ( x1 x2 -- x1 x2 x1 x2 )swap dup rot dup rot swap ;
@@ -17,11 +7,11 @@
 : tuck ( x1 x2 -- x2 x1 x2 ) dup rot swap ;
 : 2over ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 ) 3 pick 3 pick ;
 : 2swap ( x1 x2 x3 x4 -- x3 x4 x1 x2) rot >r rot r> ;
-:macro 2>r ( x1 x2 -- ) ( -- x1 x2 ) swap >r >r ;
-:macro 2r> ( -- x1 x2 ) ( x1 x2 -- ) r> r> swap ;
 : ?dup ( n1 -- n1 | [n1 n1] ) dup if dup then ;
-:macro 2r@ ( -- x1 x2 ) ( x1 x2 -- x1 x2 ) r> r> 2dup >r >r swap ;
-:macro r@ ( -- x1 ) ( x1 -- x1 ) r> dup >r ;
+: r@ ( -- x1 ) ( x1 -- x1 ) postpone r> postpone dup postpone >r ; immediate
+: 2>r ( x1 x2 -- ) ( -- x1 x2 ) postpone swap postpone >r postpone >r ; immediate
+: 2r> ( -- x1 x2 ) ( x1 x2 -- ) postpone r> postpone r> postpone swap ; immediate
+: 2r@ ( -- x1 x2 ) ( x1 x2 -- x1 x2 ) postpone 2r> postpone 2dup postpone 2>r ; immediate
 
 ( ----------------------------------- Math ----------------------------------- )
 
@@ -45,31 +35,52 @@
 : 2/ ( n -- n ) 2 / ;
 : u> ( u u -- b ) 2dup u< 0= rot rot <> and ;
 : within ( test low high -- flag ) over - >r - r> u< ;
-: lshift ( x u -- x ) 0 ?do 2* loop ;
-: rshift ( x u -- x ) 0 ?do 2/ loop ;
-
-( --------------------------- Double words emulation ------------------------- )
-
-:macro s>d ( n1 -- n1 ) ;
-:macro d>s ( n1 -- n1 ) ;
-:macro um* ( u u -- u ) * ;
-:macro  m* ( u u -- u ) * ;
+: lshift ( x u -- x ) 0 ?do 2* 1 +loop ;
+: rshift ( x u -- x ) 0 ?do 2/ 1 +loop ;
 
 ( ----------------------------- Memory management ---------------------------- )
 
 : c ( -- ) 1 allot ;
+: cell ( -- n ) 1 cells ;
 : cell+ ( n -- n ) 1 cells + ;
+: , ( x -- ) here cell allot ! ;
 : char+ ( n -- n ) 1+ ;
 : chars ( n -- n ) ;
-: cell ( -- n ) 1 cells ;
-: , ( x -- ) here cell allot ! ;
+: compile, ( xt -- ) , ;
 : c, ( c -- ) here 1 chars allot c! ;
 : 2! ( x x addr -- ) swap over ! cell+ ! ;
 : 2@ ( addr -- x x ) dup cell+ @ swap @ ;
 : aligned ( addr -- addr ) begin dup cell mod 0<> while 1+ repeat ;
 : align ( -- ) begin here aligned here <> while 1 allot repeat ;
-:macro buffer: ( n -- ) ( consume a name ) align here swap allot constant ;
-:macro variable ( -- ) ( consume a name ) cell buffer: ;
+
+( ---------------------------------- Macros ---------------------------------- )
+
+\ Not standard, but quite handy to define standard words
+
+: char ( "word" -- c ) parse-word if c@ else drop 0 then ;
+: save-here ( c-addr u -- ) dup , 0 ?do dup c@ c, char+ 1 +loop drop align ;
+: read-mem-saved-here ( addr  -- c-addr u ) dup @ swap cell+ swap ;
+: macro: ( "read a definition until ;" -- ) create immediate (literal) [ char ; , ] parse save-here does> read-mem-saved-here evaluate ;
+
+( ------------------------------- Flow control ------------------------------- )
+
+macro: do 2dup = if swap 1- swap then ?do ;
+macro: loop 1 +loop ;
+macro: until 0= while repeat ;
+
+( -------------------------- Compiling-related words ------------------------- )
+
+: buffer: ( u "name" -- ) create allot ;
+: variable ( "name -- ) align cell buffer: ;
+: constant ( n "name" -- ) create , does> @ ;
+: literal postpone (literal) , ; immediate
+
+( --------------------------- Double words emulation ------------------------- )
+
+: s>d ( n1 -- n1 ) ;
+: d>s ( n1 -- n1 ) ;
+: um* ( u u -- u ) * ;
+:  m* ( u u -- u ) * ;
 
 ( ---------------------------- Memory manipulation --------------------------- )
 
@@ -86,24 +97,25 @@ loop 2drop ;
 : space ( -- ) bl emit ;
 : spaces ( n -- ) dup 0> if 0 do space loop else drop then ;
 : type ( addr n -- ) dup 0> if 0 do dup c@ emit 1+ loop drop else 2drop then ;
-:macro [char] ( -- c ) ( consume a name ) char ;
+: [char] ( -- c ) ( consume a name ) char postpone literal ; immediate
 : hex ( -- ) 16 base ! ;
 
 ( --------------------------------- Execution -------------------------------- )
 
-:macro ['] ( -- xt ) ( consume a name ) ' ;
-: evaluate ( addr n -- ? ) (evaluate) s"  " (evaluate) ;
+: ' ( "name" -- xt ) parse-word (find) 0= if abort ( TODO better error message ) then ;
+: ['] ( -- xt ) ( consume a name ) ' postpone literal ; immediate
 
 ( ---------------------------------- Strings --------------------------------- )
 
 : count ( addr -- addr n ) dup char+ swap c@ ;
+\ TODO not sure it's working
 : accept ( addr n -- n ) 1- dup 0 > 0= if 2drop 0 exit then
 0 begin
 key dup 10 = if drop nip nip exit then
 ( addr n1 n2 c )
 swap >r swap >r over c! 1+ r> r> 1+
 ( addr n1 n2 )
-2dup = if nip nip exit then repeat ;
+2dup = if nip nip exit then until ;
 
 ( ----------------------------------- Misc. ---------------------------------- )
 
@@ -111,17 +123,17 @@ swap >r swap >r over c! 1+ r> r> 1+
 : true  ( -- n ) 0 0= ;
 
 ( ---------------------------- Numeric conversion ---------------------------- )
-
+quit
 64 constant <#-buff-len
 variable <#-buff <#-buff-len allot
 variable <#-cnt
 
 : <# ( -- ) 0 <#-cnt ! ;
-: (#) ( u -- c ) dup 9 > if 10 - char a + else char 0 + then ;
+: (#) ( u -- c ) dup 9 > if 10 - [char] a + else [char] 0 + then ;
 : <#-addr ( -- addr ) <#-buff <#-buff-len + <#-cnt @ - ;
 : hold ( c -- ) 1 <#-cnt +! <#-addr c! ;
 : holds ( addr n -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;
-: sign ( n -- ) 0 < if char - hold then ;
+: sign ( n -- ) 0 < if [char] - hold then ;
 : # ( u -- u ) base @ u/mod swap (#) hold ;
 : #s ( u -- u ) begin # dup 0= until ;
 : #n ( n -- u ) dup abs #s swap sign ;
@@ -135,10 +147,10 @@ variable <#-cnt
 : .r swap <# #n #> 2drop (x.r) type ;
 
 : (to-digit) ( c -- n )
-    dup char a < 0= if 10 + char a - exit then
-    dup char A < 0= if 10 + char A - exit then
-    dup char 9 >  if drop -1       exit then
-                            char 0 - ;
+    dup [char] a < 0= if 10 + [char] a - exit then
+    dup [char] A < 0= if 10 + [char] A - exit then
+    dup [char] 9 >  if drop -1       exit then
+                            [char] 0 - ;
 : (is-digit?) ( c -- b ) (to-digit) dup 0 < 0= swap base @ < and ;
 : >number ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) dup 0 do
     over c@ (is-digit?) 0= if leave then

@@ -16,6 +16,12 @@ static void reset_parser(forth_state_t* fs) {
     fs->input_source = NULL;
 }
 
+static void compile_system_forth_words(forth_state_t* fs) {
+    (void) fs;
+    extern const char* base_forth_func;
+    sef_parse_string(fs, base_forth_func);
+}
+
 // Init the interpreter
 void sef_state_init(forth_state_t* fs) {
     fs->here.byte = &fs->forth_memory[0];
@@ -32,6 +38,7 @@ void sef_state_init(forth_state_t* fs) {
     fs->compiling_system_words = true;
     sef_register_default_cfunc(fs);
     sef_register_parser_cfunc(fs);
+    compile_system_forth_words(fs);
     fs->compiling_system_words = false;
 }
 
