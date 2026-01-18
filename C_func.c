@@ -260,12 +260,12 @@ static void repeat_runtime(forth_state_t* fs) {
 
 // of
 static void of(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+    SEF_ERROR_OUT(fs, "TODO of!\n");
 }
 
 // endof
 static void endof(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+    SEF_ERROR_OUT(fs, "TODO endof!\n");
 }
 
 // Memory management
@@ -582,11 +582,6 @@ static void execute(forth_state_t* fs) {
     sef_call_entry(fs, exec_tocken);
 }
 
-// evaluate
-static void evaluate(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
-}
-
 // pad
 static void pad(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) fs->pad);
@@ -594,12 +589,12 @@ static void pad(forth_state_t* fs) {
 
 // defer@
 static void defer_fetch(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+    SEF_ERROR_OUT(fs, "TODO defer@!\n");
 }
 
 // defer!
 static void defer_store(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO!\n");
+    SEF_ERROR_OUT(fs, "TODO dever!!\n");
 }
 
 // Given a string, return true if i's a valid query for environment?
@@ -760,7 +755,6 @@ struct c_func_s all_default_c_func[] = {
     {"cr", cr},
     {"base", base},
     {"execute", execute},
-    {"(evaluate)", evaluate},
     {"pad", pad},
     {"defer@", defer_fetch},
     {"defer!", defer_store},
