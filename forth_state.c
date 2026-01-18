@@ -143,7 +143,11 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
         sef_int_t* new_code_pointer = (sef_int_t*) wef;
         sef_push_code(fs, (sef_int_t) fs->code_pointer);
         sef_push_data(fs, (sef_int_t) parameters);
-        fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
+        if (fs->code_pointer != NULL) {
+            fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
+        } else {
+            fs->code_pointer = new_code_pointer + 1;
+        }
     } else {
         // TODO: segfault catching
         wef(fs, parameters);

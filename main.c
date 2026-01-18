@@ -56,7 +56,9 @@ int main(void) {
     printf("----\n");
     sef_parse_string(&fs, ": say-coucou .\" coucou\" cr ; s\" say-coucou\" evaluate");
     printf("----\n");
-    sef_parse_string(&fs, ": test-does create here ! 64 allot does> @ 5 + . ; 5 test-does abc abc ");
+    sef_parse_string(&fs, ": test-does create here ! 64 allot does> @ 5 + . ; 5 test-does abc abc cr ");
+    printf("----\n");
+    sef_parse_string(&fs, "variable my-var 55 my-var ! my-var @ . cr ");
     return fs.error_encountered;
 }
 
