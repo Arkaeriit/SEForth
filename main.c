@@ -61,6 +61,8 @@ int main(void) {
     sef_parse_string(&fs, "variable my-var 55 my-var ! my-var @ . cr ");
     printf("----\n");
     sef_parse_string(&fs, ".\" Not calling words\" ( words) cr \\ cr cr cr cr");
+    printf("----\n");
+    sef_parse_string(&fs, ": msg .\" Printing second \".( Printing first ) cr ; msg");
     return fs.error_encountered;
 }
 

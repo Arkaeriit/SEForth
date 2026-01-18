@@ -160,3 +160,8 @@ variable <#-cnt
     swap rot loop ;
 : >number ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) 2>r d>s 2r> (>number) 2>r s>d 2r> ;
 
+( ----------------------------- Printing messages ---------------------------- )
+
+: abort" ( parse until " -- ) postpone s" postpone type postpone abort ; immediate \ "
+: .( [char] ) parse type ; immediate
+
