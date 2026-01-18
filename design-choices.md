@@ -4,7 +4,7 @@
 
 **Do I want to keep the stack, memory, and whatnot constant known when compiling sef or do I want the user to choose them when calling the sef API?** I think I would always need to have the included word selection optional to help embedding sef in other context such as embedded systems or the devzat plugin, so I will always need to have some sef-compilation options. I might as well go all in and keep the various sizes and configs the same.
 
-**Do I want to add a dedicated control flow stack or could I reuse the data stack for that purpose?** I would probably benefit from a dedicated stack as it would make coding and debugging sef easier. If after the rewrite, it turns out that the data stack is stable enough for this purpose during word compilation, I could use it and remove the control flow stack.
+**Do I want to add a dedicated control flow stack or could I reuse the data stack for that purpose?** I would probably benefit from a dedicated stack as it would make coding and debugging sef easier. If after the rewrite, it turns out that the data stack is stable enough for this purpose during word compilation, I could use it and remove the control flow stack. On the other hand. Not having a control flow stack ensures that the stack stay balanced between word definitions.
 
 ## State content
 
@@ -144,7 +144,9 @@ Similar mechanism will be used for `BEGIN` loops.
 
 ### Do-loop
 
-Because of `?DO`, do loops can't be made simply in Forth by building uppon the while loop. Maybe I can put wether in it is a `DO` or a `?DO` as a litteral flag between the `BEGIN` and the `WHILE`. I'll need to check this flag and the value of the loop context. Before the `BEGIN` I put the loop limits in the return stack. Then I do the checks, then the loop content.
+Even if it could seems like do-loops can be made from begin-loops, the combination of `LEAVE` needing to be implemented and `BEGIN` not being allowed to touch at the stacks at runtime makes it too hard to derive one from the other.
+
+For `?DO` and `DO`, I can make one from the other. As the overhead would be O(n) if I take `DO` as a base abd `O(1)` if I take `?DO` as a base, I'll take `?DO` as a base.
 
 ## Postpone
 

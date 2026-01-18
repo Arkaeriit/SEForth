@@ -311,6 +311,61 @@ static void repeat_compile_time(forth_state_t* fs) {
 
 }
 
+// For do loop, the loop-sys will be ( LOOP address, end value, current value )
+static void question_do_compile_time(forth_state_t* fs) {
+    // Getting address of the closing +loop to bail out there if needed
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    add_word_to_current_definition(fs, "(?do)");
+}
+
+static void question_do_run_time(forth_state_t* fs) {
+    // It might be easier to that from Forth...
+    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_data(fs);
+    sef_int_t end_value = sef_pop_data(fs);
+    // ?do can jump to the end
+    if (end_value == loop_counter) {
+        fs->code_pointer = (dictionary_entry_t) end_of_loop_pointer;
+        return;
+    }
+    // Otherwise, we prepare the loop-sys
+    sef_push_code(fs, end_of_loop_pointer);
+    sef_push_code(fs, end_value);
+    sef_push_code(fs, loop_counter);
+}
+
+static void plus_loop_compile_time(forth_state_t* fs) {
+    sef_int_t* end_of_loop_pointer = (sef_int_t*) sef_pop_control_flow(fs);
+    *end_of_loop_pointer = (sef_int_t) fs->here.cell;
+    sef_int_t* question_do_address = end_of_loop_pointer + 1;
+    inter_compil_number(fs, (sef_int_t) question_do_address);
+    add_word_to_current_definition(fs, "(+loop)");
+}
+
+// (+loop) takes as argument ( increment-value begining-of-the-loop-pointer )
+static void plus_loop_run_time(forth_state_t* fs) {
+    sef_int_t question_do_address = sef_pop_data(fs);
+    sef_int_t increment = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_code(fs);
+    sef_int_t end_value = sef_pop_code(fs);
+    loop_counter += increment;
+    if (loop_counter < end_value) {
+        sef_push_code(fs, end_value);
+        sef_push_code(fs, loop_counter);
+        fs->code_pointer = (dictionary_entry_t) question_do_address;
+    } else {
+        sef_pop_code(fs); // End of loop address
+    }
+}
+
+static void leave(forth_state_t* fs) {
+    sef_pop_code(fs);
+    sef_pop_code(fs);
+    dictionary_entry_t end_off_loop = (dictionary_entry_t) sef_pop_code(fs);
+    fs->code_pointer = end_off_loop;
+}
+
 /* ----------------------------- String parsing ----------------------------- */
 
 static void s(forth_state_t* fs) {
@@ -404,6 +459,11 @@ struct c_func_s all_default_parser_c_func[] = {
     {"begin", begin, true},
     {"while", while_compile_time, true},
     {"repeat", repeat_compile_time, true},
+    {"?do", question_do_compile_time, true},
+    {"(?do)", question_do_run_time, false},
+    {"+loop", plus_loop_compile_time, true},
+    {"(+loop)", plus_loop_run_time, false},
+    {"leave", leave, false},
 
     {"s\"", s, true},
     {".\"", dot_string, true},
