@@ -668,6 +668,11 @@ static void source_id(forth_state_t* fs) {
     sef_push_data(fs, fs->source_id);
 }
 
+static void source(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) fs->input_buffer);
+    sef_push_data(fs, fs->input_buffer_size);
+}
+
 /* ------------------------ Registering the functions ----------------------- */
 
 struct c_func_s {
@@ -765,6 +770,7 @@ struct c_func_s all_default_c_func[] = {
     {"state", state},
     {">in", in},
     {"source-id", source_id},
+    {"source", source},
 };
 
 // Register all the default C_func
