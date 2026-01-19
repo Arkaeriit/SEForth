@@ -647,6 +647,19 @@ static void find(forth_state_t* fs) {
 
 }
 
+// Pop an XT and push a pointer to its parameters
+static void body(forth_state_t* fs) {
+    dictionary_entry_t xt = (dictionary_entry_t) sef_pop_data(fs);
+    void* parameters = sef_get_entry_parameter(xt);
+    sef_push_data(fs, (sef_int_t) parameters);
+}
+
+static void state(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) &fs->compiling);
+}
+
+/* ------------------------ Registering the functions ----------------------- */
+
 struct c_func_s {
     const char* name;
     void (*func)(forth_state_t*);
@@ -736,7 +749,9 @@ struct c_func_s all_default_c_func[] = {
     {"defer@", defer_fetch},
     {"defer!", defer_store},
     {"environment?", environment_query},
-    {"(find)", find}
+    {"(find)", find},
+    {">body", body},
+    {"state", state},
 };
 
 // Register all the default C_func

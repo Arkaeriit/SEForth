@@ -174,3 +174,13 @@ variable <#-cnt
 : abort" ( parse until " -- ) postpone s" postpone type postpone abort ; immediate \ "
 : .( [char] ) parse type ; immediate
 
+( ----------------------------------- Defer ---------------------------------- )
+
+\ Defered words are handled as a created word with an xt as parameter.
+\ The default xt is exit so that calling it unititialized is okay.
+: defer ( "parse a word" -- ) create ['] exit compile, does> @ execute ;
+: defer! ( xt xt -- ) >body ! ;
+: defer@ ( xt xt -- ) >body @ ;
+: action-of ( "compile a name" -- xt ) state @ if postpone ['] postpone defer@ else ' defer@ then ; immediate
+: is ( xt "compile a name -- )state @ if postpone ['] postpone defer! else ' defer! then ; immediate
+

@@ -26,6 +26,8 @@ bool sef_is_compiling(forth_state_t* state) {
 void sef_parse_string(forth_state_t* state, const char* s) {
     sef_set_c_string_as_input_source(state, s);
     sef_inter_compil_run(state);
+    // TODO: can cause error is the compilation failed. Maybe condition on having an error
+    // A general TODO for error recovery is probably needed
     sef_pop_input_source(state);
 }
 
