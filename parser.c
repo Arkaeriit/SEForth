@@ -192,13 +192,24 @@ static void leave_compilation(forth_state_t* fs) {
 
 // Part of the colon-sys used to ensure stack integrity during compilation
 #define COLON_SYS_MAGIC 0x5EF
+static void new_forth_word(forth_state_t* fs, const char* name, size_t name_len) {
+    sef_push_data(fs, COLON_SYS_MAGIC);
+    enter_compilation(fs);
+    sef_register_new_word(fs, name, name_len, exec_forth_word);
+}
+
 static void colon(forth_state_t* fs) {
     parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
-    sef_push_data(fs, COLON_SYS_MAGIC);
-    enter_compilation(fs);
-    sef_register_new_word(fs, name, name_len, exec_forth_word);
+    new_forth_word(fs, name, name_len);
+}
+
+static void no_name(forth_state_t* fs) {
+    new_forth_word(fs, "", 0);
+    sef_int_t magic = sef_pop_data(fs);
+    sef_push_data(fs, (sef_int_t) fs->last_dictionary_entry);
+    sef_push_data(fs, magic);
 }
 
 static void semicolon(forth_state_t* fs) {
@@ -496,6 +507,7 @@ struct c_func_s all_default_parser_c_func[] = {
     {"]", enter_compilation, false},
     {":", colon, false},
     {";", semicolon, true},
+    {":noname", no_name, false},
     {"(literal)", literal, false},
     {"(string)", string, false},
     {"immediate", immediate, false},
