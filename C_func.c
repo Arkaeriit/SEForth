@@ -658,6 +658,10 @@ static void state(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) &fs->compiling);
 }
 
+static void in(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) &fs->parse_area_offset);
+}
+
 /* ------------------------ Registering the functions ----------------------- */
 
 struct c_func_s {
@@ -752,6 +756,7 @@ struct c_func_s all_default_c_func[] = {
     {"(find)", find},
     {">body", body},
     {"state", state},
+    {">in", in},
 };
 
 // Register all the default C_func
