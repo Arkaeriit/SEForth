@@ -111,6 +111,12 @@ void sef_add_string_to_current_definition(forth_state_t* fs, const char* content
 
 dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t name_len) {
     dictionary_entry_t searching = fs->last_dictionary_entry;
+    // If we are curently defining a word, we don't want to be able to find it,
+    // as it is not ready yet and we might want to shadow an old definition.
+    if (fs->compiling) {
+        searching = (dictionary_entry_t) (*searching);
+    }
+
     while (searching != NULL) {
         const char* entry_name = sef_get_entry_name(searching);
         sef_int_t* word_tags_field = sef_get_word_tag_field(searching);
