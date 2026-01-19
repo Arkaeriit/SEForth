@@ -673,9 +673,14 @@ static void source(forth_state_t* fs) {
     sef_push_data(fs, fs->input_buffer_size);
 }
 
-// Push the last dictionary entry
+// Push the last dictionary entry's address
 static void dictionary(forth_state_t* fs) {
-    sef_push_data(fs, (sef_int_t) fs->last_dictionary_entry);
+    sef_push_data(fs, (sef_int_t) &fs->last_dictionary_entry);
+}
+
+// Push the address of HERE
+static void where(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) &fs->here.byte);
 }
 
 /* ------------------------ Registering the functions ----------------------- */
@@ -777,6 +782,7 @@ struct c_func_s all_default_c_func[] = {
     {"source-id", source_id},
     {"source", source},
     {"dictionary", dictionary},
+    {"where", where},
 };
 
 // Register all the default C_func

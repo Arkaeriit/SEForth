@@ -102,7 +102,8 @@ swap >r swap >r over c! 1+ r> r> 1+
 : literal ( x -- ) ( -- x ) postpone (literal) , ; immediate
 : word ( c "parse a word" -- c-addr ) parse uncount ;
 : find ( c-addr -- xt f ) count (find) ;
-: recurse ( -- ) dictionary compile, ; immediate
+: recurse ( -- ) dictionary @ compile, ; immediate
+: marker ( "consume a name" -- ) create dictionary @ , dictionary @ @ , does> dup @ where ! cell+ @ dictionary ! ;
 
 ( ---------------------------- Memory manipulation --------------------------- )
 
