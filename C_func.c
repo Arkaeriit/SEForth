@@ -683,6 +683,11 @@ static void where(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) &fs->here.byte);
 }
 
+// Push the address of the code pointer
+static void code_pointer(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) &fs->code_pointer);
+}
+
 /* ------------------------ Registering the functions ----------------------- */
 
 struct c_func_s {
@@ -783,6 +788,7 @@ struct c_func_s all_default_c_func[] = {
     {"source", source},
     {"dictionary", dictionary},
     {"where", where},
+    {"code-pointer", code_pointer},
 };
 
 // Register all the default C_func

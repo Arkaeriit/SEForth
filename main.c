@@ -71,6 +71,8 @@ int main(void) {
     sef_parse_string(&fs, ":noname .\" print twice \" ; dup execute execute cr");
     printf("----\n");
     sef_parse_string(&fs, ": recursive-loop ( x -- 0 ) dup . 1- dup if recurse then ; 5 recursive-loop . cr");
+    printf("----\n");
+    sef_parse_string(&fs, ": test-c c\" counted string work!\" count type cr ; test-c");
     return fs.error_encountered;
 }
 

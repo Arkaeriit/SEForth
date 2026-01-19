@@ -432,6 +432,9 @@ static void endcase(forth_state_t* fs) {
 
 /* ----------------------------- String parsing ----------------------------- */
 
+// TODO I could make that in Forth, just like the counted strings.
+// I could use shadowing for the FILE expantion of s".
+// I could get rid of the string WEF and in-dic storage.
 static void s(forth_state_t* fs) {
     sef_push_data(fs, '"');
     parse(fs);

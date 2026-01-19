@@ -192,3 +192,9 @@ variable <#-cnt
 : value create , does> @ ;
 : to state @ if postpone ['] postpone >body postpone ! else ' >body ! then ; immediate
 
+( ----------------------------- String compiling ----------------------------- )
+
+: (c") ( -- c-addr ) r> cell+ dup dup c@ + aligned cell - >r ;
+: c" ( "parse string" -- c-addr ) ['] (c") compile, [char] " parse dup c,
+    0 ?do dup c@ c, char+ loop drop align ; immediate
+
