@@ -141,6 +141,7 @@ variable <#-cnt
 : <#-addr ( -- addr ) <#-buff <#-buff-len + <#-cnt @ - ;
 : hold ( c -- ) 1 <#-cnt +! <#-addr c! ;
 : holds ( addr n -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;
+\ TODO: I'm not sure printing negative numbers work... Or is it reading negative numbers...
 : sign ( n -- ) 0 < if [char] - hold then ;
 : # ( ud -- ud ) base @ um/mod swap (#) hold s>d ;
 : #s ( ud -- ud ) begin # 2dup d>s 0= until ;
@@ -183,4 +184,9 @@ variable <#-cnt
 : defer@ ( xt xt -- ) >body @ ;
 : action-of ( "compile a name" -- xt ) state @ if postpone ['] postpone defer@ else ' defer@ then ; immediate
 : is ( xt "compile a name -- )state @ if postpone ['] postpone defer! else ' defer! then ; immediate
+
+( ------------------------------- Value and To ------------------------------- )
+
+: value create , does> @ ;
+: to state @ if postpone ['] postpone >body postpone ! else ' >body ! then ; immediate
 

@@ -470,7 +470,7 @@ static void postpone_compile_time(forth_state_t* fs) {
         inter_compil_number(fs, (sef_int_t) entry);
         add_word_to_current_definition(fs, "(postpone)");
     } else {
-        SEF_ERROR_OUT(fs, "Error can't parse %.*s with POSTPONE.\n", name_len, name);
+        SEF_ERROR_OUT(fs, "Error can't parse '%.*s' with POSTPONE.\n", name_len, name);
     }
 }
 
