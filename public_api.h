@@ -46,6 +46,7 @@ typedef struct forth_state_s {
     sef_int_t parse_area_offset;
     void* input_source;
     input_source_refill_t input_source_refill;
+    sef_int_t source_id;
     bool compiling_system_words;
 } forth_state_t;
 

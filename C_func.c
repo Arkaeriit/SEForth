@@ -628,6 +628,8 @@ static void environment_query(forth_state_t* fs) {
     }
 }
 
+// Internals
+
 // (find) like find but with normal string instead of counted strings
 // In the not-found case, return the address -1 to help with find defintion
 static void find(forth_state_t* fs) {
@@ -660,6 +662,10 @@ static void state(forth_state_t* fs) {
 
 static void in(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) &fs->parse_area_offset);
+}
+
+static void source_id(forth_state_t* fs) {
+    sef_push_data(fs, fs->source_id);
 }
 
 /* ------------------------ Registering the functions ----------------------- */
@@ -753,10 +759,12 @@ struct c_func_s all_default_c_func[] = {
     {"defer@", defer_fetch},
     {"defer!", defer_store},
     {"environment?", environment_query},
+    // Internals
     {"(find)", find},
     {">body", body},
     {"state", state},
     {">in", in},
+    {"source-id", source_id},
 };
 
 // Register all the default C_func

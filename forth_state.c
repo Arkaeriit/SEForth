@@ -14,6 +14,7 @@ static void reset_parser(forth_state_t* fs) {
     fs->input_buffer_size = 0;
     fs->parse_area_offset = 0;
     fs->input_source = NULL;
+    fs->source_id = 0;
 }
 
 static void compile_system_forth_words(forth_state_t* fs) {

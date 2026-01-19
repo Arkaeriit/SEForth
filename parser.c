@@ -24,10 +24,11 @@ static void add_word_to_current_definition(forth_state_t* fs, const char* word) 
 
 /* ------------------------- Input source management ------------------------ */
 
-#define CELL_USED_FOR_INPUT_SOURCE 5
+#define CELL_USED_FOR_INPUT_SOURCE 6
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
 void sef_push_input_source(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) fs->source_id);
     sef_push_data(fs, (sef_int_t) fs->input_buffer_size);
     sef_push_data(fs, (sef_int_t) fs->input_buffer);
     sef_push_data(fs, (sef_int_t) fs->parse_area_offset);
@@ -53,6 +54,7 @@ void sef_pop_input_source(forth_state_t* fs) {
         fs->parse_area_offset = input_source_storage[2];
         fs->input_buffer = (char*) input_source_storage[3];
         fs->input_buffer_size = input_source_storage[4];
+        fs->source_id = input_source_storage[5];
         // TODO: bool
     } else {
         // TODO: bool
@@ -96,6 +98,7 @@ void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
     fs->input_buffer_size = 0;
     fs->parse_area_offset = 0;
     fs->input_source_refill = c_string_refill;
+    fs->source_id = 0;
 }
 
 /* -------------------- Forth string input (for evaluate) ------------------- */
@@ -122,6 +125,7 @@ static void set_forth_string_as_input_source(forth_state_t* fs) {
     fs->parse_area_offset = 0;
     fs->input_buffer = NULL;
     fs->input_source_refill = forth_string_refill;
+    fs->source_id = -1;
 }
 
 static void evaluate(forth_state_t* fs) {
@@ -611,4 +615,5 @@ void sef_inter_compil_run(forth_state_t* fs) {
         refill(fs);
         refilled = sef_pop_data(fs);
     }
+    // TODO: maybe pop source as well
 }
