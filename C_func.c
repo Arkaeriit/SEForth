@@ -673,6 +673,11 @@ static void source(forth_state_t* fs) {
     sef_push_data(fs, fs->input_buffer_size);
 }
 
+// Push the last dictionary entry
+static void dictionary(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) fs->last_dictionary_entry);
+}
+
 /* ------------------------ Registering the functions ----------------------- */
 
 struct c_func_s {
@@ -771,6 +776,7 @@ struct c_func_s all_default_c_func[] = {
     {">in", in},
     {"source-id", source_id},
     {"source", source},
+    {"dictionary", dictionary},
 };
 
 // Register all the default C_func

@@ -69,6 +69,8 @@ int main(void) {
     sef_parse_string(&fs, ": test-i-j 3 0 do 4 0 do i . j . cr loop loop ; test-i-j");
     printf("----\n");
     sef_parse_string(&fs, ":noname .\" print twice \" ; dup execute execute cr");
+    printf("----\n");
+    sef_parse_string(&fs, ": recursive-loop ( x -- 0 ) dup . 1- dup if recurse then ; 5 recursive-loop . cr");
     return fs.error_encountered;
 }
 
