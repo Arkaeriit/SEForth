@@ -44,6 +44,8 @@
 : within ( test low high -- flag ) over - >r - r> u< ;
 : lshift ( x u -- x ) 0 ?do 2* 1 +loop ;
 : rshift ( x u -- x ) 0 ?do 2/ 1 +loop ;
+: >= ( n n -- f ) < invert ;
+: <= ( n n -- f ) > invert ;
 
 ( ----------------------------- Memory management ---------------------------- )
 
@@ -197,6 +199,42 @@ variable <#-cnt
 : s" ( "parse string -- c-addr u ) [char] " parse state @ if ['] (s") compile, dup ,
     0 ?do dup c@ c, char+ loop drop align then ; immediate
 : ." ( "parse string" -- ) postpone s" state @ if postpone type else type then ; immediate \ "
-: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone postpone cr abort else type cr abort then ; immediate \ "
+: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone cr postpone abort else 2dup . . cr type cr abort then ; immediate \ " TODO: Doesn't seem to work in interpreting mode
 : .( [char] ) parse type ; immediate
+
+false value escaped
+0 value escaped-str-addr
+
+: parse-a-char ( "parse a single char" -- c ) source >in @ <= if abort" Unterminated string." then
+    >in @ + c@ 1 >in +! ;
+\ Write a char in the space being filled in by s\" "
+: c\, ( c -- ) c, 1 escaped-str-addr +! ;
+: handle-escaped-char ( c -- ) case
+    [char] a of  7 c\, endof
+    [char] b of  8 c\, endof
+    [char] e of 27 c\, endof
+    [char] f of 12 c\, endof
+    [char] l of 10 c\, endof
+    [char] n of 10 c\, endof
+    [char] q of 34 c\, endof
+    [char] r of 13 c\, endof
+    [char] t of  9 c\, endof
+    [char] v of 11 c\, endof
+    [char] z of  0 c\, endof
+    [char] " of 34 c\, endof \ "
+92 ( [char] \ ) of 92 c\, endof
+    [char] m of 13 c\, 10 c\, endof
+    [char] x of parse-a-char (to-digit) 16 * parse-a-char (to-digit) + c\, endof
+endcase false to escaped ;
+: s\" ( "parse string -- c-addr u ) ['] (s") compile, \ "
+    here to escaped-str-addr 0 ,
+    begin parse-a-char
+        escaped if handle-escaped-char 0 else
+            case
+                92 ( [char] \ )of true to escaped 0 endof
+                     [char] "  of 1 endof \ "
+                c\, 0 0
+            endcase
+        then
+    until align ; immediate
 

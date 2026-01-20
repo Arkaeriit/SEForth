@@ -73,6 +73,8 @@ int main(void) {
     sef_parse_string(&fs, ": recursive-loop ( x -- 0 ) dup . 1- dup if recurse then ; 5 recursive-loop . cr");
     printf("----\n");
     sef_parse_string(&fs, ": test-c c\" counted string work!\" count type cr ; test-c");
+    printf("----\n");
+    sef_parse_string(&fs, "0 value v : up v . 5 to v ; up v . 8 to v up cr");
     return fs.error_encountered;
 }
 
