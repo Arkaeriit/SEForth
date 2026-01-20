@@ -11,17 +11,6 @@ typedef void (*word_executing_function)(forth_state_t* fs, void* parameters);
 // last dictionary entry.
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_size, word_executing_function wef);
 
-// Register a string as an unnamed entry in the dictionary which will be returned.
-dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, size_t content_size);
-
-// Add a string to the current definition and manages alignment of HERE and
-// things like that. Only adds the content and not the size so that it can
-// also work with counted strings.
-void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len);
-
-// Tell how much room a string takes in the dictionary. Needed to retrieve it.
-size_t sef_size_needed_to_store_string(size_t string_len);
-
 /* ----------------------------- Reading entries ---------------------------- */
 
 // Return a pointer to an entry. Return NULL and error out if it is not found.

@@ -41,7 +41,8 @@ static bool case_sensitive_name_match(const char* name_from_dictionary, const ch
 
 /* -------------------------------- Name size ------------------------------- */
 
-size_t sef_size_needed_to_store_string(size_t string_len) {
+// Tell how much room a string takes in the dictionary. Needed to retrieve it.
+static size_t sef_size_needed_to_store_string(size_t string_len) {
     size_t effective_size = string_len + 1;
     return SPACE_ALLIGNED_TO(effective_size, sizeof(sef_int_t));
 }
@@ -78,33 +79,6 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     word_executing_function* wef_field = (word_executing_function*) fs->here.cell;
     *wef_field = wef;
     sef_allot_cell(fs);
-}
-
-// Execution function for a string
-static void exec_string(forth_state_t* fs, void* parameters) {
-   sef_int_t* len_field = parameters;
-   sef_int_t* content = len_field + 1;
-   sef_push_data(fs, (sef_int_t) content);
-   sef_push_data(fs, *len_field);
-}
-    
-dictionary_entry_t sef_register_string(forth_state_t* fs, const char* content, size_t content_len) {
-    // Register empty dictionary entry
-    sef_register_new_word(fs, "", 0, exec_string);
-    sef_add_string_to_current_definition(fs, content, content_len);
-    return fs->last_dictionary_entry;
-}
-
-void sef_add_string_to_current_definition(forth_state_t* fs, const char* content, size_t content_len) {
-    // Write in string size
-    sef_int_t* len_field = fs->here.cell;
-    *len_field = (sef_int_t) content_len;
-    sef_allot_cell(fs);
-    // Write in string content
-    char* content_in_entry = (char*) fs->here.byte;
-    sef_allot(fs, sef_size_needed_to_store_string(content_len));
-    memcpy(content_in_entry, content, content_len);
-    content_in_entry[content_len] = 0;
 }
 
 /* ----------------------------- Reading entries ---------------------------- */

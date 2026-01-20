@@ -54,7 +54,7 @@ int main(void) {
     printf("----\n");
     sef_parse_string(&fs, ": im-2 + . cr ; immediate : im-1 5 6 postpone im-2 ; immediate : nrm im-1 ;");
     printf("----\n");
-    sef_parse_string(&fs, ": say-coucou .\" coucou\" cr ; s\" say-coucou\" evaluate");
+    sef_parse_string(&fs, ": say-coucou .\" coucou\" cr ; : get-s s\" say-coucou\" ; get-s evaluate");
     printf("----\n");
     sef_parse_string(&fs, ": test-does create here ! 64 allot does> @ 5 + . ; 5 test-does abc abc cr ");
     printf("----\n");

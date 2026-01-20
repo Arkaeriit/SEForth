@@ -230,15 +230,6 @@ static void literal(forth_state_t* fs) {
     sef_push_data(fs, number);
 }
 
-static void string(forth_state_t* fs) {
-    sef_int_t str_len = *(++fs->code_pointer);
-    sef_int_t str = (sef_int_t) ++fs->code_pointer;
-    size_t size_taken_by_string_in_cells = sef_size_needed_to_store_string(str_len) / sizeof(sef_int_t);
-    fs->code_pointer += size_taken_by_string_in_cells - 1;
-    sef_push_data(fs, str);
-    sef_push_data(fs, str_len);
-}
-
 static void immediate(forth_state_t* fs) {
     sef_int_t* tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
     *tag_field |= WTM_IMMEDIATE;
@@ -430,31 +421,6 @@ static void endcase(forth_state_t* fs) {
     add_word_to_current_definition(fs, "drop");
 }
 
-/* ----------------------------- String parsing ----------------------------- */
-
-// TODO I could make that in Forth, just like the counted strings.
-// I could use shadowing for the FILE expantion of s".
-// I could get rid of the string WEF and in-dic storage.
-static void s(forth_state_t* fs) {
-    sef_push_data(fs, '"');
-    parse(fs);
-    size_t str_len = (size_t) sef_pop_data(fs);
-    char* str = (char*) sef_pop_data(fs);
-    if (fs->compiling) {
-        add_word_to_current_definition(fs, "(string)");
-        sef_add_string_to_current_definition(fs, str, str_len);
-    } else {
-        sef_call_entry(fs, sef_register_string(fs, str, str_len));
-    }
-}
-
-// TODO: this could probably be made easier if written from Forth.
-static void dot_string(forth_state_t* fs) {
-    s(fs);
-    const char* type = "type";
-    add_word_to_current_definition(fs, type);
-}
-
 /* -------------------------------- Postpone -------------------------------- */
 
 // Convert a sting to a number. Return true if it worked. As strtol stops at
@@ -516,7 +482,6 @@ struct c_func_s all_default_parser_c_func[] = {
     {";", semicolon, true},
     {":noname", no_name, false},
     {"(literal)", literal, false},
-    {"(string)", string, false},
     {"immediate", immediate, false},
     {"does>", does, false},
     {"create", create, false},
@@ -538,9 +503,6 @@ struct c_func_s all_default_parser_c_func[] = {
     {"endof", endof_compile_time, true},
     {"(endof)", endof_run_time, false},
     {"endcase", endcase, true},
-
-    {"s\"", s, true},
-    {".\"", dot_string, true},
 
     {"refill", refill, false},
     {"save-input", sef_push_input_source, false},

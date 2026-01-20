@@ -116,7 +116,7 @@ loop 2drop ;
 ( ---------------------------------- Display --------------------------------- )
 
 : decimal ( -- ) 10 base ! ;
-: bl ( -- c ) s"  " drop c@ ;
+: bl ( -- c ) 32 ;
 : space ( -- ) bl emit ;
 : spaces ( n -- ) dup 0> if 0 do space loop else drop then ;
 : type ( addr n -- ) dup 0> if 0 do dup c@ emit 1+ loop drop else 2drop then ;
@@ -172,11 +172,6 @@ variable <#-cnt
     swap rot loop ;
 : >number ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) 2>r d>s 2r> (>number) 2>r s>d 2r> ;
 
-( ----------------------------- Printing messages ---------------------------- )
-
-: abort" ( parse until " -- ) postpone s" postpone type postpone abort ; immediate \ "
-: .( [char] ) parse type ; immediate
-
 ( ----------------------------------- Defer ---------------------------------- )
 
 \ Defered words are handled as a created word with an xt as parameter.
@@ -197,4 +192,11 @@ variable <#-cnt
 : (c") ( -- c-addr ) r> cell+ dup dup c@ + aligned cell - >r ;
 : c" ( "parse string" -- c-addr ) ['] (c") compile, [char] " parse dup c,
     0 ?do dup c@ c, char+ loop drop align ; immediate
+
+: (s") ( -- c-addr u ) r> cell+ dup cell+ swap dup dup @ + aligned >r @ ;
+: s" ( "parse string -- c-addr u ) [char] " parse state @ if ['] (s") compile, dup ,
+    0 ?do dup c@ c, char+ loop drop align then ; immediate
+: ." ( "parse string" -- ) postpone s" state @ if postpone type else type then ; immediate \ "
+: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone postpone cr abort else type cr abort then ; immediate \ "
+: .( [char] ) parse type ; immediate
 
