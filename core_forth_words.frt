@@ -106,6 +106,7 @@ swap >r swap >r over c! 1+ r> r> 1+
 : find ( c-addr -- xt f ) count (find) ;
 : recurse ( -- ) dictionary @ compile, ; immediate
 : marker ( "consume a name" -- ) create dictionary @ , dictionary @ @ , does> dup @ where ! cell+ @ dictionary ! ;
+: [compile] ( "consme a name" -- ) postpone postpone ; immediate \ Not really standard. But for this word...
 
 ( ---------------------------- Memory manipulation --------------------------- )
 
