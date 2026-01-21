@@ -341,9 +341,9 @@ static void question_do_run_time(forth_state_t* fs) {
 
 static void plus_loop_compile_time(forth_state_t* fs) {
     sef_int_t* end_of_loop_pointer = (sef_int_t*) sef_pop_control_flow(fs);
-    *end_of_loop_pointer = (sef_int_t) fs->here.cell;
     sef_int_t* question_do_address = end_of_loop_pointer + 1;
     inter_compil_number(fs, (sef_int_t) question_do_address);
+    *end_of_loop_pointer = (sef_int_t) fs->here.cell;
     add_word_to_current_definition(fs, "(+loop)");
 }
 
@@ -354,12 +354,12 @@ static void plus_loop_run_time(forth_state_t* fs) {
     sef_int_t loop_counter = sef_pop_code(fs);
     sef_int_t end_value = sef_pop_code(fs);
     loop_counter += increment;
-    if (loop_counter < end_value) {
+    if ((increment > 0 && loop_counter > end_value) || (increment < 0 && (loop_counter < end_value))) {
+        sef_pop_code(fs); // End of loop address
+    } else {
         sef_push_code(fs, end_value);
         sef_push_code(fs, loop_counter);
         fs->code_pointer = (dictionary_entry_t) question_do_address;
-    } else {
-        sef_pop_code(fs); // End of loop address
     }
 }
 
