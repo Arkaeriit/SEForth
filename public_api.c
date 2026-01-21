@@ -31,12 +31,6 @@ void sef_parse_string(forth_state_t* state, const char* s) {
     sef_pop_input_source(state);
 }
 
-#if SEF_USE_SOURCE_FILE
-sef_error sef_parse_file(forth_state_t* state, const char* filename) {
-    return sef_register_file(state->parser, filename);
-}
-#endif
-
 #if SEF_ARG_AND_EXIT_CODE
 void sef_feed_arguments(forth_state_t* state, int argc, char** argv) {
     if (state->compiling) {

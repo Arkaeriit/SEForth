@@ -11,9 +11,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 
 >> Optional features and words. Set to 1 to enable and to 0 to disable
 
->> Enable reading source files
-£define __SEF_USE_SOURCE_FILE SEF_USE_SOURCE_FILE 
-
 >> Enable words related to file manipulation
 £define __SEF_FILE SEF_FILE 
 

@@ -62,10 +62,6 @@ void sef_parse_string(forth_state_t* state, const char* s);
 void sef_push_data(forth_state_t* fs, sef_int_t w);
 sef_int_t sef_pop_data(forth_state_t* fs);
 
-#if SEF_USE_SOURCE_FILE
-sef_error sef_parse_file(forth_state_t* state, const char* filename);
-#endif
-
 #ifdef SEF_ARG_AND_EXIT_CODE
 void sef_feed_arguments(forth_state_t* state, int argc, char** argv);
 int sef_exit_code(forth_state_t* state);
