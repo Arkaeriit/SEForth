@@ -47,7 +47,7 @@ $(C_OBJS) $(EXEC_OBJS) : SEForth.h
 %.c : %.frt
 	name=$$(echo $< | sed s:.frt*::); \
 		 echo "const char* $$name = " > $@
-	cat $< | sed 's:[^.]( [^)]*): :g; s:^(.*)$$::; s:\s\+\([^"]\): \1:g; s:\\ .*::;  s:\\:\\\\:g; s:":\\":g; s:^:":; s:$$:\\n":;' | grep -v '" \?\\n"'  >> $@
+	cat $< | sed 's:[^.]( [^)]*): :g; s:^(.*)$$::; s:\s\+\([^"]\): \1:g; s:\\ .*::;  s:\\:\\\\:g; s:":\\":g; s:^:":; s:$$:\\n":;' | grep -v '^" \?\\n"'  >> $@
 	echo ';' >> $@
 
 SEForth_template.h.o: SEForth_template.h public_api.h sef_config.h

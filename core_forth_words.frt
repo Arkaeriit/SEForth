@@ -200,7 +200,7 @@ variable <#-cnt
 : s" ( "parse string -- c-addr u ) [char] " parse state @ if ['] (s") compile, dup ,
     0 ?do dup c@ c, char+ loop drop align then ; immediate
 : ." ( "parse string" -- ) postpone s" state @ if postpone type else type then ; immediate \ "
-: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone cr postpone abort else 2dup . . cr type cr abort then ; immediate \ " TODO: Doesn't seem to work in interpreting mode
+: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone cr postpone abort else 2dup . . cr type cr abort then ; immediate \ "
 : .( [char] ) parse type ; immediate
 
 false value escaped
