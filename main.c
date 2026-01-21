@@ -16,13 +16,14 @@ static void parse_a_file(forth_state_t* fs, const char* file_name) {
     size_t file_size = ftell(f);
     rewind(f);
 
-    char* content = malloc(file_size);
+    char* content = malloc(file_size + 1);
     if (content == NULL) {
         fprintf(stderr, "Can't allocate bytes to read file.\n");
         exit(-1);
     }
 
     fread(content, 1, file_size, f);
+    content[file_size] = 0;
     sef_parse_string(fs, content);
     free(content);
     fclose(f);
