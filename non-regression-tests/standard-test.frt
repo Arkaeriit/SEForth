@@ -1,6 +1,6 @@
 ( This file contain various test function used to validate )
 ( the words from SEForth that are complient to the Forth standard )
-( This file is meant to be tested with SEForth and ciforth )
+( This file is meant to be tested with SEForth and gforth )
 
 : TEST.. ." Printing 0: " 0 . CR ;
 : is_true IF ." OK. " ELSE ." Failed! " THEN ;
@@ -93,7 +93,7 @@
     -7.  3 FM/MOD -3 = is_true  2 = is_true
     -7. -3 FM/MOD  2 = is_true -1 = is_true CR ;
 : TEST.U>.U< ." Testing u< and u> " -1 5 U< is_0 -1 5 U> is_true 2 6 U< is_true 8 8 U> is_0 CR ;
-: TEST.U/MOD ." Testing u/mod " -5 16 U/MOD 16 * INVERT 15 = is_true 11 = is_true CR ;
+: TEST.UM/MOD ." Testing um/mod " 15 S>D 4 UM/MOD 3 = is_true 3 = is_true CR ;
 : TEST.WITHIN ." Testing within " 1 -5 5 WITHIN is_true 3 4 5 WITHIN is_0 CR ;
 : TEST.SHIFT ." Testing lshift and rshift " 5 3 LSHIFT 40 = is_true 80 4 RSHIFT 5 = is_true CR ;
 
@@ -180,7 +180,7 @@ DECIMAL
 TEST.IF TEST.BEGIN.LOOP TEST.NESTED.IF TEST.COMPLEX.IF TEST.NESTED.LOOP TEST.+LOOP TEST.LEAVE TEST.WHILE TEST.PACKED.ELSE TEST.PACKED.IF TEST.?DO TEST.CASE
 TEST.0= TEST.0< TEST.= TEST.AND TEST.OR TEST.XOR TEST.INVERT
 TEST.DROP TEST.SWAP TEST.ROT TEST.DUP TEST.2D TEST.R TEST.NIP TEST.OVER TEST.?DUP TEST.2OVER TEST.2SWAP TEST.DEPTH
-TEST.+ TEST.* TEST.*/ TEST.*/MOD TEST./ TEST./MOD TEST.< TEST.> TEST.MAX TEST.MIN TEST.NEGATE TEST.+! TEST.SM/REM TEST.FM/MOD TEST.U>.U< TEST.U/MOD TEST.WITHIN TEST.SHIFT
+TEST.+ TEST.* TEST.*/ TEST.*/MOD TEST./ TEST./MOD TEST.< TEST.> TEST.MAX TEST.MIN TEST.NEGATE TEST.+! TEST.SM/REM TEST.FM/MOD TEST.U>.U< TEST.UM/MOD TEST.WITHIN TEST.SHIFT
 TEST.MEM TEST.CMEM TEST., TEST.C, TEST.ALIGN TEST.UNUSED
 TEST.FILL+ERASE TEST.MOVE
 TEST.BASE_RECORD TEST.BASE_PRINT
