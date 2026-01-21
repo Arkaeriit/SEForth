@@ -18,3 +18,8 @@ variable (current-arg)
 : shift-args ( -- ) 1 (current-arg) +! ;
 : next-arg   ( -- addr u ) (current-arg) @ dup argc @ 1- > if drop 0 0 else arg shift-args then ;
 
+( --------------------- Making ABORT change the exit code -------------------- )
+
+: abort ( -- ) -1 exit-code ! abort ;
+: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone cr postpone abort else 2dup . . cr type cr abort then ; immediate \ "
+
