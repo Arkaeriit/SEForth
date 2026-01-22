@@ -70,28 +70,28 @@
 : TEST.NEGATE ." Testing negate " 0 NEGATE 0 = 5 NEGATE -5 = -88 NEGATE 88 = AND AND is_true CR ;
 : TEST.+! ." Testing +! " HERE 1 CELLS ALLOT DUP DUP 55 SWAP ! 45 SWAP +! @ 100 = is_true CR ;
 : TEST.SM/REM ." Testing sm/rem "
-     10.  7 SM/REM  1 = is_true  3 = is_true
-    -10.  7 SM/REM -1 = is_true -3 = is_true
-     10. -7 SM/REM -1 = is_true  3 = is_true
-    -10. -7 SM/REM  1 = is_true -3 = is_true CR ;
+     10 S>D  7 SM/REM  1 = is_true  3 = is_true
+    -10 S>D  7 SM/REM -1 = is_true -3 = is_true
+     10 S>D -7 SM/REM -1 = is_true  3 = is_true
+    -10 S>D -7 SM/REM  1 = is_true -3 = is_true CR ;
 : TEST.FM/MOD ." Testing fm/mod "
-     0.  1 FM/MOD  0 = is_true  0 = is_true
-     1.  1 FM/MOD  1 = is_true  0 = is_true
-     2.  1 FM/MOD  2 = is_true  0 = is_true
-    -1.  1 FM/MOD -1 = is_true  0 = is_true
-    -2.  1 FM/MOD -2 = is_true  0 = is_true
-     0. -1 FM/MOD  0 = is_true  0 = is_true
-     1. -1 FM/MOD -1 = is_true  0 = is_true
-     2. -1 FM/MOD -2 = is_true  0 = is_true
-    -1. -1 FM/MOD  1 = is_true  0 = is_true
-    -2. -1 FM/MOD  2 = is_true  0 = is_true
-     2.  2 FM/MOD  1 = is_true  0 = is_true
-    -1. -1 FM/MOD  1 = is_true  0 = is_true
-    -2. -2 FM/MOD  1 = is_true  0 = is_true
-     7.  3 FM/MOD  2 = is_true  1 = is_true
-     7. -3 FM/MOD -3 = is_true -2 = is_true
-    -7.  3 FM/MOD -3 = is_true  2 = is_true
-    -7. -3 FM/MOD  2 = is_true -1 = is_true CR ;
+     0 S>D  1 FM/MOD  0 = is_true  0 = is_true
+     1 S>D  1 FM/MOD  1 = is_true  0 = is_true
+     2 S>D  1 FM/MOD  2 = is_true  0 = is_true
+    -1 S>D  1 FM/MOD -1 = is_true  0 = is_true
+    -2 S>D  1 FM/MOD -2 = is_true  0 = is_true
+     0 S>D -1 FM/MOD  0 = is_true  0 = is_true
+     1 S>D -1 FM/MOD -1 = is_true  0 = is_true
+     2 S>D -1 FM/MOD -2 = is_true  0 = is_true
+    -1 S>D -1 FM/MOD  1 = is_true  0 = is_true
+    -2 S>D -1 FM/MOD  2 = is_true  0 = is_true
+     2 S>D  2 FM/MOD  1 = is_true  0 = is_true
+    -1 S>D -1 FM/MOD  1 = is_true  0 = is_true
+    -2 S>D -2 FM/MOD  1 = is_true  0 = is_true
+     7 S>D  3 FM/MOD  2 = is_true  1 = is_true
+     7 S>D -3 FM/MOD -3 = is_true -2 = is_true
+    -7 S>D  3 FM/MOD -3 = is_true  2 = is_true
+    -7 S>D -3 FM/MOD  2 = is_true -1 = is_true CR ;
 : TEST.U>.U< ." Testing u< and u> " -1 5 U< is_0 -1 5 U> is_true 2 6 U< is_true 8 8 U> is_0 CR ;
 : TEST.UM/MOD ." Testing um/mod " 15 S>D 4 UM/MOD 3 = is_true 3 = is_true CR ;
 : TEST.WITHIN ." Testing within " 1 -5 5 WITHIN is_true 3 4 5 WITHIN is_0 CR ;
@@ -169,7 +169,7 @@ DEFER defered-defered-okay
 : .. <# #s #> type space ;
 : TEST.NUMERIC_CONVERSION ." Printing 7865: " 7865. .. CR ;
 : TEST.COMPILE-TIME-PRINT .( Testing .(: OK.) ; CR
-: (test.>number) DUP S>D <# #S #> 2>R 0. 2R> >NUMBER 0 = >R DROP D>S = R> AND ;
+: (test.>number) DUP S>D <# #S #> 2>R 0 S>D 2R> >NUMBER 0 = >R DROP D>S = R> AND ;
 : TEST.>NUMBER ." Testing >number " -567 (test.>number) is_true 0 (test.>number) is_true 1234 (test.>number) is_true 65086 (test.>number) is_true CR ;
 HEX
 : TEST.>NUMBER.HEX HEX ." Testing >number in hexa " 012ABC (test.>number) is_true CR DECIMAL ;
@@ -188,7 +188,7 @@ TEST.EMIT TEST.BL
 TEST.CONSTANT TEST.VARIABLE
 TEST.EXECUTE TEST.EVALUATE TEST.RECURSE TEST.NONAME TEST.DEFER-AND-IS TEST.DEFER@ TEST.DEFER! TEST.ACTION-OF TEST.LITERAL
 TEST.TYPE TEST.CMOVE TEST.STRING-SIZE TEST.STRING-BASE TEST.COUNT TEST.CHAR TEST.NUMERIC_CONVERSION TEST.>NUMBER TEST.>NUMBER.HEX
-." Testing stack state: " 33 = is_true CR ;
+." Testing stack state: " 33 = is_true CR 2DROP ;
 
 BENCHMARK BYE
 
