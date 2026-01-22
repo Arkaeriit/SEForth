@@ -354,7 +354,7 @@ static void plus_loop_run_time(forth_state_t* fs) {
     sef_int_t loop_counter = sef_pop_code(fs);
     sef_int_t end_value = sef_pop_code(fs);
     loop_counter += increment;
-    if ((increment > 0 && loop_counter > end_value) || (increment < 0 && (loop_counter < end_value))) {
+    if ((increment > 0 && loop_counter >= end_value) || (increment < 0 && (loop_counter < end_value))) { // TODO: I'm not sure if it should be < or <= in the negative case
         sef_pop_code(fs); // End of loop address
     } else {
         sef_push_code(fs, end_value);
