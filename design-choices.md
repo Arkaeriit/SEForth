@@ -52,6 +52,7 @@ As I intend to for sef to run on 32-bit systems for embedded task and on 64-bit 
 ## Entries
 
 The entries in the dictionary will be made of:
+- magic word (used to tell if a pointer is to an entry)
 - address of the previous entry (null for the first element of the list)
 - size of the name
 -  content of the name (null terminated to make it easier to process in C)

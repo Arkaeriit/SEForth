@@ -17,6 +17,8 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_size
 dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t name_size);
 
 // Get the various constituent of an entry.
+sef_int_t* sef_get_entry_magic(dictionary_entry_t entry);
+dictionary_entry_t* sef_get_previous_entry(dictionary_entry_t entry);
 char* sef_get_entry_name(dictionary_entry_t entry);
 sef_int_t* sef_get_entry_name_len(dictionary_entry_t entry);
 sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry);

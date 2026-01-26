@@ -2,6 +2,8 @@
 #include "string.h"
 #include "stdio.h"
 
+#define DICTIONARY_MAGIC 0xD1C7
+
 /* --------------------------- String manipulation -------------------------- */
 
 #if SEF_CASE_INSENSITIVE
@@ -54,9 +56,11 @@ static size_t sef_size_needed_to_store_string(size_t string_len) {
 // safety...
 // TODO: maybe warning in case of word redefinition.
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
-    // Storing pointer to previous entry
     dictionary_entry_t new_entry = fs->here.cell;
-    *new_entry = (sef_int_t) fs->last_dictionary_entry;
+    *(sef_get_entry_magic(new_entry)) = DICTIONARY_MAGIC;
+    sef_allot_cell(fs);
+    // Storing pointer to previous entry
+    *(sef_get_previous_entry(new_entry)) = fs->last_dictionary_entry;
     fs->last_dictionary_entry = new_entry;
     sef_allot_cell(fs);
     // Storing name size
@@ -88,7 +92,7 @@ dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t na
     // If we are curently defining a word, we don't want to be able to find it,
     // as it is not ready yet and we might want to shadow an old definition.
     if (fs->compiling) {
-        searching = (dictionary_entry_t) (*searching);
+        searching = *sef_get_previous_entry(searching);
     }
 
     while (searching != NULL) {
@@ -103,8 +107,16 @@ dictionary_entry_t sef_find_entry(forth_state_t* fs, const char* name, size_t na
     return NULL;
 }
 
+sef_int_t* sef_get_entry_magic(dictionary_entry_t entry) {
+    return entry;
+}
+
+dictionary_entry_t* sef_get_previous_entry(dictionary_entry_t entry) {
+    return (dictionary_entry_t*) (sef_get_entry_magic(entry) + 1);
+}
+
 sef_int_t* sef_get_entry_name_len(dictionary_entry_t entry) {
-    return entry + 1;
+    return (sef_int_t*) sef_get_previous_entry(entry) + 1;
 }
 
 char* sef_get_entry_name(dictionary_entry_t entry) {
