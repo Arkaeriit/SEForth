@@ -138,6 +138,19 @@ void* sef_get_entry_parameter(dictionary_entry_t entry) {
     return (sef_int_t*) sef_get_word_executing_function(entry) + 1;
 }
 
+bool sef_is_entry_valid(forth_state_t* fs, dictionary_entry_t entry) {
+    char* entry_as_bytes = (char*) entry;
+    char* memory_start = (char*) &fs->forth_memory[0];
+    char* memory_end = memory_start + SEF_FORTH_MEMORY_SIZE;
+    if (!(memory_start <= entry_as_bytes && entry_as_bytes < memory_end)) {
+        return false;
+    }
+
+    return *sef_get_entry_magic(entry) == DICTIONARY_MAGIC;
+    // I could add some checks on the entry name size, but I'm not sure it would be safer.
+}
+
+
 void sef_display_dictionary(forth_state_t* fs) {
     dictionary_entry_t entry = fs->last_dictionary_entry;
     while (entry != NULL) {
