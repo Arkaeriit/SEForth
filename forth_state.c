@@ -147,7 +147,11 @@ void sef_exit(forth_state_t* fs) {
     fs->code_pointer = (sef_int_t*) sef_pop_code(fs);
 }
 
+#if SEF_CATCH_SEGFAULTS
+static void _sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+#else
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+#endif
     debug_msg("Calling %s\n", sef_get_entry_name(entry));
     sef_int_t word_tags = *(sef_get_word_tag_field(entry));
     void* parameters = sef_get_entry_parameter(entry);
@@ -168,6 +172,43 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
         wef(fs, parameters);
     }
 }
+
+#if SEF_CATCH_SEGFAULTS
+#include <setjmp.h>
+#include <signal.h>
+#define UNUSED(x) (void)(x)
+
+static sigjmp_buf point;
+static void segfault_handler(int sig, siginfo_t *dont_care, void *dont_care_either) {
+    UNUSED(sig);
+    UNUSED(dont_care);
+    UNUSED(dont_care_either);
+    longjmp(point, 1);
+}
+
+void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+    // Prepare catching of segfaults
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sigaction));
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags     = SA_NODEFER;
+    sa.sa_sigaction = segfault_handler;
+    sigaction(SIGSEGV, &sa, NULL);
+
+// Execute the risky code
+    if (setjmp(point) == 0) {
+        _sef_call_entry(fs, entry);
+    } else {
+        const char* entry_name = sef_get_entry_name(entry);
+        SEF_ERROR_OUT(fs, "SEGFAULT while executing word %s.\n", entry_name);
+    }
+
+    // Stop the fault catcher
+    sa.sa_sigaction = NULL;
+    sa.sa_handler = SIG_IGN;
+    sigaction(SIGSEGV, &sa, NULL);
+}
+#endif
 
 // TODO: Do I realy need that?
 possible_states_t sef_get_current_state(forth_state_t* fs) {
