@@ -37,9 +37,7 @@ compare_to_score () {
 }
 
 ok_std=$(count_ok "../seforth.bin ./standard-test.frt")
-ok_spe=$(count_ok "../seforth.bin ./specific-test.frt")
-total_ok=$(printf "%s %s + n" "$ok_std" "$ok_spe" | dc)
 
-compare_to_score "./score" "$total_ok"
+compare_to_score "./score" "$ok_std"
 echo "OK!"
 

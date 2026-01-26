@@ -156,6 +156,7 @@ DEFER defered-defered-okay
 : p33-def s" : p33 33 ;" ;
 : p44 44 ;
 : p44-33 s" p33-def evaluate" evaluate s" p44" evaluate s" p33" evaluate ;
+( TODO: recursive evaluation isn't working yet )
 : TEST.EVALUATE ." Testing evaluate " p44-33 33 = is_true 44 = s" is_true CR" evaluate ;
 : TEST.LITERAL ." Testing literal and [ ] " [ 5 3 + ] LITERAL 8 = is_true CR ;
 
