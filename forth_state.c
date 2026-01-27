@@ -96,9 +96,22 @@ void sef_quit(forth_state_t* fs) {
 }
 
 #if SEF_STACK_TRACE
+static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_pointer) {
+    dictionary_entry_t entry = sef_try_to_find_entry(fs, code_pointer);
+    const char* entry_name = entry != NULL ?
+        sef_get_entry_name(entry) :
+        "???";
+    sef_print_string("  * ");
+    sef_print_string(entry_name);
+    sef_print_string("\n");
+}
+
 static void sef_stack_trace(forth_state_t* fs) {
-    (void) fs;
-    error_msg("Stack trace TODO!\n");
+    stack_trace_print_word(fs, fs->code_pointer);
+    for (sef_int_t i=fs->code_stack_index-1; i>=0; i--) {
+        // TODO: index 0 is probably NULL, so I could cut it out
+        stack_trace_print_word(fs, (dictionary_entry_t) fs->code_stack[i]);
+    }
 }
 #endif
 

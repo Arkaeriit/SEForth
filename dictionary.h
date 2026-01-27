@@ -25,8 +25,9 @@ sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry);
 word_executing_function* sef_get_word_executing_function(dictionary_entry_t entry);
 void* sef_get_entry_parameter(dictionary_entry_t entry);
 
-// Tell if a pointer is to an entry
-bool sef_is_entry_valid(forth_state_t* fs, dictionary_entry_t entry);
+// From a pointer, if it is in the dictionary, try to return the entry it is
+// from. Otherwise, return NULL.
+dictionary_entry_t sef_try_to_find_entry(forth_state_t* fs, void* p);
 
 // Prints all words from the dictionary
 void sef_display_dictionary(forth_state_t* fs);
