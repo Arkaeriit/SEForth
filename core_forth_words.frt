@@ -155,7 +155,7 @@ variable <#-cnt
 : . ( n -- ) <# #n #> type space ;
 : u. ( u -- ) <# #s #> type space ;
 : (x.r) ( n -- addr n ) <#-cnt @ - dup 0 > if
-    0 do bl hold loop 0
+    0 do bl hold loop 0 s>d
     then #> ;
 : u.r ( u n -- )swap s>d <# #s #> 2drop (x.r) type ;
 : .r ( n n -- ) swap <# #n #> 2drop (x.r) type ;
