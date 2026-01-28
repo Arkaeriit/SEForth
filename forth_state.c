@@ -97,7 +97,6 @@ void sef_quit(forth_state_t* fs) {
     reset_parser(fs);
 }
 
-#if SEF_STACK_TRACE
 static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_pointer) {
     dictionary_entry_t entry = sef_try_to_find_entry(fs, code_pointer);
     const char* entry_name = entry != NULL ?
@@ -108,21 +107,30 @@ static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_po
     sef_print_string("\n");
 }
 
+#define NUMBER_OF_ELEMENTS_TO_SHOW_FROM_DATA_STACK 5
 static void sef_stack_trace(forth_state_t* fs) {
+    sef_print_string("Stack trace:\n");
     stack_trace_print_word(fs, fs->code_pointer);
-    for (sef_int_t i=fs->code_stack_index-1; i>=0; i--) {
-        // TODO: index 0 is probably NULL, so I could cut it out
+    for (sef_int_t i=fs->code_stack_index-1; i>=1; i--) {
         stack_trace_print_word(fs, (dictionary_entry_t) fs->code_stack[i]);
     }
+    sef_print_string("Top elements on data stack:\n");
+    for (int i=0; i<NUMBER_OF_ELEMENTS_TO_SHOW_FROM_DATA_STACK; i++) {
+        sef_int_t index = fs->data_stack_index - i - 1;
+        if (index < 0) {
+            continue;
+        }
+        // I reuse the pad as a string as I know the pad won't be used anymore
+        snprintf((char*) fs->pad, SEF_PAD_SIZE, "  * %li\n", (long int) fs->data_stack[index]);
+        fs->pad[SEF_PAD_SIZE-1] = 0;
+        sef_print_string((char*) fs->pad);
+    }
 }
-#endif
 
 // Trigerred on error. Do as quit but also reset data stack and set error flag.
 void sef_abort(forth_state_t* fs) {
-#if SEF_STACK_TRACE
     //TODO: Maybe I should separate the error case and the normal case...
     sef_stack_trace(fs);
-#endif
     sef_quit(fs);
     fs->data_stack_index = 0;
     fs->error_encountered = true;

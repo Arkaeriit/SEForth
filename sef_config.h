@@ -85,8 +85,3 @@
 #define SEF_CATCH_SEGFAULTS 1
 #endif
 
-// Print a stack strace when an error is encountered during execution.
-#ifndef SEF_STACK_TRACE
-#define SEF_STACK_TRACE 1
-#endif
-
