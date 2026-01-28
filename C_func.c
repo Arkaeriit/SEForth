@@ -28,18 +28,6 @@ void sef_register_cfunc(forth_state_t* fs, const char* name, cfunc func, bool is
     }
 }
 
-// TODO: Remove to keep the forth one
-static void dot(forth_state_t* fs) {
-    // I don't care about base as this is a debug word.
-    sef_int_t w = sef_pop_data(fs);
-    printf("%li ", w);
-}
-static void type(forth_state_t* fs) {
-    sef_int_t str_len = sef_pop_data(fs);
-    char* str = (char*) sef_pop_data(fs);
-    printf("%.*s<-", (int) str_len, str);
-}
-
 // List of default C_func
 
 // Stack manipulation
@@ -268,16 +256,6 @@ static void while_runtime(forth_state_t* fs) {
 static void repeat_runtime(forth_state_t* fs) {
     dictionary_entry_t begin_address = (dictionary_entry_t) sef_pop_data(fs);
     fs->code_pointer = begin_address;
-}
-
-// of
-static void of(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO of!\n");
-}
-
-// endof
-static void endof(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO endof!\n");
 }
 
 // Memory management
@@ -566,16 +544,6 @@ static void pad(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) fs->pad);
 }
 
-// defer@
-static void defer_fetch(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO defer@!\n");
-}
-
-// defer!
-static void defer_store(forth_state_t* fs) {
-    SEF_ERROR_OUT(fs, "TODO dever!!\n");
-}
-
 // Given a string, return true if i's a valid query for environment?
 // Also put in the return pointer the constants to put on the stack.
 // ret[0] is the first element to put on the stack.
@@ -697,8 +665,6 @@ struct c_func_s {
 };
 
 struct c_func_s all_default_c_func[] = {
-    {".", dot},
-    {"type", type},
     // Stack manipulation
     {"swap", swap},
     {"rot", rot},
@@ -731,8 +697,6 @@ struct c_func_s all_default_c_func[] = {
     {"(else)", else_runtime},
     {"(while)", while_runtime},
     {"(repeat)", repeat_runtime},
-    {"of", of},
-    {"endof", endof},
     // Memory management
     {"allot", allot},
     {"cells", cells},
@@ -748,7 +712,7 @@ struct c_func_s all_default_c_func[] = {
     {"strlen", str_len},
 #if SEF_FILE
     // File manipulation
-#warning TODO: test and document
+    // TODO: test and document
     {"r/o", ro},
     {"r/w", rw},
     {"w/o", wo},
@@ -777,8 +741,6 @@ struct c_func_s all_default_c_func[] = {
     {"base", base},
     {"execute", execute},
     {"pad", pad},
-    {"defer@", defer_fetch},
-    {"defer!", defer_store},
     {"environment?", environment_query},
     // Internals
     {"(find)", find},
