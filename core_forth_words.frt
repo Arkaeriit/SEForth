@@ -15,7 +15,7 @@
 
 ( --------------------------- Double words emulation ------------------------- )
 
-: s>d ( n -- d ) dup 0 < if 1 else 0 then ;
+: s>d ( n -- d ) dup 0 < if -1 else 0 then ;
 : d>s ( d -- n ) drop ;
 : um* ( u u -- d ) * 0 ;
 :  m* ( u u -- d ) * s>d ;
