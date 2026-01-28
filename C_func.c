@@ -584,7 +584,6 @@ static bool environment_reply(const char* query, size_t size, sef_int_t ret[stat
     if (!strncmp(query, "/COUNTED-STRING", size)) {
         *ret = 0xFF;
     } else if (!strncmp(query, "/HOLD", size)) {
-#warning "Use a constant"
         *ret = 64;
     } else if (!strncmp(query, "/PAD", size)) {
         *ret = SEF_PAD_SIZE;
@@ -624,10 +623,10 @@ static void environment_query(forth_state_t* fs) {
     sef_int_t ret[2];
     size_t number_of_returned_values = 0;
     bool query_ret = environment_reply(str, size, ret, &number_of_returned_values);
-    sef_push_data(fs, FORTH_BOOL(query_ret));
     for (size_t i=0; i<number_of_returned_values; i++) {
         sef_push_data(fs, ret[i]);
     }
+    sef_push_data(fs, FORTH_BOOL(query_ret));
 }
 
 // Internals
