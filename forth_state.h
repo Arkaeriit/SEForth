@@ -3,6 +3,43 @@
 #define FORTH_STATE_H
 
 #include "stdbool.h"
+#include "stddef.h"
+
+struct forth_state_s;
+typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_source);
+
+typedef sef_int_t* dictionary_entry_t;
+typedef struct forth_state_s {
+    // Memory spaces
+    uint8_t forth_memory[SEF_FORTH_MEMORY_SIZE];
+    uint8_t pad[SEF_PAD_SIZE];
+    sef_int_t data_stack[SEF_DATA_STACK_SIZE];
+    sef_int_t code_stack[SEF_CODE_STACK_SIZE];
+    sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK_SIZE];
+    // Memory pointer and indexes
+    union {
+        uint8_t* byte;
+        sef_int_t* cell;
+    } here;
+    dictionary_entry_t last_dictionary_entry;
+    sef_int_t data_stack_index;
+    sef_int_t code_stack_index;
+    sef_int_t control_flow_stack_index;
+    // Internal variables
+    bool compiling;
+    sef_int_t base;
+    sef_int_t* code_pointer;
+    bool error_encountered;
+    bool bye;
+    // Parser
+    sef_int_t input_buffer_size;
+    char* input_buffer;
+    sef_int_t parse_area_offset;
+    void* input_source;
+    input_source_refill_t input_source_refill;
+    sef_int_t source_id;
+    bool compiling_system_words;
+} forth_state_t;
 
 void sef_state_init(forth_state_t* fs);
 

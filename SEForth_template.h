@@ -56,6 +56,9 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Print a stack strace when an error is encountered during execution.
 £define __SEF_STACK_TRACE SEF_STACK_TRACE 
 
+>> Size of the forth state
+£define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_CODE_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
+
 #include "public_api.h"
 
 £endif

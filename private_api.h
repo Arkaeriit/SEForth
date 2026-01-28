@@ -8,11 +8,11 @@
 #define PRIVATE_API_H
 
 #include "SEForth.h"
+#include "forth_state.h"
 #include "stdlib.h"
 #include "sef_io.h"
 #include "sef_debug.h"
 #include "errors.h"
-#include "forth_state.h"
 #include "C_func.h"
 #include "dictionary.h"
 #include "parser.h"

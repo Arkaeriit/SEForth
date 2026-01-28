@@ -17,23 +17,25 @@ static void reset_parser(forth_state_t* fs) {
     fs->source_id = 0;
 }
 
+#define PARSE_STRING(fs, str) sef_parse_string((sef_forth_state_t*) (fs), (str))
+
 static void compile_system_forth_words(forth_state_t* fs) {
     (void) fs;
     extern const char* core_forth_words;
-    sef_parse_string(fs, core_forth_words);
+    PARSE_STRING(fs, core_forth_words);
     // The pre-processor would corrupt comments definitions
-    sef_parse_string(fs, ": ( [char] ) parse 2drop ; immediate");
-    sef_parse_string(fs, ": \\ 10 parse 2drop ; immediate");
+    PARSE_STRING(fs, ": ( [char] ) parse 2drop ; immediate");
+    PARSE_STRING(fs, ": \\ 10 parse 2drop ; immediate");
 #if SEF_PROGRAMMING_TOOLS
     extern const char* tools_forth_words;
-    sef_parse_string(fs, tools_forth_words);
+    PARSE_STRING(fs, tools_forth_words);
 #endif
 #if SEF_ARG_AND_EXIT_CODE
     extern const char* arg_and_exit_code_forth_words;
-    sef_parse_string(fs, arg_and_exit_code_forth_words);
+    PARSE_STRING(fs, arg_and_exit_code_forth_words);
 #endif
 #if SEF_PROGRAMMING_TOOLS && SEF_ARG_AND_EXIT_CODE
-    sef_parse_string(fs, ": (bye) exit-code ! bye ;");
+    PARSE_STRING(fs, ": (bye) exit-code ! bye ;");
 #endif
 }
 

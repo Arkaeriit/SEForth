@@ -3,7 +3,7 @@
 #include "stdio.h"
 
 
-static void parse_a_file(forth_state_t* fs, const char* file_name) {
+static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
     FILE* f = fopen(file_name, "r");
     if (f == NULL) {
         fprintf(stderr, "Can't open file %s.\n", file_name);
@@ -30,7 +30,7 @@ static void parse_a_file(forth_state_t* fs, const char* file_name) {
 }
 
 int main(int argc, char** argv) {
-    static forth_state_t fs;
+    static sef_forth_state_t fs;
     sef_init(&fs);
 
 #if SEF_ARG_AND_EXIT_CODE
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 #if SEF_ARG_AND_EXIT_CODE
     // TODO: check that we are not compiling. Maybe calling quit is enough
     sef_parse_string(&fs, "exit-code @");
-    return sef_pop_data(&fs);
+    return sef_pop_from_data_stack(&fs);
 #else
     return fs.error_encountered;
 #endif
