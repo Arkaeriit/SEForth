@@ -9,14 +9,16 @@
 
 // Functions used to manipulate C_fun
 
+typedef void (*cfunc)(forth_state_t*);
+
 static void exec_cfunc(forth_state_t* fs, void* parameters) {
-    C_callback_t* func_field = parameters;
-    C_callback_t func = *func_field;
+    cfunc* func_field = parameters;
+    cfunc func = *func_field;
     func(fs);
 }
 
 // Register a new C function
-void sef_register_cfunc(forth_state_t* fs, const char* name, C_callback_t func, bool is_immediate) {
+void sef_register_cfunc(forth_state_t* fs, const char* name, cfunc func, bool is_immediate) {
     sef_register_new_word(fs, name, strlen(name), exec_cfunc);
     *fs->here.cell = (sef_int_t) func;
     sef_allot_cell(fs);
