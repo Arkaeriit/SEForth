@@ -38,12 +38,9 @@
 : min ( n1 n2 -- n1 | n2 ) 2dup max negate + + ;
 : invert ( n -- n ) -1 xor ;
 : +! ( n addr -- ) dup @ rot + swap ! ;
-: 2* ( n -- n ) 2 * ;
-: 2/ ( n -- n ) 2 / ;
+: 2* ( n -- n ) 1 lshift ;
 : u> ( u u -- b ) 2dup u< 0= rot rot <> and ;
 : within ( test low high -- flag ) over - >r - r> u< ;
-: lshift ( x u -- x ) 0 ?do 2* 1 +loop ;
-: rshift ( x u -- x ) 0 ?do 2/ 1 +loop ;
 : >= ( n n -- f ) < invert ;
 : <= ( n n -- f ) > invert ;
 

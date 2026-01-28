@@ -226,6 +226,27 @@ static void xor(forth_state_t* fs) {
     sef_push_data(fs, w1 ^ w2);
 }
 
+// lshift
+static void lshift(forth_state_t* fs) {
+    sef_int_t w1 = sef_pop_data(fs);
+    sef_int_t w2 = sef_pop_data(fs);
+    sef_push_data(fs, w2 << w1);
+}
+
+// rshift
+static void rshift(forth_state_t* fs) {
+    sef_unsigned_t w1 = (sef_unsigned_t) sef_pop_data(fs);
+    sef_unsigned_t w2 = (sef_unsigned_t) sef_pop_data(fs);
+    sef_push_data(fs, (sef_int_t) (w2 >> w1));
+}
+
+// 2/
+static void two_slash(forth_state_t* fs) {
+    sef_int_t w1 = 1;
+    sef_int_t w2 = sef_pop_data(fs);
+    sef_push_data(fs, w2 >> w1);
+}
+
 // Flow control
 
 // if
@@ -692,6 +713,9 @@ struct c_func_s all_default_c_func[] = {
     {"and", and},
     {"or", or},
     {"xor", xor},
+    {"lshift", lshift},
+    {"rshift", rshift},
+    {"2/", two_slash},
     // Flow control
     {"(if)", if_runtine}, // TODO: if a cache is made for this kind of words (used in the parser), I could stop take new name and use name shadowing instead.
     {"(else)", else_runtime},
