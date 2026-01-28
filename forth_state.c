@@ -72,11 +72,17 @@ void sef_state_init(forth_state_t* fs) {
 
 #define STACK_OPERATIONS(stack_name, stack_size)                                \
 void sef_push_ ## stack_name(forth_state_t* fs, sef_int_t data) {               \
+    if (fs->error_encountered) {                                                \
+        return;                                                                 \
+    }                                                                           \
     fs->stack_name ## _stack[fs->stack_name ## _stack_index++] = data;          \
     STACK_BOUND_CHECK(fs, stack_name, stack_size)                               \
 }                                                                               \
                                                                                 \
 sef_int_t sef_pop_ ## stack_name(forth_state_t* fs) {                           \
+    if (fs->error_encountered) {                                                \
+        return 0;                                                               \
+    }                                                                           \
     sef_int_t ret = fs->stack_name ## _stack[--fs->stack_name ## _stack_index]; \
     STACK_BOUND_CHECK(fs, stack_name, stack_size)                               \
     return ret;                                                                 \
