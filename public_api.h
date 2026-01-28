@@ -1,12 +1,5 @@
 £include <stdbool.h>
 
-£define SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size) \\
-    (alignment_size - (base_size % alignment_size))
-
-// TODO: do I really need that or should I let the C compiler align everything ?
-£define SPACE_ALLIGNED_TO(base_size, alignment_size) \\
-    (base_size + SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size))
-
 
 struct forth_state_s;
 typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_source);
@@ -20,8 +13,8 @@ typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_s
 typedef sef_int_t* dictionary_entry_t;
 typedef struct forth_state_s {
     // Memory spaces
-    uint8_t forth_memory[SPACE_ALLIGNED_TO(SEF_FORTH_MEMORY_SIZE, sizeof(sef_int_t))];
-    uint8_t pad[SPACE_ALLIGNED_TO(SEF_PAD_SIZE, sizeof(sef_int_t))];
+    uint8_t forth_memory[SEF_FORTH_MEMORY_SIZE];
+    uint8_t pad[SEF_PAD_SIZE];
     sef_int_t data_stack[SEF_DATA_STACK_SIZE];
     sef_int_t code_stack[SEF_CODE_STACK_SIZE];
     sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK_SIZE];

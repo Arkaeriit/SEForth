@@ -43,6 +43,12 @@ static bool case_sensitive_name_match(const char* name_from_dictionary, const ch
 
 /* -------------------------------- Name size ------------------------------- */
 
+#define SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size) \
+    (alignment_size - (base_size % alignment_size))
+
+#define SPACE_ALLIGNED_TO(base_size, alignment_size) \
+    (base_size + SPACE_TO_ADD_TO_ENSURE_ALIGNMENT(base_size, alignment_size))
+
 // Tell how much room a string takes in the dictionary. Needed to retrieve it.
 static size_t sef_size_needed_to_store_string(size_t string_len) {
     size_t effective_size = string_len + 1;
