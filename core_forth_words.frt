@@ -219,11 +219,10 @@ variable <#-cnt
 : <#-addr ( -- addr ) <#-buff <#-buff-len + <#-cnt @ - ;
 : hold ( c -- ) 1 <#-cnt +! <#-addr c! ;
 : holds ( addr n -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;
-\ TODO: I'm not sure printing negative numbers work... Or is it reading negative numbers...
 : sign ( n -- ) 0 < if [char] - hold then ;
 : # ( ud -- ud ) base @ um/mod swap (#) hold s>d ;
 : #s ( ud -- ud ) begin # 2dup d>s 0= until ;
-: #n ( n -- ud ) dup abs s>d #s swap sign ;
+: #n ( n -- ud ) dup abs s>d #s drop swap sign 0 ;
 : #> ( du -- addr n ) 2drop <#-addr <#-cnt @ ;
 : . ( n -- ) <# #n #> type space ;
 : u. ( u -- ) <# #s #> type space ;
