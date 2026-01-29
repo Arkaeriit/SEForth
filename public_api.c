@@ -28,13 +28,12 @@ bool sef_is_compiling(sef_forth_state_t* _state) {
 
 // TODO: error flag read and reset. Maybe in the same function ?
 
+// A general TODO for error recovery is probably needed
+
 void sef_parse_string(sef_forth_state_t* _state, const char* s) {
     forth_state_t* state = (forth_state_t*) _state;
     sef_set_c_string_as_input_source(state, s);
     sef_inter_compil_run(state);
-    // TODO: can cause error is the compilation failed. Maybe condition on having an error
-    // A general TODO for error recovery is probably needed
-    sef_pop_input_source(state);
 }
 
 void sef_push_to_data_stack(sef_forth_state_t* _state, sef_int_t w) {

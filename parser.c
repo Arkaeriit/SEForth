@@ -93,7 +93,6 @@ static bool c_string_refill(forth_state_t* fs, void* input_source) {
 }
 
 void sef_set_c_string_as_input_source(forth_state_t* fs, const char* str) {
-    sef_push_input_source(fs);
     fs->input_source = (char*) str; // I won't edit it with c_string refill, so no biggie with const.
     fs->input_buffer_size = 0;
     fs->parse_area_offset = 0;
