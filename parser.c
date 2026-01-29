@@ -460,7 +460,9 @@ static void postpone_runtime(forth_state_t* fs) {
         bool old_state = fs->compiling;
         fs->compiling = true;
         sef_call_entry(fs, entry);
-        fs->compiling = old_state;
+        if (fs->compiling) {
+            fs->compiling = old_state;
+        }
     } else {
         *fs->here.cell++ = (sef_int_t) entry;
     }
