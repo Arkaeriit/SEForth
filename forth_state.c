@@ -114,12 +114,14 @@ static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_po
 }
 
 #define NUMBER_OF_ELEMENTS_TO_SHOW_FROM_DATA_STACK 5
-static void sef_stack_trace(forth_state_t* fs) {
+static void show_debug(forth_state_t* fs) {
     sef_print_string("Stack trace:\n");
     stack_trace_print_word(fs, fs->code_pointer);
     for (sef_int_t i=fs->code_stack_index-1; i>=1; i--) {
         stack_trace_print_word(fs, (dictionary_entry_t) fs->code_stack[i]);
     }
+    char* pad = (char*) fs->pad;
+    pad[SEF_PAD_SIZE-1] = 0;
     sef_print_string("Top elements on data stack:\n");
     for (int i=0; i<NUMBER_OF_ELEMENTS_TO_SHOW_FROM_DATA_STACK; i++) {
         sef_int_t index = fs->data_stack_index - i - 1;
@@ -127,16 +129,23 @@ static void sef_stack_trace(forth_state_t* fs) {
             continue;
         }
         // I reuse the pad as a string as I know the pad won't be used anymore
-        snprintf((char*) fs->pad, SEF_PAD_SIZE, "  * %li\n", (long int) fs->data_stack[index]);
-        fs->pad[SEF_PAD_SIZE-1] = 0;
-        sef_print_string((char*) fs->pad);
+        snprintf(pad, SEF_PAD_SIZE-1, "  * %li\n", (long int) fs->data_stack[index]);
+        sef_print_string(pad);
     }
+    sef_print_string("Currently parsing:\n");
+    snprintf(pad, SEF_PAD_SIZE-1, "%.*s\n", (int) fs->input_buffer_size, fs->input_buffer);
+    sef_print_string(pad);
+    for (int i=0; i<fs->parse_area_offset; i++) {
+        sef_print_string(" ");
+    }
+    sef_print_string("^\n");
+
 }
 
 // Trigerred on error. Do as quit but also reset data stack and set error flag.
 void sef_abort(forth_state_t* fs) {
     //TODO: Maybe I should separate the error case and the normal case...
-    sef_stack_trace(fs);
+    show_debug(fs);
     sef_quit(fs);
     fs->data_stack_index = 0;
     fs->error_encountered = true;
@@ -177,10 +186,11 @@ void sef_exit(forth_state_t* fs) {
 }
 
 #if SEF_CATCH_SEGFAULTS
-static void _sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+static void _sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
 #else
-void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
+void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
 #endif
+{
     debug_msg("Calling %s\n", sef_get_entry_name(entry));
     sef_int_t word_tags = *(sef_get_word_tag_field(entry));
     void* parameters = sef_get_entry_parameter(entry);
