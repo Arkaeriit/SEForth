@@ -81,14 +81,14 @@ macro: j r> r> r> r@ swap >r swap >r swap >r ;
 ( ---------------------------------- Strings --------------------------------- )
 
 : count ( addr -- addr n ) dup char+ swap c@ ;
-\ TODO not sure it's working
-: accept ( addr n -- n ) 1- dup 0 > 0= if 2drop 0 exit then
+: accept ( c-addr n -- n ) dup 0 <= if 2drop 0 exit then
 0 begin
+( addr max n )
 key dup 10 = if drop nip nip exit then
-( addr n1 n2 c )
-swap >r swap >r over c! 1+ r> r> 1+
-( addr n1 n2 )
-2dup = if nip nip exit then until ;
+( addr max n key )
+3 pick 2 pick + c! 1+
+( addr max n )
+2dup = if nip nip exit then again ;
 \ Writes the given string as a counted string a few bytes away from HERE.
 : (uncount-loop) ( addr c-addr -- addr+1 c-addr+1 ) 1+ >r dup c@ swap 1+ swap r@ c! r> ;
 : uncount ( addr u -- c-addr ) HERE 8 cells + >r r@ 2dup c! swap 0 ?do (uncount-loop) loop 2drop r> ;
