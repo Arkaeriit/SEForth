@@ -298,15 +298,18 @@ static void begin(forth_state_t* fs) {
 }
 
 static void while_compile_time(forth_state_t* fs) {
+    sef_int_t begin_address = sef_pop_control_flow(fs);
     // While needs a black address that will be filled-in by repeat
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    sef_push_control_flow(fs, begin_address);
     add_word_to_current_definition(fs, "(while)");
 }
 
 static void repeat_compile_time(forth_state_t* fs) {
-    sef_int_t* while_empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
     sef_int_t begin_address = sef_pop_control_flow(fs);
+    sef_int_t* while_empty_cell = (sef_int_t*) sef_pop_control_flow(fs);
+
     // Putting the address of begin as a literal, the runtime repeat will go to it.
     inter_compil_number(fs, begin_address);
     // Filling in the blank word from while with repeat address
