@@ -111,7 +111,11 @@ key dup 10 = if drop nip nip exit then
     swap 2dup c! 1+ swap
 loop 2drop ;
 : erase ( addr u -- ) 0 fill ;
-: move ( addr addr u -- ) 0 ?do over c@ over c! 1+ swap 1+ swap loop 2drop ;
+: cmove ( addr addr u -- ) 0 ?do over c@ over c! 1+ swap 1+ swap loop 2drop ;
+: cmove> ( addr addr u -- ) >r r@ + 1- swap r@ + 1- swap r> 0 ?do over c@ over c! 1- swap 1- swap loop 2drop ;
+: move ( addr addr u -- ) >r 2dup > if
+    r> cmove else
+    r> cmove> then ;
 
 ( ---------------------------------- Display --------------------------------- )
 
