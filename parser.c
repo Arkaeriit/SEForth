@@ -129,16 +129,18 @@ static void set_forth_string_as_input_source(forth_state_t* fs) {
 
 static void evaluate(forth_state_t* fs) {
     set_forth_string_as_input_source(fs);
-    for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
+    sef_int_t cells_to_save = sef_pop_data(fs);
+    for (int i=0; i<cells_to_save; i++) {
         sef_push_code(fs, sef_pop_data(fs));
     }
     sef_push_code(fs, (sef_int_t) fs->code_pointer);
     fs->code_pointer = NULL;
     sef_inter_compil_run(fs);
     fs->code_pointer = (dictionary_entry_t) sef_pop_code(fs);
-    for (int i=0; i<CELL_USED_FOR_INPUT_SOURCE; i++) {
+    for (int i=0; i<cells_to_save; i++) {
         sef_push_data(fs, sef_pop_code(fs));
     }
+    sef_push_data(fs, cells_to_save);
     sef_pop_input_source(fs);
 }
 
