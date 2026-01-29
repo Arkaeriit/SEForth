@@ -222,7 +222,7 @@ variable <#-cnt
 : #n ( n -- ud ) dup abs s>d #s drop swap sign 0 ;
 : #> ( du -- addr n ) 2drop <#-addr <#-cnt @ ;
 : . ( n -- ) <# #n #> type space ;
-: u. ( u -- ) <# #s #> type space ;
+: u. ( u -- ) 0 <# #s #> type space ;
 : (x.r) ( n -- addr n ) <#-cnt @ - dup 0 > if
     0 do bl hold loop 0 s>d
     then #> ;
