@@ -64,14 +64,12 @@
 \ Not standard, but quite handy to define standard words
 
 : char ( "word" -- c ) parse-name if c@ else drop 0 then ;
-: save-here ( c-addr u -- ) dup , 0 ?do dup c@ c, char+ 1 +loop drop align ;
+: save-here ( c-addr u -- ) dup , 0 ?do dup c@ c, char+ loop drop align ;
 : read-mem-saved-here ( addr  -- c-addr u ) dup @ swap cell+ swap ;
 : macro: ( "read a definition until ;" -- ) create immediate (literal) [ char ; , ] parse save-here does> read-mem-saved-here evaluate ;
 
 ( ------------------------------- Flow control ------------------------------- )
 
-macro: do 2dup = if swap 1- swap then ?do ;
-macro: loop 1 +loop ;
 macro: until 0= while repeat ;
 macro: again 0 until ;
 macro: unloop r> drop r> drop r> drop ;

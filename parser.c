@@ -343,22 +343,67 @@ static void question_do_run_time(forth_state_t* fs) {
     sef_push_code(fs, loop_counter);
 }
 
-static void plus_loop_compile_time(forth_state_t* fs) {
+static void do_compile_time(forth_state_t* fs) {
+    inter_compil_number(fs, 0);
+    sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
+    add_word_to_current_definition(fs, "(do)");
+}
+
+static void do_run_time(forth_state_t* fs) {
+    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_data(fs);
+    sef_int_t end_value = sef_pop_data(fs);
+    sef_push_code(fs, end_of_loop_pointer);
+    sef_push_code(fs, end_value);
+    sef_push_code(fs, loop_counter);
+}
+
+static void any_loop_compile_time(forth_state_t* fs) {
     sef_int_t* end_of_loop_pointer = (sef_int_t*) sef_pop_control_flow(fs);
     sef_int_t* question_do_address = end_of_loop_pointer + 1;
     inter_compil_number(fs, (sef_int_t) question_do_address);
     *end_of_loop_pointer = (sef_int_t) fs->here.cell;
+}
+
+static void plus_loop_compile_time(forth_state_t* fs) {
+    any_loop_compile_time(fs);
     add_word_to_current_definition(fs, "(+loop)");
+}
+
+static void loop_compile_time(forth_state_t* fs) {
+    any_loop_compile_time(fs);
+    add_word_to_current_definition(fs, "(loop)");
 }
 
 // (+loop) takes as argument ( increment-value begining-of-the-loop-pointer )
 static void plus_loop_run_time(forth_state_t* fs) {
     sef_int_t question_do_address = sef_pop_data(fs);
     sef_int_t increment = sef_pop_data(fs);
+    sef_int_t old_loop_counter = sef_pop_code(fs);
+    sef_int_t end_value = sef_pop_code(fs);
+    sef_int_t updated_loop_counter = old_loop_counter + increment;
+
+    sef_int_t min_int = ((sef_unsigned_t) ~0 >> 1) + 1;
+    sef_int_t check_sign_before = (old_loop_counter - end_value) + min_int;
+    sef_int_t check_sign_after = check_sign_before + increment;
+    bool overflowed = increment > 0 && check_sign_after < check_sign_before;
+    bool underflowed = increment < 0 && check_sign_after > check_sign_before;
+    if (overflowed || underflowed) {
+        sef_pop_code(fs); // End of loop address
+    } else {
+        sef_push_code(fs, end_value);
+        sef_push_code(fs, updated_loop_counter);
+        fs->code_pointer = (dictionary_entry_t) question_do_address;
+    }
+}
+
+// (loop) takes as argument ( begining-of-the-loop-pointer )
+static void loop_run_time(forth_state_t* fs) {
+    sef_int_t question_do_address = sef_pop_data(fs);
     sef_int_t loop_counter = sef_pop_code(fs);
     sef_int_t end_value = sef_pop_code(fs);
-    loop_counter += increment;
-    if ((increment > 0 && loop_counter >= end_value) || (increment < 0 && (loop_counter < end_value))) { // TODO: I'm not sure if it should be < or <= in the negative case
+    loop_counter++;
+    if (loop_counter == end_value) {
         sef_pop_code(fs); // End of loop address
     } else {
         sef_push_code(fs, end_value);
@@ -498,10 +543,14 @@ struct c_func_s all_default_parser_c_func[] = {
     {"begin", begin, true},
     {"while", while_compile_time, true},
     {"repeat", repeat_compile_time, true},
+    {"do", do_compile_time, true},
+    {"(do)", do_run_time, false},
     {"?do", question_do_compile_time, true},
     {"(?do)", question_do_run_time, false},
     {"+loop", plus_loop_compile_time, true},
     {"(+loop)", plus_loop_run_time, false},
+    {"loop", loop_compile_time, true},
+    {"(loop)", loop_run_time, false},
     {"leave", leave, false},
     {"case", case_compile_time, true},
     {"of", of_compile_time, true},
