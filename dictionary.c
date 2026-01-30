@@ -171,7 +171,7 @@ void sef_display_dictionary(forth_state_t* fs) {
             }
             sef_output(' ');
         }
-        entry = (dictionary_entry_t) (*entry);
+        entry = *sef_get_previous_entry(entry);
     }
 }
 

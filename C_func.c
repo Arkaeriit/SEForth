@@ -516,12 +516,10 @@ static void _stderr(forth_state_t* fs) {
 }
 #endif
 
-#if SEF_PROGRAMMING_TOOLS
 // words
 static void words(forth_state_t* fs) {
     sef_display_dictionary(fs);
 }
-#endif
 
 // Misc
 
@@ -751,10 +749,8 @@ struct c_func_s all_default_c_func[] = {
     {"stdout", _stdout},
     {"stderr", _stderr},
 #endif
-#if SEF_PROGRAMMING_TOOLS
     // Programming tools
     {"words", words},
-#endif
     // Misc
     {"emit", emit},
     {"key", key},
