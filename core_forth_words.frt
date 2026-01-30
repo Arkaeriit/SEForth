@@ -102,7 +102,7 @@ key dup 10 = if drop nip nip exit then
 : word ( c "parse a word" -- c-addr ) parse uncount ;
 : find ( c-addr -- xt f ) count (find) ;
 : recurse ( -- ) dictionary @ compile, ; immediate
-: marker ( "consume a name" -- ) create dictionary @ , dictionary @ @ , does> dup @ where ! cell+ @ dictionary ! ;
+: marker ( "consume a name" -- ) create dictionary @ , dictionary @ cell+ ( parsing by hand the dictionary entry )  @ , does> dup @ where ! cell+ @ dictionary ! ;
 : [compile] ( "consme a name" -- ) postpone postpone ; immediate \ Not really standard. But for this word...
 
 ( ---------------------------- Memory manipulation --------------------------- )
