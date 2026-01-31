@@ -571,7 +571,7 @@ static bool environment_reply(const char* query, size_t size, sef_int_t ret[stat
     if (!strncmp(query, "/COUNTED-STRING", size)) {
         *ret = 0xFF;
     } else if (!strncmp(query, "/HOLD", size)) {
-        *ret = 64;
+        *ret = sizeof(sef_int_t) * 8 + 16;
     } else if (!strncmp(query, "/PAD", size)) {
         *ret = SEF_PAD_SIZE;
     } else if (!strncmp(query, "ADDRESS-UNIT-BITS", size)) {
