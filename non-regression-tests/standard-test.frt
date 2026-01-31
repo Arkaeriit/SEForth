@@ -156,13 +156,12 @@ DEFER defered-defered-okay
 : p33-def s" : p33 33 ;" ;
 : p44 44 ;
 : p44-33 s" p33-def evaluate" evaluate s" p44" evaluate s" p33" evaluate ;
-( TODO: recursive evaluation isn't working yet )
 : TEST.EVALUATE ." Testing evaluate " p44-33 33 = is_true 44 = s" is_true CR" evaluate ;
 : TEST.LITERAL ." Testing literal and [ ] " [ 5 3 + ] LITERAL 8 = is_true CR ;
 
 ( STRINGS )
 : TEST.TYPE ." Testing type " S" OK." TYPE CR ;
-: TEST.CMOVE ; \ TODO: ." Testing cmove " S" OK." DUP >R HERE DUP >R SWAP DUP ALLOT CMOVE R> R> TYPE CR ;
+: TEST.CMOVE ." Testing cmove " S" OK." DUP >R HERE DUP >R SWAP DUP ALLOT CMOVE R> R> TYPE CR ;
 : TEST.STRING-SIZE ." Testing string size " S" 123 " 4 = SWAP DROP S" 1 " SWAP DROP 2 = S" \ " SWAP DROP 2 = is_true is_true is_true CR ;
 : TEST.STRING-BASE ." Testing strings in non decimal base " 8 BASE ! ." OK." CR DECIMAL ;
 : TEST.COUNT ." Testing count " S" abc" DROP COUNT 97 = is_true COUNT 98 = is_true COUNT 99 = is_true DROP CR ;
