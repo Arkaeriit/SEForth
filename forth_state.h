@@ -5,6 +5,10 @@
 #include "stdbool.h"
 #include "stddef.h"
 
+#define FORTH_TRUE ((sef_int_t) ~0)
+#define FORTH_BOOL(x) ((x) ? FORTH_TRUE : 0)
+#define FORTH_FALSE FORTH_BOOL(false)
+
 struct forth_state_s;
 typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_source);
 

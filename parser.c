@@ -55,11 +55,9 @@ void sef_pop_input_source(forth_state_t* fs) {
         fs->input_buffer = (char*) input_source_storage[3];
         fs->input_buffer_size = input_source_storage[4];
         fs->source_id = input_source_storage[5];
-        // TODO: bool
-        sef_push_data(fs, 0);
+        sef_push_data(fs, FORTH_FALSE);
     } else {
-        // TODO: bool
-        sef_push_data(fs, 1);
+        sef_push_data(fs, FORTH_TRUE);
     }
 }
 
@@ -68,8 +66,7 @@ static void refill(forth_state_t* fs) {
     if (refill_rc) {
         fs->parse_area_offset = 0;
     }
-    // TODO C bool to Forth bool
-    sef_push_data(fs, refill_rc);
+    sef_push_data(fs, FORTH_BOOL(refill_rc));
 }
 
 /* -------------------------- C string input source ------------------------- */
@@ -694,5 +691,4 @@ void sef_inter_compil_run(forth_state_t* fs) {
         refill(fs);
         refilled = sef_pop_data(fs);
     }
-    // TODO: maybe pop source as well
 }

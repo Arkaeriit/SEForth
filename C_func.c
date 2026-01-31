@@ -4,8 +4,6 @@
 #include "stdio.h"
 
 #define UNUSED(x) (void)(x)
-#define FORTH_TRUE ((sef_int_t) ~0)
-#define FORTH_BOOL(x) ((x) ? FORTH_TRUE : 0)
 
 // Functions used to manipulate C_fun
 
