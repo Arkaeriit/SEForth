@@ -65,7 +65,9 @@ void sef_pop_input_source(forth_state_t* fs) {
 
 static void refill(forth_state_t* fs) {
     bool refill_rc = fs->input_source_refill(fs, fs->input_source);
-    fs->parse_area_offset = 0;
+    if (refill_rc) {
+        fs->parse_area_offset = 0;
+    }
     // TODO C bool to Forth bool
     sef_push_data(fs, refill_rc);
 }
