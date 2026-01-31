@@ -26,6 +26,9 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Enable Forth getting cli argument and setting exit code
 £define __SEF_ARG_AND_EXIT_CODE SEF_ARG_AND_EXIT_CODE
 
+>> Set to 1 for ABORT to stop Forth and 0 for ABORT to start the shell
+£define __SEF_ABORT_STOP_FORTH SEF_ABORT_STOP_FORTH
+
 >> Depth of the memory blocks
 £define __SEF_CODE_STACK_SIZE SEF_CODE_STACK_SIZE 
 £define __SEF_DATA_STACK_SIZE SEF_DATA_STACK_SIZE 

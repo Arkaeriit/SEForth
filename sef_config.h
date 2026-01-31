@@ -38,6 +38,11 @@
 #define SEF_ARG_AND_EXIT_CODE 1
 #endif
 
+// Set to 1 for ABORT to stop Forth and 0 for ABORT to start the shell
+#ifndef SEF_ABORT_STOP_FORTH
+#define SEF_ABORT_STOP_FORTH 1
+#endif
+
 // Depth of the memory blocks
 #ifndef SEF_CODE_STACK_SIZE
 #define SEF_CODE_STACK_SIZE 1000

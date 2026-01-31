@@ -693,4 +693,8 @@ void sef_inter_compil_run(forth_state_t* fs) {
         refill(fs);
         refilled = sef_pop_data(fs);
     }
+    if (fs->quit && !fs->bye && (!SEF_ABORT_STOP_FORTH || !fs->error_encountered)) {
+        sef_reset(fs);
+        inter_compil_entry(fs, sef_find_entry(fs, "(repl)", 6));
+    }
 }
