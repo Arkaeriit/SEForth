@@ -505,9 +505,13 @@ static int str_to_num(const char* str, size_t str_len, sef_int_t* num, int base)
         return 1;
     } else if (converted_size == str_len - 1 && end[0] == '.') {
         return 2;
-    } else {
-        return 0;
     }
+
+    if (str_len == 3 && str[0] == '\'' && str[2] == '\'') {
+        *num = str[1];
+        return 1;
+    }
+    return 0;
 }
 
 static void postpone_compile_time(forth_state_t* fs) {
