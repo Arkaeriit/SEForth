@@ -139,7 +139,6 @@ static void show_debug(forth_state_t* fs) {
         sef_print_string(" ");
     }
     sef_print_string("^\n");
-
 }
 
 // Trigerred on error. Do as quit but also reset data stack and set error flag.
@@ -207,7 +206,6 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
             fs->code_pointer = new_code_pointer + 1;
         }
     } else {
-        // TODO: segfault catching
         wef(fs, parameters);
     }
 }
