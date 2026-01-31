@@ -20,6 +20,9 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Enable programing tools words
 £define __SEF_PROGRAMMING_TOOLS SEF_PROGRAMMING_TOOLS 
 
+>> Enable memory allocation words
+£define __SEF_MEMORY_ALLOCATION SEF_MEMORY_ALLOCATION
+
 >> Enable Forth getting cli argument and setting exit code
 £define __SEF_ARG_AND_EXIT_CODE SEF_ARG_AND_EXIT_CODE
 

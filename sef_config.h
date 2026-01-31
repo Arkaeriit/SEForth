@@ -28,6 +28,11 @@
 #define SEF_PROGRAMMING_TOOLS 1
 #endif
 
+// Enable memory allocation words
+#ifndef SEF_MEMORY_ALLOCATION
+#define SEF_MEMORY_ALLOCATION 1
+#endif
+
 // Enable Forth getting cli argument and setting exit code
 #ifndef SEF_ARG_AND_EXIT_CODE
 #define SEF_ARG_AND_EXIT_CODE 1

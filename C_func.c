@@ -295,6 +295,7 @@ static void allot(forth_state_t* fs) {
     sef_allot(fs, size);
 }
 
+#if SEF_MEMORY_ALLOCATION
 // allocate
 static void allocate(forth_state_t* fs) {
     sef_int_t size = sef_pop_data(fs);
@@ -317,6 +318,7 @@ static void resize(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) new_mem);
     sef_push_data(fs, new_mem == NULL);
 }
+#endif
 
 // @
 static void fetch(forth_state_t* fs) {
@@ -721,9 +723,11 @@ struct c_func_s all_default_c_func[] = {
     {"allot", allot},
     {"cells", cells},
     {"here", here},
+#if SEF_MEMORY_ALLOCATION
     {"allocate", allocate},
     {"free", FREE},
     {"resize", resize},
+#endif
     {"@", fetch},
     {"!", store},
     {"c@", cfetch},
