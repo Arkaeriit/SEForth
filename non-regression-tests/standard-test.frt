@@ -54,7 +54,7 @@
 : TEST.?DUP ." Testing ?dup " 4 5 ?DUP + 10 = is_true DROP 8 0 ?DUP + 8 = is_true CR ;
 : TEST.2OVER ." Testing 2over " 1 2 3 4 2OVER 2 = is_true 1 = is_true 4 = is_true 3 = is_true 2 = is_true 1 = is_true cr ;
 : TEST.2SWAP ." Testing 2swap " 1 2 3 4 2SWAP 2 = is_true 1 = is_true 4 = is_true 3 = is_true cr ;
-: TEST.DEPTH ." Testing depth " DEPTH >r 1 2 3 7 DEPTH r> 4 + = is_true DROP DROP DROP CR ;
+: TEST.DEPTH ." Testing depth " DEPTH >r 1 2 3 7 DEPTH r> 4 + = is_true DROP DROP DROP DROP CR ;
 
 ( BASIC MATH )
 : TEST.+ ." Testing + " -5 5 + is_0 CR ;
