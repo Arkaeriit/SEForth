@@ -147,9 +147,8 @@ static void evaluate(forth_state_t* fs) {
 
 /* ------------------------------ Parsing words ----------------------------- */
 
-static void parse(forth_state_t* fs) {
-    // TODO: test if there is nothing to parse such as in ":\n name". It should
-    // fail gracefully.
+// Same as WORD but give a normal forth string
+static void word(forth_state_t* fs) {
     char delimiter = sef_pop_data(fs);
     char* content = NULL;
     sef_int_t content_size = 0;
@@ -168,6 +167,28 @@ static void parse(forth_state_t* fs) {
             content_size++;
         }
         fs->parse_area_offset++;
+    }
+    sef_push_data(fs, (sef_int_t) content);
+    sef_push_data(fs, content_size);
+}
+
+// Internal function to parse word
+static void parse_word(forth_state_t* fs) {
+    sef_push_data(fs, ' ');
+    word(fs);
+}
+
+static void parse(forth_state_t* fs) {
+    char delimiter = sef_pop_data(fs);
+    char* content = fs->input_buffer + fs->parse_area_offset;
+    sef_int_t content_size = 0;
+    while (fs->parse_area_offset < fs->input_buffer_size) {
+        bool on_delimiter = fs->input_buffer[fs->parse_area_offset] == delimiter;
+        fs->parse_area_offset++;
+        if (on_delimiter) {
+            break;
+        }
+        content_size++;
     }
     debug_msg("Parsed `%.*s` of size %i.\n", (int) content_size, content, (int) content_size);
     sef_push_data(fs, (sef_int_t) content);
@@ -204,7 +225,7 @@ static void new_forth_word(forth_state_t* fs, const char* name, size_t name_len)
 }
 
 static void colon(forth_state_t* fs) {
-    parse_name(fs);
+    parse_word(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     new_forth_word(fs, name, name_len);
@@ -251,7 +272,7 @@ static void exec_create(forth_state_t* fs, void* parameter) {
 }
 
 static void create(forth_state_t* fs) {
-    parse_name(fs);
+    parse_word(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     sef_register_new_word(fs, name, name_len, exec_create);
@@ -515,7 +536,7 @@ static int str_to_num(const char* str, size_t str_len, sef_int_t* num, int base)
 }
 
 static void postpone_compile_time(forth_state_t* fs) {
-    parse_name(fs);
+    parse_word(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
 
@@ -555,6 +576,7 @@ struct c_func_s {
 };
 
 struct c_func_s all_default_parser_c_func[] = {
+    {"(word)", word, false},
     {"parse", parse, false},
     {"parse-name", parse_name, false},
     {"evaluate", evaluate, false},
@@ -635,7 +657,7 @@ static void inter_compil_number(forth_state_t* fs, sef_int_t number) {
 
 // Compile a single word. Does nothing if there is nothing in the input buffer.
 static void inter_compil_step(forth_state_t* fs) {
-    parse_name(fs);
+    parse_word(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
     if (name_len == 0) {
