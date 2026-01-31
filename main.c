@@ -42,8 +42,7 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         parse_a_file(&fs, argv[1]);
     } else {
-        fprintf(stderr, "TODO\n");
-        exit(-1);
+        sef_parse_string(&fs, "(repl)");
     }
 
 #if SEF_ARG_AND_EXIT_CODE

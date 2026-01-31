@@ -35,6 +35,7 @@ typedef struct forth_state_s {
     sef_int_t* code_pointer;
     bool error_encountered;
     bool bye;
+    bool quit;
     // Parser
     sef_int_t input_buffer_size;
     char* input_buffer;

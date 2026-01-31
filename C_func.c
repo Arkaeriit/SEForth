@@ -676,6 +676,11 @@ static void code_pointer(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) &fs->code_pointer);
 }
 
+// Push the address of the bye value
+static void bye(forth_state_t* fs) {
+    sef_push_data(fs, (sef_int_t) &fs->bye);
+}
+
 /* ------------------------ Registering the functions ----------------------- */
 
 struct c_func_s {
@@ -774,6 +779,7 @@ struct c_func_s all_default_c_func[] = {
     {"dictionary", dictionary},
     {"where", where},
     {"code-pointer", code_pointer},
+    {">bye", bye},
 };
 
 // Register all the default C_func

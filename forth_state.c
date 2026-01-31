@@ -26,6 +26,8 @@ static void compile_system_forth_words(forth_state_t* fs) {
     // The pre-processor would corrupt comments definitions
     PARSE_STRING(fs, ": ( [char] ) parse 2drop ; immediate");
     PARSE_STRING(fs, ": \\ 10 parse 2drop ; immediate");
+    extern const char* shell;
+    PARSE_STRING(fs, shell);
 #if SEF_PROGRAMMING_TOOLS
     extern const char* tools_forth_words;
     PARSE_STRING(fs, tools_forth_words);
@@ -72,7 +74,7 @@ void sef_state_init(forth_state_t* fs) {
 
 #define STACK_OPERATIONS(stack_name, stack_size)                                \
 void sef_push_ ## stack_name(forth_state_t* fs, sef_int_t data) {               \
-    if (fs->error_encountered) {                                                \
+    if (fs->quit) {                                                             \
         return;                                                                 \
     }                                                                           \
     fs->stack_name ## _stack[fs->stack_name ## _stack_index++] = data;          \
@@ -80,7 +82,7 @@ void sef_push_ ## stack_name(forth_state_t* fs, sef_int_t data) {               
 }                                                                               \
                                                                                 \
 sef_int_t sef_pop_ ## stack_name(forth_state_t* fs) {                           \
-    if (fs->error_encountered) {                                                \
+    if (fs->quit) {                                                             \
         return 0;                                                               \
     }                                                                           \
     sef_int_t ret = fs->stack_name ## _stack[--fs->stack_name ## _stack_index]; \
@@ -97,6 +99,7 @@ STACK_OPERATIONS(control_flow, SEF_CONTROL_FLOW_STACK_SIZE)
 // Puts the state back in an idle state, with all stacks but the data stack
 // empty and no word being executed.
 void sef_quit(forth_state_t* fs) {
+    fs->quit = true;
     fs->code_pointer = NULL;
     fs->code_stack_index = 0;
     fs->compiling = false;
@@ -143,7 +146,6 @@ static void show_debug(forth_state_t* fs) {
 
 // Trigerred on error. Do as quit but also reset data stack and set error flag.
 void sef_abort(forth_state_t* fs) {
-    //TODO: Maybe I should separate the error case and the normal case...
     show_debug(fs);
     sef_quit(fs);
     fs->data_stack_index = 0;
@@ -156,6 +158,7 @@ void sef_reset(forth_state_t* fs) {
     sef_quit(fs);
     fs->error_encountered = false;
     fs->bye = false;
+    fs->quit = false;
     fs->data_stack_index = 0;
 }
 
