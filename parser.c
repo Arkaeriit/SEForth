@@ -472,14 +472,42 @@ static void endcase(forth_state_t* fs) {
 
 /* -------------------------------- Postpone -------------------------------- */
 
-// Convert a sting to a number. Return true if it worked. As strtol stops at
-// the first non valid char, we can use it even if the string is not
-// null-terminated, as we can expect to have some random non-number data after.
-// TODO: fix cases like "70abcd" being parsed as "70". Maybe feed-in str len.
-static bool str_to_num(const char* str, sef_int_t* num, int base) {
+// Convert a sting to a number. Return 0 if it fails, 1 if a single-cell number
+// was parsed and 2 if a double-cell number was parsed.
+static int str_to_num(const char* str, size_t str_len, sef_int_t* num, int base) {
+    if (!str_len) {
+        return 0;
+    }
+    switch (str[0]) {
+        case '#':
+            base = 10;
+            str++;
+            str_len--;
+            break;
+        case '$':
+            base = 16;
+            str++;
+            str_len--;
+            break;
+        case '%':
+            base = 2;
+            str++;
+            str_len--;
+            break;
+        default:
+            break;
+    }
+
     char* end;
     *num = strtol(str, &end, base);
-    return end != str;
+    size_t converted_size = end - str;
+    if (converted_size == str_len) {
+        return 1;
+    } else if (converted_size == str_len - 1 && end[0] == '.') {
+        return 2;
+    } else {
+        return 0;
+    }
 }
 
 static void postpone_compile_time(forth_state_t* fs) {
@@ -617,8 +645,12 @@ static void inter_compil_step(forth_state_t* fs) {
     }
 
     sef_int_t read_number;
-    if (str_to_num(name, &read_number, fs->base)) {
+    int number_size = str_to_num(name, name_len, &read_number, fs->base);
+    if (number_size) {
         inter_compil_number(fs, read_number);
+        if (number_size == 2) {
+            inter_compil_entry(fs, sef_find_entry(fs, "s>d", 3));
+        }
         return;
     }
 
