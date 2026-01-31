@@ -56,9 +56,10 @@ void sef_pop_input_source(forth_state_t* fs) {
         fs->input_buffer_size = input_source_storage[4];
         fs->source_id = input_source_storage[5];
         // TODO: bool
+        sef_push_data(fs, 0);
     } else {
         // TODO: bool
-        sef_push_data(fs, 0);
+        sef_push_data(fs, 1);
     }
 }
 
@@ -142,6 +143,10 @@ static void evaluate(forth_state_t* fs) {
     }
     sef_push_data(fs, cells_to_save);
     sef_pop_input_source(fs);
+    // Checking pop input flag
+    if (sef_pop_data(fs)) {
+        SEF_ERROR_OUT(fs, "Can't restore input source after evaluate.\n");
+    }
 }
 
 
