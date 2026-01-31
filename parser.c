@@ -114,7 +114,7 @@ static bool forth_string_refill(forth_state_t* fs, void* input_source) {
 }
 
 // The forth string is assumed to be on the stack
-static void set_forth_string_as_input_source(forth_state_t* fs) {
+static void set_forth_string_as_input_source(forth_state_t* fs, sef_int_t source_id) {
     size_t str_len = (size_t) sef_pop_data(fs);
     char* str = (char*) sef_pop_data(fs);
     debug_msg("Evaluating '%.*s'.\n", str_len, str);
@@ -124,11 +124,13 @@ static void set_forth_string_as_input_source(forth_state_t* fs) {
     fs->parse_area_offset = 0;
     fs->input_buffer = NULL;
     fs->input_source_refill = forth_string_refill;
-    fs->source_id = -1;
+    fs->source_id = source_id;
 }
 
+// Like EVALUATE, but takes as top argument the source-id
 static void evaluate(forth_state_t* fs) {
-    set_forth_string_as_input_source(fs);
+    sef_int_t source_id = sef_pop_data(fs);
+    set_forth_string_as_input_source(fs, source_id);
     sef_int_t cells_to_save = sef_pop_data(fs);
     for (int i=0; i<cells_to_save; i++) {
         sef_push_code(fs, sef_pop_data(fs));
@@ -577,7 +579,7 @@ struct c_func_s all_default_parser_c_func[] = {
     {"(word)", word, false},
     {"parse", parse, false},
     {"parse-name", parse_name, false},
-    {"evaluate", evaluate, false},
+    {"(evaluate)", evaluate, false},
 
     {"[", leave_compilation, true},
     {"]", enter_compilation, false},
