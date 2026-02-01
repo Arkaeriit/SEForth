@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
 #if SEF_ARG_AND_EXIT_CODE
     sef_restart(&fs);
-    sef_parse_string(&fs, "exit-code @ dup . cr");
+    sef_parse_string(&fs, "exit-code @");
     return sef_pop_from_data_stack(&fs);
 #else
     return sef_error_encountered(&fs);
