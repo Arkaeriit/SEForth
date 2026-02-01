@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     sef_parse_string(&fs, "exit-code @ dup . cr");
     return sef_pop_from_data_stack(&fs);
 #else
-    return fs.error_encountered;
+    return sef_error_encountered(&fs);
 #endif
 }
 

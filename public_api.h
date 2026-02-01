@@ -10,6 +10,7 @@ void sef_restart(sef_forth_state_t* state);
 bool sef_ready_to_run(sef_forth_state_t* state);
 bool sef_asked_bye(sef_forth_state_t* state);
 bool sef_is_compiling(sef_forth_state_t* state);
+bool sef_error_encountered(sef_forth_state_t* state);
 
 void sef_parse_string(sef_forth_state_t* state, const char* s);
 

@@ -26,9 +26,12 @@ bool sef_is_compiling(sef_forth_state_t* _state) {
     return state->compiling;
 }
 
-// TODO: error flag read and reset. Maybe in the same function ?
-
-// A general TODO for error recovery is probably needed
+bool sef_error_encountered(sef_forth_state_t* _state) {
+    forth_state_t* state = (forth_state_t*) _state;
+    bool ret = state->error_encountered;
+    state->error_encountered = false;
+    return ret;
+}
 
 void sef_parse_string(sef_forth_state_t* _state, const char* s) {
     forth_state_t* state = (forth_state_t*) _state;
