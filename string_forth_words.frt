@@ -7,5 +7,4 @@
         ( c-addrX c-addrY )
         2drop 0
     else 2drop 2drop 1 then ;
-: cmove ( c-addr c-addr u -- ) move ;
 

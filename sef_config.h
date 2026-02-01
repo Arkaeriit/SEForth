@@ -20,7 +20,7 @@
 
 // Enable words related to string manipulation
 #ifndef SEF_STRING
-#define SEF_STRING 0
+#define SEF_STRING 1
 #endif
 
 // Enable programing tools words

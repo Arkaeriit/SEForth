@@ -36,6 +36,10 @@ static void compile_system_forth_words(forth_state_t* fs) {
     extern const char* arg_and_exit_code_forth_words;
     PARSE_STRING(fs, arg_and_exit_code_forth_words);
 #endif
+#if SEF_STRING
+    extern const char* string_forth_words;
+    PARSE_STRING(fs, string_forth_words);
+#endif
 #if SEF_PROGRAMMING_TOOLS && SEF_ARG_AND_EXIT_CODE
     PARSE_STRING(fs, ": (bye) exit-code ! bye ;");
 #endif
