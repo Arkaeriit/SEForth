@@ -55,7 +55,7 @@ SEForth_template.h.o: SEForth_template.h public_api.h sef_config.h
 
 .SECONDARY: SEForth.h
 SEForth.h: SEForth_template.h.o
-	cat $< | sed 's:# .*::; s:£:#:g; s:__::g; s:>>://:' | uniq > $@
+	cat $< | sed 's:# .*::; s:£:#:g; s:___::g; s:>>://:' | uniq > $@
 
 $(TARGET).bin : $(EXEC_OBJS) lib$(TARGET).a
 	$(CC) $(EXEC_OBJS) -L. -l$(TARGET) $(CFLAGS) -o $@
