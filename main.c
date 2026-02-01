@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
     }
 
 #if SEF_ARG_AND_EXIT_CODE
-    // TODO: check that we are not compiling. Maybe calling quit is enough
-    sef_parse_string(&fs, "exit-code @");
+    sef_restart(&fs);
+    sef_parse_string(&fs, "exit-code @ dup . cr");
     return sef_pop_from_data_stack(&fs);
 #else
     return fs.error_encountered;
