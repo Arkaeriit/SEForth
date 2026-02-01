@@ -8,11 +8,6 @@
 
 // Optional features and words. Set to 1 to enable and to 0 to disable
 
-// Enable reading source files
-#ifndef SEF_USE_SOURCE_FILE
-#define SEF_USE_SOURCE_FILE 0
-#endif
-
 // Enable words related to file manipulation
 #ifndef SEF_FILE
 #define SEF_FILE 0
@@ -74,11 +69,6 @@
 // Writing logs to stderr instead of the usual canals
 #ifndef SEF_LOG_OVER_STDERR
 #define SEF_LOG_OVER_STDERR 0
-#endif
-
-// Max number of digits in a number
-#ifndef SEF_MAX_NUMBER_DIGIT
-#define SEF_MAX_NUMBER_DIGIT 64
 #endif
 
 // Performs bound checks on stack to prevent overflows or underflows

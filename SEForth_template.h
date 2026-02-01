@@ -46,9 +46,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Writing logs to stderr instead of the usual canals
 £define __SEF_LOG_OVER_STDERR SEF_LOG_OVER_STDERR 
 
->> Max number of digits in a number
-£define __SEF_MAX_NUMBER_DIGIT SEF_MAX_NUMBER_DIGIT 
-
 >> Performs bound checks on stack to prevent overflows or underflows
 £define __SEF_STACK_BOUND_CHECKS SEF_STACK_BOUND_CHECKS 
 
