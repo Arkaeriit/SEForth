@@ -2,14 +2,14 @@ variable exit-code
 
 ( -------------------- Getting arguments from the host OS -------------------- )
 
-variable argc
-variable argv
-: feed-arguments-from-os ( n addr -- ) argv ! argc ! ;
+0 value argc
+0 value argv
+: feed-arguments-from-os ( n addr -- ) to argv to argc ;
 
 ( --------------------------- Giving I-th argument --------------------------- )
 
 \ Invalid if u > argc @
-: arg ( u -- addr u ) argv ! + dup strlen ;
+: arg ( u -- addr u ) argv swap cells + @ dup strlen ;
 
 ( ------------------- Giving next argument by shifting them ------------------ )
 
