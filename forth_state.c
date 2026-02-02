@@ -50,7 +50,7 @@ void sef_state_init(forth_state_t* fs) {
     fs->here.byte = &fs->forth_memory[0];
     fs->last_dictionary_entry = NULL;
     fs->data_stack_index = 0;
-    fs->code_stack_index = 0;
+    fs->return_stack_index = 0;
     fs->control_flow_stack_index = 0;
     fs->compiling = false;
     fs->base = 10;
@@ -95,7 +95,7 @@ sef_int_t sef_pop_ ## stack_name(forth_state_t* fs) {                           
 }                                                                                
 
 STACK_OPERATIONS(data, SEF_DATA_STACK_SIZE)
-STACK_OPERATIONS(code, SEF_CODE_STACK_SIZE)
+STACK_OPERATIONS(return, SEF_RETURN_STACK_SIZE)
 STACK_OPERATIONS(control_flow, SEF_CONTROL_FLOW_STACK_SIZE)
 
 /* ---------------------------- Taking down state --------------------------- */
@@ -105,7 +105,7 @@ STACK_OPERATIONS(control_flow, SEF_CONTROL_FLOW_STACK_SIZE)
 void sef_quit(forth_state_t* fs) {
     fs->quit = true;
     fs->code_pointer = NULL;
-    fs->code_stack_index = 0;
+    fs->return_stack_index = 0;
     fs->compiling = false;
     reset_parser(fs);
 }
@@ -124,8 +124,8 @@ static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_po
 static void show_debug(forth_state_t* fs) {
     sef_print_string("Stack trace:\n");
     stack_trace_print_word(fs, fs->code_pointer);
-    for (sef_int_t i=fs->code_stack_index-1; i>=1; i--) {
-        stack_trace_print_word(fs, (dictionary_entry_t) fs->code_stack[i]);
+    for (sef_int_t i=fs->return_stack_index-1; i>=1; i--) {
+        stack_trace_print_word(fs, (dictionary_entry_t) fs->return_stack[i]);
     }
     char* pad = (char*) fs->pad;
     pad[SEF_PAD_SIZE-1] = 0;
@@ -188,7 +188,7 @@ void sef_run(forth_state_t* fs) {
 }
 
 void sef_exit(forth_state_t* fs) {
-    fs->code_pointer = (sef_int_t*) sef_pop_code(fs);
+    fs->code_pointer = (sef_int_t*) sef_pop_return(fs);
 }
 
 #if SEF_CATCH_SEGFAULTS
@@ -205,7 +205,7 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
     // TODO: consider the proposition about this in the design choices document.
     if (word_tags & WTM_DOES_EXECUTION) {
         sef_int_t* new_code_pointer = (sef_int_t*) wef;
-        sef_push_code(fs, (sef_int_t) fs->code_pointer);
+        sef_push_return(fs, (sef_int_t) fs->code_pointer);
         sef_push_data(fs, (sef_int_t) parameters);
         if (fs->code_pointer != NULL) {
             fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.

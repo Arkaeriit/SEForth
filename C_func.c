@@ -62,14 +62,14 @@ static void drop(forth_state_t* fs) {
 
 // r>
 static void r_from(forth_state_t* fs) {
-    sef_int_t data = sef_pop_code(fs);
+    sef_int_t data = sef_pop_return(fs);
     sef_push_data(fs, data);
 }
 
 // >r
 static void to_r(forth_state_t* fs) {
     sef_int_t w = sef_pop_data(fs);
-    sef_push_code(fs, w);
+    sef_push_return(fs, w);
 }
 
 // roll
@@ -593,7 +593,7 @@ static bool environment_reply(const char* query, size_t size, sef_int_t ret[stat
         ret[1] = 0;
         *number_of_returned_values = 2;
     } else if (!strncmp(query, "RETURN-STACK-CELLS", size)) {
-        *ret = SEF_CODE_STACK_SIZE;
+        *ret = SEF_RETURN_STACK_SIZE;
     } else if (!strncmp(query, "STACK-CELLS", size)) {
         *ret = SEF_DATA_STACK_SIZE;
     } else {

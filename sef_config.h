@@ -39,8 +39,8 @@
 #endif
 
 // Depth of the memory blocks
-#ifndef SEF_CODE_STACK_SIZE
-#define SEF_CODE_STACK_SIZE 1000
+#ifndef SEF_RETURN_STACK_SIZE
+#define SEF_RETURN_STACK_SIZE 1000
 #endif
 #ifndef SEF_DATA_STACK_SIZE
 #define SEF_DATA_STACK_SIZE 1000

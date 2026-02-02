@@ -3,7 +3,7 @@
 
 static void exec_forth_word(forth_state_t* fs, void* parameter) {
     sef_int_t* first_sub_word = (sef_int_t*) parameter;
-    sef_push_code(fs, (sef_int_t) fs->code_pointer);
+    sef_push_return(fs, (sef_int_t) fs->code_pointer);
     if (fs->code_pointer == NULL) {
         fs->code_pointer = first_sub_word; // Executing from the interpreting/compiling state, we want to start executing the given word.
     } else {
@@ -133,14 +133,14 @@ static void evaluate(forth_state_t* fs) {
     set_forth_string_as_input_source(fs, source_id);
     sef_int_t cells_to_save = sef_pop_data(fs);
     for (int i=0; i<cells_to_save; i++) {
-        sef_push_code(fs, sef_pop_data(fs));
+        sef_push_return(fs, sef_pop_data(fs));
     }
-    sef_push_code(fs, (sef_int_t) fs->code_pointer);
+    sef_push_return(fs, (sef_int_t) fs->code_pointer);
     fs->code_pointer = NULL;
     sef_inter_compil_run(fs);
-    fs->code_pointer = (dictionary_entry_t) sef_pop_code(fs);
+    fs->code_pointer = (dictionary_entry_t) sef_pop_return(fs);
     for (int i=0; i<cells_to_save; i++) {
-        sef_push_data(fs, sef_pop_code(fs));
+        sef_push_data(fs, sef_pop_return(fs));
     }
     sef_push_data(fs, cells_to_save);
     sef_pop_input_source(fs);
@@ -359,9 +359,9 @@ static void question_do_run_time(forth_state_t* fs) {
         return;
     }
     // Otherwise, we prepare the loop-sys
-    sef_push_code(fs, end_of_loop_pointer);
-    sef_push_code(fs, end_value);
-    sef_push_code(fs, loop_counter);
+    sef_push_return(fs, end_of_loop_pointer);
+    sef_push_return(fs, end_value);
+    sef_push_return(fs, loop_counter);
 }
 
 static void do_compile_time(forth_state_t* fs) {
@@ -374,9 +374,9 @@ static void do_run_time(forth_state_t* fs) {
     sef_int_t end_of_loop_pointer = sef_pop_data(fs);
     sef_int_t loop_counter = sef_pop_data(fs);
     sef_int_t end_value = sef_pop_data(fs);
-    sef_push_code(fs, end_of_loop_pointer);
-    sef_push_code(fs, end_value);
-    sef_push_code(fs, loop_counter);
+    sef_push_return(fs, end_of_loop_pointer);
+    sef_push_return(fs, end_value);
+    sef_push_return(fs, loop_counter);
 }
 
 static void any_loop_compile_time(forth_state_t* fs) {
@@ -400,8 +400,8 @@ static void loop_compile_time(forth_state_t* fs) {
 static void plus_loop_run_time(forth_state_t* fs) {
     sef_int_t question_do_address = sef_pop_data(fs);
     sef_int_t increment = sef_pop_data(fs);
-    sef_int_t old_loop_counter = sef_pop_code(fs);
-    sef_int_t end_value = sef_pop_code(fs);
+    sef_int_t old_loop_counter = sef_pop_return(fs);
+    sef_int_t end_value = sef_pop_return(fs);
     sef_int_t updated_loop_counter = old_loop_counter + increment;
 
     sef_int_t min_int = ((sef_unsigned_t) ~0 >> 1) + 1;
@@ -410,10 +410,10 @@ static void plus_loop_run_time(forth_state_t* fs) {
     bool overflowed = increment > 0 && check_sign_after < check_sign_before;
     bool underflowed = increment < 0 && check_sign_after > check_sign_before;
     if (overflowed || underflowed) {
-        sef_pop_code(fs); // End of loop address
+        sef_pop_return(fs); // End of loop address
     } else {
-        sef_push_code(fs, end_value);
-        sef_push_code(fs, updated_loop_counter);
+        sef_push_return(fs, end_value);
+        sef_push_return(fs, updated_loop_counter);
         fs->code_pointer = (dictionary_entry_t) question_do_address;
     }
 }
@@ -421,22 +421,22 @@ static void plus_loop_run_time(forth_state_t* fs) {
 // (loop) takes as argument ( begining-of-the-loop-pointer )
 static void loop_run_time(forth_state_t* fs) {
     sef_int_t question_do_address = sef_pop_data(fs);
-    sef_int_t loop_counter = sef_pop_code(fs);
-    sef_int_t end_value = sef_pop_code(fs);
+    sef_int_t loop_counter = sef_pop_return(fs);
+    sef_int_t end_value = sef_pop_return(fs);
     loop_counter++;
     if (loop_counter == end_value) {
-        sef_pop_code(fs); // End of loop address
+        sef_pop_return(fs); // End of loop address
     } else {
-        sef_push_code(fs, end_value);
-        sef_push_code(fs, loop_counter);
+        sef_push_return(fs, end_value);
+        sef_push_return(fs, loop_counter);
         fs->code_pointer = (dictionary_entry_t) question_do_address;
     }
 }
 
 static void leave(forth_state_t* fs) {
-    sef_pop_code(fs);
-    sef_pop_code(fs);
-    dictionary_entry_t end_off_loop = (dictionary_entry_t) sef_pop_code(fs);
+    sef_pop_return(fs);
+    sef_pop_return(fs);
+    dictionary_entry_t end_off_loop = (dictionary_entry_t) sef_pop_return(fs);
     fs->code_pointer = end_off_loop;
 }
 

@@ -18,7 +18,7 @@ typedef struct forth_state_s {
     uint8_t forth_memory[SEF_FORTH_MEMORY_SIZE];
     uint8_t pad[SEF_PAD_SIZE];
     sef_int_t data_stack[SEF_DATA_STACK_SIZE];
-    sef_int_t code_stack[SEF_CODE_STACK_SIZE];
+    sef_int_t return_stack[SEF_RETURN_STACK_SIZE];
     sef_int_t control_flow_stack[SEF_CONTROL_FLOW_STACK_SIZE];
     // Memory pointer and indexes
     union {
@@ -27,7 +27,7 @@ typedef struct forth_state_s {
     } here;
     dictionary_entry_t last_dictionary_entry;
     sef_int_t data_stack_index;
-    sef_int_t code_stack_index;
+    sef_int_t return_stack_index;
     sef_int_t control_flow_stack_index;
     // Internal variables
     bool compiling;
@@ -49,10 +49,10 @@ typedef struct forth_state_s {
 void sef_state_init(forth_state_t* fs);
 
 void sef_push_data(forth_state_t* fs, sef_int_t data);
-void sef_push_code(forth_state_t* fs, sef_int_t data);
+void sef_push_return(forth_state_t* fs, sef_int_t data);
 void sef_push_control_flow(forth_state_t* fs, sef_int_t data);
 sef_int_t sef_pop_data(forth_state_t* fs);
-sef_int_t sef_pop_code(forth_state_t* fs);
+sef_int_t sef_pop_return(forth_state_t* fs);
 sef_int_t sef_pop_control_flow(forth_state_t* fs);
 
 void sef_run(forth_state_t* fs);

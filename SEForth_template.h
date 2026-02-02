@@ -30,7 +30,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 £define ___SEF_ABORT_STOP_FORTH SEF_ABORT_STOP_FORTH
 
 >> Depth of the memory blocks
-£define ___SEF_CODE_STACK_SIZE SEF_CODE_STACK_SIZE
+£define ___SEF_RETURN_STACK_SIZE SEF_RETURN_STACK_SIZE
 £define ___SEF_DATA_STACK_SIZE SEF_DATA_STACK_SIZE
 £define ___SEF_CONTROL_FLOW_STACK_SIZE SEF_CONTROL_FLOW_STACK_SIZE
 £define ___SEF_FORTH_MEMORY_SIZE SEF_FORTH_MEMORY_SIZE
@@ -57,7 +57,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 £define ___SEF_CATCH_SEGFAULTS SEF_CATCH_SEGFAULTS
 
 >> Size of the forth state
-£define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_CODE_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
+£define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_RETURN_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
 
 #include "public_api.h"
 
