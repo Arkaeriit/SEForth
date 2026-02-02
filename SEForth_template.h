@@ -12,7 +12,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Optional features and words. Set to 1 to enable and to 0 to disable
 
 >> Enable words related to file manipulation
-£define ___SEF_FILE SEF_FILE
+£define ___SEF_FILE_ACCESS SEF_FILE_ACCESS
 
 >> Enable words related to string manipulation
 £define ___SEF_STRING SEF_STRING

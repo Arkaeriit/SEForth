@@ -359,7 +359,7 @@ static void str_len(forth_state_t* fs) {
     sef_push_data(fs, (sef_int_t) strlen(str));
 }
 
-#if SEF_FILE
+#if SEF_FILE_ACCESS
 // File manipulation
 
 enum file_modes {
@@ -739,7 +739,7 @@ struct c_func_s all_default_c_func[] = {
     {"c!", cstore},
     {"unused", unused},
     {"strlen", str_len},
-#if SEF_FILE
+#if SEF_FILE_ACCESS
     // File manipulation
     // TODO: test and document
     {"r/o", ro},

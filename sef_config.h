@@ -9,8 +9,8 @@
 // Optional features and words. Set to 1 to enable and to 0 to disable
 
 // Enable words related to file manipulation
-#ifndef SEF_FILE
-#define SEF_FILE 0
+#ifndef SEF_FILE_ACCESS
+#define SEF_FILE_ACCESS 0
 #endif
 
 // Enable words related to string manipulation
