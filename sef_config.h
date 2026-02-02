@@ -70,7 +70,7 @@
 // prompt as the standard suggests. If set to 1, those words will stop the Forth
 // system, which is more convenient to run programs.
 #ifndef SEF_ABORT_STOP_FORTH
-#define SEF_ABORT_STOP_FORTH 1
+#define SEF_ABORT_STOP_FORTH 0
 #endif
 
 // If set to 1, all dictionary searches will be case-insensitive. If set to 0,
