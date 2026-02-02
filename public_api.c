@@ -13,7 +13,7 @@ void sef_restart(sef_forth_state_t* _state) {
 
 bool sef_ready_to_run(sef_forth_state_t* _state) {
     forth_state_t* state = (forth_state_t*) _state;
-    return !state->bye && !state->error_encountered;
+    return !state->bye && (!state->error_encountered || SEF_ABORT_STOP_FORTH);
 }
 
 bool sef_asked_bye(sef_forth_state_t* _state) {
