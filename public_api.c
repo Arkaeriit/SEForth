@@ -65,9 +65,9 @@ sef_int_t sef_pop_from_data_stack(sef_forth_state_t* _state) {
     return sef_pop_data(state);
 }
 
-void sef_register_c_word(sef_forth_state_t* _state, const char* name, sef_c_word func, bool is_imediate) {
+void sef_register_c_word(sef_forth_state_t* _state, const char* name, sef_c_word func, bool is_immediate) {
     forth_state_t* state = (forth_state_t*) _state;
-    sef_register_cfunc(state, name, (void (*)(forth_state_t*)) func, is_imediate);
+    sef_register_cfunc(state, name, (void (*)(forth_state_t*)) func, is_immediate);
 }
 
 #if SEF_ARG_AND_EXIT_CODE

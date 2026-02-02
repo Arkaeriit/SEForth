@@ -51,7 +51,7 @@ $(C_OBJS) $(EXEC_OBJS) : SEForth.h
 	echo ';' >> $@
 
 SEForth_template.h.o: SEForth_template.h public_api.h sef_config.h
-	gcc -o $@ -E $< $(CFLAGS)
+	gcc -o $@ -E $< $(CFLAGS) -Wno-everything -w
 
 .SECONDARY: SEForth.h
 SEForth.h: SEForth_template.h.o
