@@ -41,7 +41,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 
 >> Log messages
 >> 0 = no logs; 1 = errors; 2 = errors and warnings; 3 = errors, warning, and debug
-£define ___SEF_LOG SEF_LOG
+£define ___SEF_LOG_LEVEL SEF_LOG_LEVEL
 
 >> Writing logs to stderr instead of the usual canals
 £define ___SEF_LOG_OVER_STDERR SEF_LOG_OVER_STDERR

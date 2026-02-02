@@ -62,8 +62,8 @@
 
 // Log messages
 // 0 = no logs; 1 = errors; 2 = errors and warnings; 3 = errors, warning, and debug
-#ifndef SEF_LOG
-#define SEF_LOG 2
+#ifndef SEF_LOG_LEVEL
+#define SEF_LOG_LEVEL 2
 #endif
 
 // Writing logs to stderr instead of the usual canals

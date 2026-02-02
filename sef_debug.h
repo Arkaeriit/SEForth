@@ -22,19 +22,19 @@ static void __attribute__((unused)) sef_log_error_msg(int ANSI_color, const char
 #endif
 }
 
-#if SEF_LOG > 0
+#if SEF_LOG_LEVEL > 0
 #define error_msg(msg, ...) sef_log_error_msg(31, "[ERROR]", msg, ##__VA_ARGS__);
 #else
 #define error_msg(msg, ...)
 #endif
 
-#if SEF_LOG > 1
+#if SEF_LOG_LEVEL > 1
 #define warn_msg(msg, ...) sef_log_error_msg(33, "[WARNING]", msg, ##__VA_ARGS__);
 #else
 #define warn_msg(msg, ...)
 #endif
 
-#if SEF_LOG > 2
+#if SEF_LOG_LEVEL > 2
 #define debug_msg(msg, ...) sef_log_error_msg(36, "[DEBUG]", msg, ##__VA_ARGS__);
 #else
 #define debug_msg(msg, ...)
