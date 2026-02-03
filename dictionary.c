@@ -67,40 +67,38 @@ static void warn_if_exists(forth_state_t* fs, const char* name, size_t name_len)
     }
 }
 
-// TODO: To ensure memory safety, I should probably move the allocation before
-// the memory use, and return if an error was detected. But Forth and memory
-// safety...
-// TODO: maybe warning in case of word redefinition.
+#define ALLOT_AND_LEAVE_IF_ERROR(fs, size)                              \
+    if (fs->here.byte - &fs->forth_memory[0] > SEF_FORTH_MEMORY_SIZE) { \
+        return;                                                         \
+    }                                                                   \
+    sef_allot(fs, size)                                                  
+
+
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
     warn_if_exists(fs, name, name_len);
 
     dictionary_entry_t new_entry = fs->here.cell;
     *(sef_get_entry_magic(new_entry)) = DICTIONARY_MAGIC;
-    sef_allot_cell(fs);
+    ALLOT_AND_LEAVE_IF_ERROR(fs, sizeof(sef_int_t) * 5 + sef_size_needed_to_store_string(name_len));
     // Storing pointer to previous entry
     *(sef_get_previous_entry(new_entry)) = fs->last_dictionary_entry;
     fs->last_dictionary_entry = new_entry;
-    sef_allot_cell(fs);
     // Storing name size
     dictionary_entry_t name_len_field = sef_get_entry_name_len(new_entry);
     *name_len_field = name_len;
-    sef_allot_cell(fs);
     // Storing name
     char* name_field = sef_get_entry_name(new_entry);
     memcpy(name_field, name, name_len);
     name_field[name_len] = 0;
-    sef_allot(fs, sef_size_needed_to_store_string(name_len));
     if (SEF_CASE_INSENSITIVE) {
         to_lower(name_field);
     }
     // Storing tags. For now the only one we can be sure of if the sytem word tag.
     sef_int_t* word_tags_field = sef_get_word_tag_field(new_entry);
     *word_tags_field = fs->compiling_system_words ? WTM_SYSTEM_WORD : 0;
-    sef_allot_cell(fs);
     // Storing wef
-    word_executing_function* wef_field = (word_executing_function*) fs->here.cell;
+    word_executing_function* wef_field = sef_get_word_executing_function(new_entry);
     *wef_field = wef;
-    sef_allot_cell(fs);
 }
 
 /* ----------------------------- Reading entries ---------------------------- */
