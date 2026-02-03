@@ -117,7 +117,7 @@ This function must be called on the Forth state before using it.
 
 ### Executing Forth code
 
-* `void sef_parse_string(sef_forth_state_t* state, const char* s);`  
+* `void sef_eval_string(sef_forth_state_t* state, const char* s);`  
 Parse and execute the null-terminated string of Forth code `s`.
 
 ### Manipulating the state
@@ -181,7 +181,7 @@ int main(void) {
     static sef_forth_state_t state;
     sef_init(&state);
     sef_register_c_word(&state, "triple", triple, false);
-    sef_parse_string(&state, "5 triple . cr"); // This will print "15"
+    sef_eval_string(&state, "5 triple . cr"); // This will print "15"
     return 0;
 }
 ```
@@ -202,7 +202,7 @@ void sef_output(char c) {
 int main(void) {
     sef_forth_state_t* state = malloc(sizeof(sef_forth_state_t));
     sef_init(state);
-    sef_parse_string(state, ".( hello )"); // This will print "68 65 6c 6c 6f 20 "
+    sef_eval_string(state, ".( hello )"); // This will print "68 65 6c 6c 6f 20 "
     free(state);
     return 0;
 }

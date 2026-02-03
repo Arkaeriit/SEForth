@@ -34,13 +34,13 @@ int sef_exit_code(sef_forth_state_t* _state) {
     }
     bool is_compiling = sef_is_compiling(_state);
     if (is_compiling) {
-        sef_parse_string(_state, "[");
+        sef_eval_string(_state, "[");
     }
-    sef_parse_string(_state, "exit-code @");
+    sef_eval_string(_state, "exit-code @");
     int ret = sef_pop_from_data_stack(_state);
-    sef_parse_string(_state, " 0 exit-code !");
+    sef_eval_string(_state, " 0 exit-code !");
     if (is_compiling) {
-        sef_parse_string(_state, "]");
+        sef_eval_string(_state, "]");
     }
 #else
     int ret = state->error_encountered ? -1 : 0;
@@ -49,7 +49,7 @@ int sef_exit_code(sef_forth_state_t* _state) {
     return ret;
 }
 
-void sef_parse_string(sef_forth_state_t* _state, const char* s) {
+void sef_eval_string(sef_forth_state_t* _state, const char* s) {
     forth_state_t* state = (forth_state_t*) _state;
     sef_set_c_string_as_input_source(state, s);
     sef_inter_compil_run(state);
@@ -80,7 +80,7 @@ void sef_feed_arguments(sef_forth_state_t* _state, int argc, char** argv) {
 
     sef_push_data(state, (sef_int_t) argc);
     sef_push_data(state, (sef_int_t) argv);
-    sef_parse_string(_state, "feed-arguments-from-os");
+    sef_eval_string(_state, "feed-arguments-from-os");
 }
 
 #endif

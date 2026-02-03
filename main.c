@@ -24,7 +24,7 @@ static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
 
     fread(content, 1, file_size, f);
     content[file_size] = 0;
-    sef_parse_string(fs, content);
+    sef_eval_string(fs, content);
     free(content);
     fclose(f);
 }
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         parse_a_file(&fs, argv[1]);
     } else {
-        sef_parse_string(&fs, "(repl)");
+        sef_eval_string(&fs, "(repl)");
     }
 
     return sef_exit_code(&fs);

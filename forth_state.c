@@ -17,7 +17,7 @@ static void reset_parser(forth_state_t* fs) {
     fs->source_id = 0;
 }
 
-#define PARSE_STRING(fs, str) sef_parse_string((sef_forth_state_t*) (fs), (str))
+#define PARSE_STRING(fs, str) sef_eval_string((sef_forth_state_t*) (fs), (str))
 
 static void compile_system_forth_words(forth_state_t* fs) {
     (void) fs;

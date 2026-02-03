@@ -15,7 +15,7 @@ void sef_init(sef_forth_state_t* state);
 >> -------------------------- Executing Forth code -------------------------- >>
 
 >> Parse and execute the null-terminated string of Forth code `s`.
-void sef_parse_string(sef_forth_state_t* state, const char* s);
+void sef_eval_string(sef_forth_state_t* state, const char* s);
 
 >> ------------------------- Manipulating the state ------------------------- >>
 
