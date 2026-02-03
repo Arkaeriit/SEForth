@@ -67,15 +67,6 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry);
     sef_abort(fs)                        
 
 typedef enum {
-    STATE_IDLE,
-    STATE_COMPILING,
-    STATE_INTERPRETING,
-    STATE_EXECUTING,
-} possible_states_t;
-
-possible_states_t sef_get_current_state(forth_state_t* fs);
-
-typedef enum {
     WTM_IMMEDIATE      = 1 << 0,
     WTM_DOES_EXECUTION = 1 << 1,
     WTM_SYSTEM_WORD    = 1 << 2,

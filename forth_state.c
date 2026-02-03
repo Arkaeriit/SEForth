@@ -254,17 +254,6 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
 }
 #endif
 
-// TODO: Do I realy need that?
-possible_states_t sef_get_current_state(forth_state_t* fs) {
-    if (fs->compiling) {
-        return STATE_COMPILING;
-    } else if (fs->code_pointer != NULL) {
-        return STATE_EXECUTING;
-    } else {
-        return STATE_INTERPRETING;
-    }
-}
-
 /* ------------------------- Forth memory management ------------------------ */
 
 // Request some bytes from the forth memory and align the index
