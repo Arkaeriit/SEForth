@@ -89,7 +89,7 @@
 // messages will be outputted; as this is **extremely** verbose and noisy, it's
 // only suitable to debug the SEForth interpreter itself.
 #ifndef SEF_LOG_LEVEL
-#define SEF_LOG_LEVEL 2
+#define SEF_LOG_LEVEL 1
 #endif
 
 // If set to 1, the logs controlled by `SEF_LOG_LEVEL` will be printed to

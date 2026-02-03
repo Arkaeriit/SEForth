@@ -55,11 +55,25 @@ static size_t sef_size_needed_to_store_string(size_t string_len) {
 
 /* --------------------------- Writing new entries -------------------------- */
 
+static void warn_if_exists(forth_state_t* fs, const char* name, size_t name_len) {
+    if (SEF_LOG_LEVEL < 2) {
+        return;
+    }
+    if (fs->compiling_system_words) {
+        return; // If a system word redifines an other system word, it's fine.
+    }
+    if (sef_find_entry(fs, name, name_len) != NULL) {
+        warn_msg("%.*s redifined.\n", (int) name_len, name);
+    }
+}
+
 // TODO: To ensure memory safety, I should probably move the allocation before
 // the memory use, and return if an error was detected. But Forth and memory
 // safety...
 // TODO: maybe warning in case of word redefinition.
 void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
+    warn_if_exists(fs, name, name_len);
+
     dictionary_entry_t new_entry = fs->here.cell;
     *(sef_get_entry_magic(new_entry)) = DICTIONARY_MAGIC;
     sef_allot_cell(fs);
