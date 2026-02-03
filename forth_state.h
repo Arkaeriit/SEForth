@@ -70,7 +70,12 @@ typedef enum {
     WTM_IMMEDIATE      = 1 << 0,
     WTM_DOES_EXECUTION = 1 << 1,
     WTM_SYSTEM_WORD    = 1 << 2,
+    WTM_C_WORD         = 1 << 3,
+    WTM_FORTH_WORD     = 1 << 4,
+    WTM_CREATE         = 1 << 5,
 } word_tag_mask;
+
+#define WORD_KIND (WTM_C_WORD | WTM_FORTH_WORD | WTM_CREATE | WTM_DOES_EXECUTION)
 
 void sef_allot(forth_state_t* fs, size_t byte_requested);
 static inline void sef_allot_cell(forth_state_t* fs) {

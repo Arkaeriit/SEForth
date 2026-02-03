@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "string.h"
 
-static void exec_forth_word(forth_state_t* fs, void* parameter) {
+void sef_exec_forth_word(forth_state_t* fs, void* parameter) {
     sef_int_t* first_sub_word = (sef_int_t*) parameter;
     sef_push_return(fs, (sef_int_t) fs->code_pointer);
     if (fs->code_pointer == NULL) {
@@ -221,7 +221,12 @@ static void leave_compilation(forth_state_t* fs) {
 static void new_forth_word(forth_state_t* fs, const char* name, size_t name_len) {
     sef_push_data(fs, COLON_SYS_MAGIC);
     enter_compilation(fs);
-    sef_register_new_word(fs, name, name_len, exec_forth_word);
+    sef_register_new_word(fs, name, name_len, WTM_FORTH_WORD);
+    if (sef_get_entry_parameter(fs->last_dictionary_entry) != fs->here.cell) {
+        SEF_ERROR_OUT(fs, "Memory error, %p should be %p.\n",
+                      sef_get_entry_parameter(fs->last_dictionary_entry),
+                      fs->here.cell);
+    }
 }
 
 static void colon(forth_state_t* fs) {
@@ -259,15 +264,16 @@ static void immediate(forth_state_t* fs) {
 
 static void does(forth_state_t* fs) {
     sef_int_t* tag_field = sef_get_word_tag_field(fs->last_dictionary_entry);
+    *tag_field &= ~WORD_KIND;
     *tag_field |= WTM_DOES_EXECUTION;
-    sef_int_t* wef_field = tag_field + 1; // I have to change this as well as the dictionary if I ever change entry layout
-    *wef_field = (sef_int_t) (fs->code_pointer);
+    sef_int_t* special_parameters = sef_get_entry_special_parameters(fs->last_dictionary_entry);
+    *special_parameters = (sef_int_t) (fs->code_pointer);
     sef_exit(fs); // We don't want to execute what is made for the other word.
 }
 
 /* --------------------------------- Create --------------------------------- */
 
-static void exec_create(forth_state_t* fs, void* parameter) {
+void sef_exec_create(forth_state_t* fs, void* parameter) {
     sef_push_data(fs, (sef_int_t) parameter);
 }
 
@@ -275,7 +281,7 @@ static void create(forth_state_t* fs) {
     parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
-    sef_register_new_word(fs, name, name_len, exec_create);
+    sef_register_new_word(fs, name, name_len, WTM_CREATE);
 }
 
 /* --------------------------- Control-flow words --------------------------- */

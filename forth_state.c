@@ -200,20 +200,29 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
     debug_msg("Calling %s\n", sef_get_entry_name(entry));
     sef_int_t word_tags = *(sef_get_word_tag_field(entry));
     void* parameters = sef_get_entry_parameter(entry);
-    word_executing_function wef = *(sef_get_word_executing_function(entry));
 
-    // TODO: consider the proposition about this in the design choices document.
-    if (word_tags & WTM_DOES_EXECUTION) {
-        sef_int_t* new_code_pointer = (sef_int_t*) wef;
-        sef_push_return(fs, (sef_int_t) fs->code_pointer);
-        sef_push_data(fs, (sef_int_t) parameters);
-        if (fs->code_pointer != NULL) {
-            fs->code_pointer = new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
-        } else {
-            fs->code_pointer = new_code_pointer + 1;
-        }
-    } else {
-        wef(fs, parameters);
+    switch (word_tags & WORD_KIND) {
+        case WTM_DOES_EXECUTION:
+            sef_int_t* new_code_pointer = sef_get_entry_special_parameters(entry);
+            sef_push_return(fs, (sef_int_t) fs->code_pointer);
+            sef_push_data(fs, (sef_int_t) (parameters));
+            if (fs->code_pointer != NULL) {
+                fs->code_pointer = (dictionary_entry_t) *new_code_pointer; // Currently pointing to `DOES>`, but will be shifted to what we cant to execute by the run word function.
+            } else {
+                fs->code_pointer = (dictionary_entry_t) (*new_code_pointer) + 1;
+            }
+            break;
+        case WTM_CREATE:
+            sef_exec_create(fs, parameters);
+            break;
+        case WTM_C_WORD:
+            sef_exec_cfunc(fs, parameters);
+            break;
+        case WTM_FORTH_WORD:
+            sef_exec_forth_word(fs, parameters);
+            break;
+        default:
+            SEF_ERROR_OUT(fs, "Invalid word kind %X.", (int) word_tags & WORD_KIND);
     }
 }
 

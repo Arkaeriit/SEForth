@@ -8,5 +8,8 @@ void sef_register_cfunc(forth_state_t* fs, const char* name, void (*func)(forth_
 // Register run-time system words defined in C.
 void sef_register_default_cfunc(forth_state_t* fs);
 
+// Execute a C function
+void sef_exec_cfunc(forth_state_t* fs, void* parameters);
+
 #endif
 

@@ -61,7 +61,7 @@ The entries in the dictionary will be made of:
 - content of the name (null terminated to make it easier to process in C)
 - Padding if needed to align next entry to `sef_word_t`
 - Word tags
-- Word execution function
+- special parameters (only used for DOES> words)
 - parameters
 
 The name is written as a NULL terminated string in the dictionary, but it could have come from outside not NULL terminated. The NULL termination is handled inside of the dictionary entry writing. Similarly, if the forth should be case-insensitive, the name will be processed during writing to be uppercase.
@@ -70,10 +70,12 @@ The need for NULL-terminated name means that NULL bytes are invalid in names, bu
 
 The word tags is a bitfield with the following entries:
 1. Immediate word: set to 1 if the word should be run at compile time.
-2. Special execution: if set to 0, the word is executed by calling its word execution function, this is the normal case. If set to 1, it means that the word has a special meaning given by `DOES>`. The word execution function will be replaced by an address to the list of subwords from another word in the dictionary. To execute the current word, we must push the code pointer (as in a word call) and replace it with the address at the place of the word executing function. To ensure execution of the desired word, `DOES>` will set its own address as the word executing function replacement, and the execution will set the code pointer to it. Then, the execution will slide it to the word we want to execute (right after the `DOES>`).
+2. Special execution: if set to 1, the word's effect have been chosen with `DOES>` and to execute it, we must get the code from the special parameters and the data from the parameters.
 3. System word: if set to 1, it means that this is a system word, that can't be removed by `FORGET` and that should use a case-insensitive matching function.
+4. C words: The word's execution will be made by calling the function stored in the parameters.
+5. Forth word: The word's execution will be to move the code pointer to the parameters.
+6. Create: The word's execution will be to push it's parameters on the stack.
 
-I could probably get rid of the word executing function as a c function and replace it with a Forth one. This would remove the special treatment for `DOES>`-using words. I currently only have WEF for C words, forth words, and strings. Strings could probably be managed with a `CREATE` and a `DOES>`, Especially considering I don't need it to start bootstrapping core words. Forth word would reuse the execution code of `DOES>` words. For C words, I'll have to get hacky. Maybe create a dummy static entry somewhere in ROM which will be the first entry... This would make the word execution more streamlined, but the state init a bit more hacky. It would also probably be closer to the standard's spirit. I think I'll probably test it at some point and do some performance monitoring to see if its worth it.
 
 ## Types of entries
 
@@ -81,7 +83,7 @@ I could probably get rid of the word executing function as a c function and repl
 
 Number literal will be stored on the sub word list as a special `(LITERAL)` word followed by the raw value of the number literal on the next cell. `(LITERAL)` will perform the reading from the sub-word list.
 
-During interpretation, string-literal will be stored in the dictionary, with the word executing function fetching the content from the parameters and putting it on the state's stack. This is the best way to ensure that we give to the forth state an owned copy of the string. During compilation, they will be appended to the current definition after a `(string)` word that behaves similarly to `(LITERAL)`. Registering a string inside of `[ ... ]` would corrupt the current definition.
+During interpretation, string-literal will be pointed from the input buffer as a transient region. This means that the string won't be owned by the Forth state as it can change if new words are defined. During compilation, they will be appended to the current definition after a `(string)` word that behaves similarly to `(LITERAL)`. Registering a string inside of `[ ... ]` would corrupt the current definition.
 
 Counted strings could probably be managed with `CREATE` in interpreted mode and like normal strings, in some way, in compiling mode.
 
@@ -89,12 +91,7 @@ Counted strings could probably be managed with `CREATE` in interpreted mode and 
 
 ### C words
 
-C words will be in the form `void fnc(sef_forth_state_t* fs);`. They will either be only run time or only compile time. The word executing function will check if the context is right for execution (compile or run time) and call the function in the entry's parameter if it is. If I need a word with effect at both compile and run time, I will have two words for compile and run time effect. They will either have separate names and or there will be a cache and some word shadowing.
-
-It's still the same word executing function in both cases. The parameters to the dictionary entry will be as follow:
-- word-tag
-- function pointer
-See the Forth word for the word-tag definition.
+C words will be in the form `void fnc(sef_forth_state_t* fs);`.
 
 ### Forth words
 
@@ -113,7 +110,7 @@ The loop execution process for normal runtime is the following:
 - If it is null, return without doing more. Otherwise, execute it.
 - Increase the code pointer by one, to point to the next word in the current forth word.
 
-When calling a new forth word, the process of the word execution function is the following:
+When calling a new forth word, the process of the word execution is the following:
 - Push the current word pointer to the return stack.
 - Read the address of the word to be executed and put it in the code pointer.
 - Decreasing the code pointer by one step, so that the end of the word execution would make it point to the first element of the callee word.

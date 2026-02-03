@@ -74,7 +74,7 @@ static void warn_if_exists(forth_state_t* fs, const char* name, size_t name_len)
     sef_allot(fs, size)                                                  
 
 
-void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, word_executing_function wef) {
+void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len, sef_int_t tags) {
     warn_if_exists(fs, name, name_len);
 
     dictionary_entry_t new_entry = fs->here.cell;
@@ -96,9 +96,7 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     // Storing tags. For now the only one we can be sure of if the sytem word tag.
     sef_int_t* word_tags_field = sef_get_word_tag_field(new_entry);
     *word_tags_field = fs->compiling_system_words ? WTM_SYSTEM_WORD : 0;
-    // Storing wef
-    word_executing_function* wef_field = sef_get_word_executing_function(new_entry);
-    *wef_field = wef;
+    *word_tags_field |= tags;
 }
 
 /* ----------------------------- Reading entries ---------------------------- */
@@ -145,13 +143,12 @@ sef_int_t* sef_get_word_tag_field(dictionary_entry_t entry) {
     return ret;
 }
 
-word_executing_function* sef_get_word_executing_function(dictionary_entry_t entry) {
-    sef_int_t* ret = sef_get_word_tag_field(entry) + 1;
-    return (word_executing_function*) ret;
+sef_int_t* sef_get_entry_special_parameters(dictionary_entry_t entry) {
+    return sef_get_word_tag_field(entry) + 1;
 }
 
 void* sef_get_entry_parameter(dictionary_entry_t entry) {
-    return (sef_int_t*) sef_get_word_executing_function(entry) + 1;
+    return sef_get_entry_special_parameters(entry) + 1;
 }
 
 dictionary_entry_t sef_try_to_find_entry(forth_state_t* fs, void* _p) {
