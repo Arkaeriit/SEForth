@@ -51,7 +51,7 @@ int sef_exit_code(sef_forth_state_t* state);
 #ifdef SEF_ARG_AND_EXIT_CODE
 >> This is only available if `___SEF_ARG_AND_EXIT_CODE` is set. This let you feed
 >> command line arguments to SEForth by calling
->> `sef_feed_arguments(state, argc-1, argv+1);`.
+>> `sef_feed_arguments(state, argc, argv);`.
 void sef_feed_arguments(sef_forth_state_t* state, int argc, char** argv);
 #endif
 

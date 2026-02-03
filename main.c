@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
 #if SEF_ARG_AND_EXIT_CODE
     if (argc > 1) {
-        sef_feed_arguments(&fs, argc - 1, argv + 1);
+        sef_feed_arguments(&fs, argc - 1, argv + 1); // First argument is skipped as it will be handled from the C side.
     }
 #endif
 

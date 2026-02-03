@@ -135,7 +135,7 @@ Return true if the state is in compiling mode and false if it is in interpreting
 * `int sef_exit_code(sef_forth_state_t* state);`  
 Return the exit code of the Forth state. If `SEF_ARG_AND_EXIT_CODE` is set, it is the value in `exit-code`. Otherwise, it's -1 if `abort` has been called or 0 if it hasn't.
 * `void sef_feed_arguments(sef_forth_state_t* state, int argc, char** argv);`  
-This is only available if `SEF_ARG_AND_EXIT_CODE` is set. This let you feed command line arguments to SEForth by calling `sef_feed_arguments(state, argc-1, argv+1);`.
+This is only available if `SEF_ARG_AND_EXIT_CODE` is set. This let you feed command line arguments to SEForth by calling `sef_feed_arguments(state, argc, argv);`.
 
 ### Manipulating the stack
 
