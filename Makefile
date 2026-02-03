@@ -71,6 +71,8 @@ install : $(TARGET).bin lib$(TARGET).a SEForth.h
 
 uninstall :
 	$(RM) $(TARGET_BIN)
+	$(RM) $(TARGET_DIR_INCLUDE)/SEForth.h
+	$(RM) $(TARGET_DIR_LIB)/lib$(TARGET).a
 
 clean : 
 	$(RM) *.bin
