@@ -6,16 +6,14 @@
 
 /* --------------------------- String manipulation -------------------------- */
 
-#if SEF_CASE_INSENSITIVE
 // Change lower case characters in the input string into their upper case versions
-static void to_upper(char* str) {
+static void to_lower(char* str) {
     for (size_t i=0; i<strlen(str); i++) {
-        if ('a' <= str[i] && str[i] <= 'z') {
-            str[i] = str[i] - ('a' - 'A');
+        if ('A' <= str[i] && str[i] <= 'Z') {
+            str[i] = str[i] + ('a' - 'A');
         }
     }
 }
-#endif
 
 static bool case_insensitive_name_match(const char* name_from_dictionary, const char* outside_name, size_t outside_name_size) {
     if (strlen(name_from_dictionary) != outside_name_size || strlen(name_from_dictionary) == 0) {
@@ -23,8 +21,8 @@ static bool case_insensitive_name_match(const char* name_from_dictionary, const 
     }
     for (size_t i=0; i<strlen(name_from_dictionary); i++) {
         char char_from_outside = outside_name[i];
-        if ('a' <= char_from_outside && char_from_outside <= 'z') {
-            char_from_outside -= 'a' - 'A';
+        if ('A' <= char_from_outside && char_from_outside <= 'Z') {
+            char_from_outside += 'a' - 'A';
         }
         if (char_from_outside != name_from_dictionary[i]) {
             return false;
@@ -78,9 +76,9 @@ void sef_register_new_word(forth_state_t* fs, const char* name, size_t name_len,
     memcpy(name_field, name, name_len);
     name_field[name_len] = 0;
     sef_allot(fs, sef_size_needed_to_store_string(name_len));
-#if SEF_CASE_INSENSITIVE
-    to_upper(name_field);
-#endif
+    if (SEF_CASE_INSENSITIVE) {
+        to_lower(name_field);
+    }
     // Storing tags. For now the only one we can be sure of if the sytem word tag.
     sef_int_t* word_tags_field = sef_get_word_tag_field(new_entry);
     *word_tags_field = fs->compiling_system_words ? WTM_SYSTEM_WORD : 0;
