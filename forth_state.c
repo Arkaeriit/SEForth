@@ -108,6 +108,7 @@ void sef_quit(forth_state_t* fs) {
     fs->return_stack_index = 0;
     fs->compiling = false;
     reset_parser(fs);
+    // TODO "quit" and then "bye" doesn't works as expected.
 }
 
 static void stack_trace_print_word(forth_state_t* fs, dictionary_entry_t code_pointer) {

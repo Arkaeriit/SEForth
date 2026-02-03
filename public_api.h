@@ -17,6 +17,12 @@ void sef_init(sef_forth_state_t* state);
 >> Parse and execute the null-terminated string of Forth code `s`.
 void sef_eval_string(sef_forth_state_t* state, const char* s);
 
+>> Force the interpretation of a string, even if the state isn't ready to
+>> interpret. If the state wasn't ready to run, call sef_restart before. If the
+>> state is compiling, put it back in interpreting mode before evaluating the
+>> string, and then put it back in compiling mode.
+void sef_force_string_interpretation(sef_forth_state_t* state, const char* s);
+
 >> ------------------------- Manipulating the state ------------------------- >>
 
 >> Return true if the state is ready to parse and execute new code and false if

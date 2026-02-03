@@ -11,9 +11,13 @@ void sef_restart(sef_forth_state_t* _state) {
     sef_reset(state);
 }
 
+static bool cant_run(forth_state_t* state) {
+    return state->bye || (state->error_encountered && SEF_ABORT_STOP_FORTH);
+}
+
 bool sef_ready_to_run(sef_forth_state_t* _state) {
     forth_state_t* state = (forth_state_t*) _state;
-    return !state->bye && (!state->error_encountered || SEF_ABORT_STOP_FORTH);
+    return !cant_run(state);
 }
 
 bool sef_asked_bye(sef_forth_state_t* _state) {
@@ -29,19 +33,8 @@ bool sef_is_compiling(sef_forth_state_t* _state) {
 int sef_exit_code(sef_forth_state_t* _state) {
     forth_state_t* state = (forth_state_t*) _state;
 #if SEF_ARG_AND_EXIT_CODE
-    if (!sef_ready_to_run(_state)) {
-        sef_restart(_state);
-    }
-    bool is_compiling = sef_is_compiling(_state);
-    if (is_compiling) {
-        sef_eval_string(_state, "[");
-    }
-    sef_eval_string(_state, "exit-code @");
+    sef_force_string_interpretation(_state, "exit-code @");
     int ret = sef_pop_from_data_stack(_state);
-    sef_eval_string(_state, " 0 exit-code !");
-    if (is_compiling) {
-        sef_eval_string(_state, "]");
-    }
 #else
     int ret = state->error_encountered ? -1 : 0;
 #endif
@@ -68,6 +61,23 @@ sef_int_t sef_pop_from_data_stack(sef_forth_state_t* _state) {
 void sef_register_c_word(sef_forth_state_t* _state, const char* name, sef_c_word func, bool is_immediate) {
     forth_state_t* state = (forth_state_t*) _state;
     sef_register_cfunc(state, name, (void (*)(forth_state_t*)) func, is_immediate);
+}
+
+void sef_force_string_interpretation(sef_forth_state_t* state, const char* s) {
+    /*forth_state_t* _state = (forth_state_t*) state;*/
+    /*bool bye = _state->bye;*/
+    if (!sef_ready_to_run(state)) {
+        sef_restart(state);
+    }
+    bool is_compiling = sef_is_compiling(state);
+    if (is_compiling) {
+        sef_eval_string(state, "[");
+    }
+    sef_eval_string(state, s);
+    if (is_compiling) {
+        sef_eval_string(state, "]");
+    }
+    /*_state->bye = bye;*/
 }
 
 #if SEF_ARG_AND_EXIT_CODE
