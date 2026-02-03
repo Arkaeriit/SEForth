@@ -58,7 +58,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> case-insensitive for system words.
 £define ___SEF_CASE_INSENSITIVE SEF_CASE_INSENSITIVE
 
->> This control the amount of internal logs outputted by SEForth. If set to 0,
+>> This controls the amount of internal logs outputted by SEForth. If set to 0,
 >> no internal logs will be outputted; this is only suitable if SEForth runs in
 >> an environment with very limited resources and where the logs will never be
 >> read. If set to 1, error message will be outputted; this is the most sensible
@@ -68,7 +68,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> only suitable to debug the SEForth interpreter itself.
 £define ___SEF_LOG_LEVEL SEF_LOG_LEVEL
 
->> If set to 1, the logs controlled by `SEF_LOG_LEVEL` will be printed to
+>> If set to 1, the logs controlled by `___SEF_LOG_LEVEL` will be printed to
 >> `stderr`. If set to 0, they will be emitted with the `EMIT` word.
 £define ___SEF_LOG_OVER_STDERR SEF_LOG_OVER_STDERR
 

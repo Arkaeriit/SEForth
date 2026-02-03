@@ -21,7 +21,7 @@ void sef_parse_string(sef_forth_state_t* state, const char* s);
 
 >> Return true if the state is ready to parse and execute new code and false if
 >> it can't. Either because the word `bye` has been called or if an error has
->> been encountered and `SEF_ABORT_STOP_FORTH` is set.
+>> been encountered and `___SEF_ABORT_STOP_FORTH` is set.
 bool sef_ready_to_run(sef_forth_state_t* state);
 
 >> Empties the data and return stacks, put the state in interpreting mode,
@@ -37,13 +37,13 @@ bool sef_asked_bye(sef_forth_state_t* state);
 >> interpreting mode.
 bool sef_is_compiling(sef_forth_state_t* state);
 
->> Return the exit code of the Forth state. If `SEF_ARG_AND_EXIT_CODE` is set,
+>> Return the exit code of the Forth state. If `___SEF_ARG_AND_EXIT_CODE` is set,
 >> it is the value in `exit-code`. Otherwise, it's -1 if `abort` has been called
 >> or 0 if it hasn't.
 int sef_exit_code(sef_forth_state_t* state);
 
 #ifdef SEF_ARG_AND_EXIT_CODE
->> This is only available if `SEF_ARG_AND_EXIT_CODE` is set. This let you feed
+>> This is only available if `___SEF_ARG_AND_EXIT_CODE` is set. This let you feed
 >> command line arguments to SEForth by calling
 >> `sef_feed_arguments(state, argc-1, argv+1);`.
 void sef_feed_arguments(sef_forth_state_t* state, int argc, char** argv);
@@ -64,7 +64,7 @@ sef_int_t sef_pop_from_data_stack(sef_forth_state_t* state);
 >> Forth code.
 typedef void (*sef_c_word)(sef_forth_state_t*);
 
->> Add a new word to the Forth dictionary. It's name should be a null-terminated
+>> Add a new word to the Forth dictionary. Its name should be a null-terminated
 >> string. If `is_immediate` is set to true, `func` will be the compile-time
 >> semantic of the word; if it is false, it will be the interpreting or
 >> executing semantic.

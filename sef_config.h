@@ -80,7 +80,7 @@
 #define SEF_CASE_INSENSITIVE 1
 #endif
 
-// This control the amount of internal logs outputted by SEForth. If set to 0,
+// This controls the amount of internal logs outputted by SEForth. If set to 0,
 // no internal logs will be outputted; this is only suitable if SEForth runs in
 // an environment with very limited resources and where the logs will never be
 // read. If set to 1, error message will be outputted; this is the most sensible
