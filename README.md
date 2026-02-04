@@ -45,6 +45,8 @@ SEForth can be configured for the dictionary search to be either case-sensitive 
 
 Currently, SEForth doesn't support computation with double-cell numbers. Standard words that use double-cell numbers still use them in SEForth, but the most significant cell is only a sign extension and isn't used in computations. This behavior is susceptible to change in the future.
 
+As SEForth doesn't want to make assumptions on the input source if it is embedded in an other application, `quit` and `abort` don't put you back in the Forth prompt on their own. If you want that behavior in your application, you can check how it is done in `main.c`.
+
 ## Included interpreter
 
 Running `make` in this repository will compile `seforth.bin` (which can be installed as `seforth`). You can give it as argument a Forth file and some additional arguments to run the program. Alternatively, you can call it without arguments to enter a Forth REPL. This REPL is very bare-bones. For a more comfortable environment, you can use [ISEForth](https://github.com/Arkaeriit/iseforth).
@@ -79,8 +81,6 @@ This controls the amount of internal logs outputted by SEForth. If set to 0, no 
 If set to 1, the logs controlled by `SEF_LOG_LEVEL` will be printed to `stderr`. If set to 0, they will be emitted with the `EMIT` word.
 * `SEF_STACK_BOUND_CHECKS`  
 If set to 1, there will be checks to ensure that none of the stacks can overflow and underflow, and that the memory space addressed by HERE doesn't overflow. If set to 0, those checks are disabled. The checks have some performance impact, but they are very convenient. 
-* `SEF_ABORT_STOP_FORTH`  
-If set to 0, the words `abort` and `abort"` will put the user in a Forth prompt as the standard suggests. If set to 1, those words will stop the Forth system, which is more convenient to run programs.
 * `SEF_CATCH_SEGFAULTS`  
 With this option set to 1, segfaults caused by Forth code will be caught and the interpreter will be put back into an idle state if encountered. This relies on static variable and thus, this prevent the interpreter to be used on multiple threads. Furthermore, the system running SEForth needs to support POSIX signals.
 
@@ -125,7 +125,7 @@ Force the interpretation of a string, even if the state isn't ready to interpret
 ### Manipulating the state
 
 * `bool sef_ready_to_run(sef_forth_state_t* state);`  
-Return true if the state is ready to parse and execute new code and false if it can't. Either because the word `bye` has been called or if an error has been encountered and `SEF_ABORT_STOP_FORTH` is set.
+Return true if the state is ready to parse and execute new code and false if it can't because the words `bye`, `quit`, or `abort` have been called.
 * `void sef_restart(sef_forth_state_t* state);`  
 Empties the data and return stacks, put the state in interpreting mode, clears flag that prevented it from running. The memory region addressed by HERE and, by extension, the dictionary are preserved. This can be used to reuse a state for which `sef_ready_to_run` returns false.
 * `bool sef_asked_bye(sef_forth_state_t* state);`  

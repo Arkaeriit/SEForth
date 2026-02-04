@@ -48,11 +48,6 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 
 >> ---------------------------- Optional features --------------------------- >>
 
->> If set to 0, the words `abort` and `abort"` will put the user in a Forth
->> prompt as the standard suggests. If set to 1, those words will stop the Forth
->> system, which is more convenient to run programs.
-£define ___SEF_ABORT_STOP_FORTH SEF_ABORT_STOP_FORTH
-
 >> If set to 1, all dictionary searches will be case-insensitive. If set to 0,
 >> dictionary searches will be case-sensitive for user-defined words and
 >> case-insensitive for system words.

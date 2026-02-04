@@ -29,6 +29,12 @@ static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
     fclose(f);
 }
 
+static void repl(sef_forth_state_t* fs) {
+    do {
+        sef_force_string_interpretation(fs, "(repl)");
+    } while (!sef_asked_bye(fs));
+}
+
 int main(int argc, char** argv) {
     static sef_forth_state_t fs;
     sef_init(&fs);
@@ -41,8 +47,11 @@ int main(int argc, char** argv) {
 
     if (argc > 1) {
         parse_a_file(&fs, argv[1]);
+        if (!sef_ready_to_run(&fs) && !sef_asked_bye(&fs)) {
+            repl(&fs);
+        }
     } else {
-        sef_eval_string(&fs, "(repl)");
+        repl(&fs);
     }
 
     return sef_exit_code(&fs);

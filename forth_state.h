@@ -33,7 +33,7 @@ typedef struct forth_state_s {
     bool compiling;
     sef_int_t base;
     sef_int_t* code_pointer;
-    bool error_encountered;
+    sef_int_t exit_code;
     bool bye;
     bool quit;
     // Parser

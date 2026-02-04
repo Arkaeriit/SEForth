@@ -26,8 +26,7 @@ void sef_force_string_interpretation(sef_forth_state_t* state, const char* s);
 >> ------------------------- Manipulating the state ------------------------- >>
 
 >> Return true if the state is ready to parse and execute new code and false if
->> it can't. Either because the word `bye` has been called or if an error has
->> been encountered and `___SEF_ABORT_STOP_FORTH` is set.
+>> it can't because the words `bye`, `quit`, or `abort` have been called.
 bool sef_ready_to_run(sef_forth_state_t* state);
 
 >> Empties the data and return stacks, put the state in interpreting mode,

@@ -11,13 +11,9 @@ void sef_restart(sef_forth_state_t* _state) {
     sef_reset(state);
 }
 
-static bool cant_run(forth_state_t* state) {
-    return state->bye || (state->error_encountered && SEF_ABORT_STOP_FORTH);
-}
-
 bool sef_ready_to_run(sef_forth_state_t* _state) {
     forth_state_t* state = (forth_state_t*) _state;
-    return !cant_run(state);
+    return !(state->bye || state->quit);
 }
 
 bool sef_asked_bye(sef_forth_state_t* _state) {
@@ -32,14 +28,7 @@ bool sef_is_compiling(sef_forth_state_t* _state) {
 
 int sef_exit_code(sef_forth_state_t* _state) {
     forth_state_t* state = (forth_state_t*) _state;
-#if SEF_ARG_AND_EXIT_CODE
-    sef_force_string_interpretation(_state, "exit-code @");
-    int ret = sef_pop_from_data_stack(_state);
-#else
-    int ret = state->error_encountered ? -1 : 0;
-#endif
-    state->error_encountered = false;
-    return ret;
+    return state->exit_code;
 }
 
 void sef_eval_string(sef_forth_state_t* _state, const char* s) {
@@ -64,8 +53,6 @@ void sef_register_c_word(sef_forth_state_t* _state, const char* name, sef_c_word
 }
 
 void sef_force_string_interpretation(sef_forth_state_t* state, const char* s) {
-    /*forth_state_t* _state = (forth_state_t*) state;*/
-    /*bool bye = _state->bye;*/
     if (!sef_ready_to_run(state)) {
         sef_restart(state);
     }
@@ -77,7 +64,6 @@ void sef_force_string_interpretation(sef_forth_state_t* state, const char* s) {
     if (is_compiling) {
         sef_eval_string(state, "]");
     }
-    /*_state->bye = bye;*/
 }
 
 #if SEF_ARG_AND_EXIT_CODE

@@ -33,6 +33,7 @@ static void compile_system_forth_words(forth_state_t* fs) {
     PARSE_STRING(fs, tools_forth_words);
 #endif
 #if SEF_ARG_AND_EXIT_CODE
+    sef_push_data(fs, (sef_int_t) &fs->exit_code); // Push the address of the exit code to map it to the word EXIT-CODE.
     extern const char* arg_and_exit_code_forth_words;
     PARSE_STRING(fs, arg_and_exit_code_forth_words);
 #endif
@@ -55,8 +56,8 @@ void sef_state_init(forth_state_t* fs) {
     fs->compiling = false;
     fs->base = 10;
     fs->code_pointer = NULL;
-    fs->error_encountered = false;
     fs->bye = false;
+    fs->exit_code = 0;
     reset_parser(fs);
     fs->compiling_system_words = true;
     sef_register_default_cfunc(fs);
@@ -150,17 +151,16 @@ static void show_debug(forth_state_t* fs) {
 
 // Trigerred on error. Do as quit but also reset data stack and set error flag.
 void sef_abort(forth_state_t* fs) {
+    fs->exit_code = -1;
     show_debug(fs);
     sef_quit(fs);
     fs->data_stack_index = 0;
-    fs->error_encountered = true;
 }
 
 // Put the state back in working order, clears bye and error flag. Reset stacks
 // and parsers.
 void sef_reset(forth_state_t* fs) {
     sef_quit(fs);
-    fs->error_encountered = false;
     fs->bye = false;
     fs->quit = false;
     fs->data_stack_index = 0;
