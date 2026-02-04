@@ -1,7 +1,22 @@
 #include "SEForth.h"
+#include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
 
+static void clear_shebang_from_first_line(char* file_content) {
+    if (strlen(file_content) < 2) {
+        return;
+    }
+    if (file_content[0] != '#' || file_content[1] != '!') {
+        return;
+    }
+    for (size_t i=0; i<strlen(file_content); i++) {
+        if (file_content[i] == '\n') {
+            break;
+        }
+        file_content[i] = ' ';
+    }
+}
 
 static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
     FILE* f = fopen(file_name, "r");
@@ -24,6 +39,7 @@ static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
 
     fread(content, 1, file_size, f);
     content[file_size] = 0;
+    clear_shebang_from_first_line(content);
     sef_eval_string(fs, content);
     free(content);
     fclose(f);
