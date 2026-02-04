@@ -64,7 +64,7 @@ Type used to represent signed one-cell numbers. It must be big enough to store a
 * `SEF_UNSIGNED_T`  
 Type used to represent unsigned one-cell numbers. It must have the same size as `SEF_INT_T`.
 * `SEF_FORTH_MEMORY_SIZE`  
-Size in bytes of the memory region addressed by HERE. You might need around 30 kB on a system with `SEF_INT_T` set to `int64_t`.
+Size in bytes of the memory region addressed by HERE. You might need at least around 30 kB on a system with `SEF_INT_T` set to `int64_t`, but higher amount of memory is needed to have room to save more words.
 * `SEF_PAD_SIZE`  
 Size in bytes of the pad region.
 * `SEF_DATA_STACK_SIZE`  
