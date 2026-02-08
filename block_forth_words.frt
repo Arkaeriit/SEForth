@@ -57,3 +57,14 @@ variable blk
 : empty-buffers block-buffers-list ['] (empty-buffer) exec-on-list ;
 : save-buffers block-buffers-list ['] (save-buffer) exec-on-list ;
 : flush save-buffers empty-buffers ;
+
+64 constant block-line-len
+: list ( u -- ) block block-size block-line-len / 0 do
+    i 2 .r dup block-line-len type cr block-line-len +
+loop drop ;
+
+variable src
+0 src !
+: list ( u -- ) dup src ! list ;
+
+: thru ( ... u u -- ... )  1+ swap  do i load loop ;
