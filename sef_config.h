@@ -31,6 +31,10 @@
 #define SEF_MEMORY_ALLOCATION 1
 #endif
 
+#ifndef SEF_BLOCK
+#define SEF_BLOCK 0
+#endif
+
 #ifndef SEF_ARG_AND_EXIT_CODE
 #define SEF_ARG_AND_EXIT_CODE 1
 #endif

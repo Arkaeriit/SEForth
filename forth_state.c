@@ -28,6 +28,10 @@ static void compile_system_forth_words(forth_state_t* fs) {
     PARSE_STRING(fs, ": \\ 10 parse 2drop ; immediate");
     extern const char* shell;
     PARSE_STRING(fs, shell);
+#if SEF_FILE_ACCESS || SEF_BLOCK
+    extern const char* linked_list;
+    PARSE_STRING(fs, linked_list);
+#endif
 #if SEF_PROGRAMMING_TOOLS
     extern const char* tools_forth_words;
     PARSE_STRING(fs, tools_forth_words);
@@ -40,6 +44,10 @@ static void compile_system_forth_words(forth_state_t* fs) {
 #if SEF_STRING
     extern const char* string_forth_words;
     PARSE_STRING(fs, string_forth_words);
+#endif
+#if SEF_BLOCK
+    extern const char* block_forth_words;
+    PARSE_STRING(fs, block_forth_words);
 #endif
 #if SEF_PROGRAMMING_TOOLS && SEF_ARG_AND_EXIT_CODE
     PARSE_STRING(fs, ": (bye) exit-code ! bye ;");

@@ -26,6 +26,8 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 
 £define ___SEF_MEMORY_ALLOCATION SEF_MEMORY_ALLOCATION
 
+£define ___SEF_BLOCK SEF_BLOCK
+
 £define ___SEF_ARG_AND_EXIT_CODE SEF_ARG_AND_EXIT_CODE
 
 >> ------------------------------- Memory used ------------------------------ >>

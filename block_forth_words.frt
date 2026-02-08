@@ -29,7 +29,7 @@ init-block-buffers
 : read-buffer ( buffer -- ) dup dup get-block-number @ swap get-buffer-content read-buffer 0 (update) ;
 
 ( Save the buffer content if it needs saving and unset the update flag )
-: save-buffer ( buffer -- ) dup get-update-flag @ if dup write-buffer 0 (update) else drop then ;
+: (save-buffer) ( buffer -- ) dup get-update-flag @ if dup write-buffer 0 (update) else drop then ;
 
 ( Set found-buffer to the input buffer if its asigned block is the one in searched-block )
 0 value found-buffer 0 value searched-block
@@ -42,9 +42,18 @@ init-block-buffers
 0 value forced-buffer-index
 : get-next-forced-buffer ( -- buffer ) forced-buffer-index number-of-block-buffers mod dup 1+ to forced-buffer-index block-buffers-list swap get-node-at-index ;
 
-: buffer ( u -- buffer ) dup search-buffer ?dup 0= if get-next-forced-buffer dup save-buffer 2dup get-block-number ! dup false swap get-data-ready-flag ! ( if we got a random buffer, then there is 0 in the data ready flag ) then
+: buffer ( u -- buffer ) dup search-buffer ?dup 0= if get-next-forced-buffer dup (save-buffer) 2dup get-block-number ! dup false swap get-data-ready-flag ! ( if we got a random buffer, then there is 0 in the data ready flag ) then
     ( on stack, there is only the buffer object )
     nip dup to current-buffer get-buffer-content ;
     
 : block ( u -- buffer ) buffer current-buffer get-data-ready-flag @ 0= ( addr  f ) if current-buffer read-buffer then ;
 
+variable blk
+0 blk !
+: load ( ... u -- ... ) blk @ >r dup blk ! block block-size blk @ (evaluate) r> blk ! ;
+: evaluate blk @ >r 0 blk ! evaluate r> blk ! ;
+
+: (empty-buffer) ( buffer -- ) 0 swap 2dup get-block-number ! 2dup get-update-flag ! get-data-ready-flag ! ;
+: empty-buffers block-buffers-list ['] (empty-buffer) exec-on-list ;
+: save-buffers block-buffers-list ['] (save-buffer) exec-on-list ;
+: flush save-buffers empty-buffers ;
