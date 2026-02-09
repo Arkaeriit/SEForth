@@ -1,4 +1,4 @@
-30 constant number-of-blocks
+40 constant number-of-blocks
 1024 constant block-size
 
 block-size number-of-blocks * buffer: blocks

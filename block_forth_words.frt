@@ -63,8 +63,8 @@ variable blk
     i 2 .r dup block-line-len type cr block-line-len +
 loop drop ;
 
-variable src
-0 src !
-: list ( u -- ) dup src ! list ;
+variable scr
+0 scr !
+: list ( u -- ) dup scr ! list ;
 
 : thru ( ... u u -- ... )  1+ swap  do i load loop ;
