@@ -103,6 +103,7 @@ key dup 10 = if drop nip nip exit then
 : recurse ( -- ) dictionary @ compile, ; immediate
 : marker ( "consume a name" -- ) create dictionary @ , dictionary @ cell+ ( parsing by hand the dictionary entry )  @ , does> dup @ where ! cell+ @ dictionary ! ;
 : [compile] ( "consme a name" -- ) postpone postpone ; immediate \ Not really standard. But for this word...
+: source ( -- c-addr u ) >source @ swap @ swap ;
 
 ( ---------------------------- Memory manipulation --------------------------- )
 

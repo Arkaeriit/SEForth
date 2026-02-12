@@ -657,9 +657,10 @@ static void source_id(forth_state_t* fs) {
     sef_push_data(fs, fs->source_id);
 }
 
+// Push the addresses of the input buffer and its size
 static void source(forth_state_t* fs) {
-    sef_push_data(fs, (sef_int_t) fs->input_buffer);
-    sef_push_data(fs, fs->input_buffer_size);
+    sef_push_data(fs, (sef_int_t) &fs->input_buffer);
+    sef_push_data(fs, (sef_int_t) &fs->input_buffer_size);
 }
 
 // Push the last dictionary entry's address
@@ -776,7 +777,7 @@ struct c_func_s all_default_c_func[] = {
     {"state", state},
     {">in", in},
     {"source-id", source_id},
-    {"source", source},
+    {">source", source},
     {"dictionary", dictionary},
     {"where", where},
     {"code-pointer", code_pointer},
