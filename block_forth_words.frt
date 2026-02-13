@@ -68,3 +68,5 @@ variable scr
 : list ( u -- ) dup scr ! list ;
 
 : thru ( ... u u -- ... )  1+ swap  do i load loop ;
+
+: refill ( -- flag ) source-id blk @ = if 0 >in ! >source block-size swap ! 1 blk +! blk @ block swap ! true else refill then ;
