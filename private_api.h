@@ -7,6 +7,8 @@
 #ifndef PRIVATE_API_H
 #define PRIVATE_API_H
 
+#define UNUSED(x) (void)(x)
+
 #include "SEForth.h"
 #include "forth_state.h"
 #include "stdlib.h"

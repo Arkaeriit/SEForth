@@ -3,8 +3,6 @@
 #include "string.h"
 #include "stdio.h"
 
-#define UNUSED(x) (void)(x)
-
 // Functions used to manipulate C_fun
 
 typedef void (*cfunc)(forth_state_t*);

@@ -240,7 +240,6 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
 #if SEF_CATCH_SEGFAULTS
 #include <setjmp.h>
 #include <signal.h>
-#define UNUSED(x) (void)(x)
 
 static sigjmp_buf point;
 static void segfault_handler(int sig, siginfo_t *dont_care, void *dont_care_either) {
