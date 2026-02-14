@@ -1,6 +1,4 @@
-3 constant number-of-block-buffers ( TODO: configurable )
 0 value block-buffers-list
-
 0 value current-buffer
 
 ( The block buffers are stored in a linked list. Their content is the block id )

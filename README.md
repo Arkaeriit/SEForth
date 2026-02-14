@@ -21,6 +21,7 @@ The following word sets are partially provided:
 * File-Access
 * Programming-Tools
 * String
+* Block (all words provided but more testing is needed)
 
 To know which words are supported, you can use `word`, which is always enabled, even if the rest of the Programming-Tools word set is not enabled. Similarly, some other words from optional word sets, such as `cmove>` for example, are always provided even if the rest of the optional word set is disabled.
 
@@ -73,6 +74,8 @@ Number of cells in the data stack.
 Number of cells in the return stack.
 * `SEF_CONTROL_FLOW_STACK_SIZE`  
 Number of cells in the control flow stack.
+* `SEF_NUMBER_OF_BLOCK_BUFFERS`
+Number of block buffer available. They are stored in the memory indexed by HERE.
 * `SEF_CASE_INSENSITIVE`  
 If set to 1, all dictionary searches will be case-insensitive. If set to 0, dictionary searches will be case-sensitive for user-defined words and case-insensitive for system words.
 * `SEF_LOG_LEVEL`  

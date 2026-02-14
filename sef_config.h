@@ -67,6 +67,12 @@
 #define SEF_PAD_SIZE 100
 #endif
 
+// Number of block buffer available. They are stored in the memory indexed by
+// HERE.
+#ifndef SEF_NUMBER_OF_BLOCK_BUFFERS
+#define SEF_NUMBER_OF_BLOCK_BUFFERS 3
+#endif
+
 // ---------------------------- Optional features --------------------------- //
 
 // If set to 1, all dictionary searches will be case-insensitive. If set to 0,

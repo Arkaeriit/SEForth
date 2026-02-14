@@ -48,6 +48,12 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Size in bytes of the pad region.
 £define ___SEF_PAD_SIZE SEF_PAD_SIZE
 
+#if SEF_BLOCK
+>> Number of block buffer available. They are stored in the memory indexed by
+>> HERE.
+£define ___SEF_NUMBER_OF_BLOCK_BUFFERS SEF_NUMBER_OF_BLOCK_BUFFERS
+#endif
+
 >> ---------------------------- Optional features --------------------------- >>
 
 >> If set to 1, all dictionary searches will be case-insensitive. If set to 0,

@@ -35,10 +35,15 @@ static void block_size(forth_state_t* fs) {
     sef_push_data(fs, SEF_BLOCK_SIZE);
 }
 
+static void number_of_block_buffers(forth_state_t* fs) {
+    sef_push_data(fs, SEF_NUMBER_OF_BLOCK_BUFFERS);
+}
+
 void sef_register_block_cfunc(forth_state_t* fs) {
-    sef_register_cfunc(fs, "block-size",   block_size,   false);
-    sef_register_cfunc(fs, "read-buffer",  read_buffer,  false);
-    sef_register_cfunc(fs, "write-buffer", write_buffer, false);
+    sef_register_cfunc(fs, "block-size",              block_size,              false);
+    sef_register_cfunc(fs, "read-buffer",             read_buffer,             false);
+    sef_register_cfunc(fs, "write-buffer",            write_buffer,            false);
+    sef_register_cfunc(fs, "number-of-block-buffers", number_of_block_buffers, false);
 }
 #else
 sef_register_block_cfunc(sef_forth_state_t* fs) {
