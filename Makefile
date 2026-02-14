@@ -2,9 +2,9 @@
 CFLAGS ?= -Wall -Wextra -g -Werror -Wno-error=cpp
 
 # Files lists
-C_SRC := dictionary.c forth_state.c C_func.c parser.c public_api.c sef_io.c
+C_SRC := dictionary.c forth_state.c C_func.c parser.c public_api.c sef_io.c block_forth_func.c
 FRT_SRC := core_forth_words.frt file_forth_func.frt string_forth_words.frt tools_forth_words.frt arg_and_exit_code_forth_words.frt shell.frt linked_list.frt block_forth_words.frt memory_blocks.frt
-C_HEADER := sef_io.h SEForth.h C_func.h dictionary.h errors.h forth_state.h hash.h parser.h user_words.h sef_debug.h private_api.h
+C_HEADER := sef_io.h SEForth.h C_func.h dictionary.h errors.h forth_state.h hash.h parser.h user_words.h sef_debug.h private_api.h block_forth_func.h
 TARGET := seforth
 C_AUTO_SRC := $(FRT_SRC:%.frt=%.c)
 C_SRC += $(C_AUTO_SRC)

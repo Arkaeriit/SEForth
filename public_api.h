@@ -77,4 +77,15 @@ void sef_register_c_word(sef_forth_state_t* state,
                          const char* name,
                          sef_c_word func,
                          bool is_immediate);
+#if SEF_BLOCK && !SEF_BLOCK_FILE
+>> --------------------------------- Blocks --------------------------------- >>
+
+£define SEF_BLOCK_SIZE 1024
+
+// TODO: document
+void sef_write_buffer(sef_forth_state_t* _fs, sef_int_t block_number, const char* data);
+
+// TODO: document
+void sef_read_buffer(sef_forth_state_t* _fs, sef_int_t block_number, char* data);
+#endif
 

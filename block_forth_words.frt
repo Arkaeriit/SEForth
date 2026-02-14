@@ -1,5 +1,4 @@
 3 constant number-of-block-buffers ( TODO: configurable )
-1024 constant block-size
 0 value block-buffers-list
 
 0 value current-buffer

@@ -18,6 +18,7 @@
 #include "C_func.h"
 #include "dictionary.h"
 #include "parser.h"
+#include "block_forth_func.h"
 
 #endif
 
