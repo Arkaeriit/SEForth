@@ -46,7 +46,7 @@ void sef_register_block_cfunc(forth_state_t* fs) {
     sef_register_cfunc(fs, "number-of-block-buffers", number_of_block_buffers, false);
 }
 #else
-sef_register_block_cfunc(sef_forth_state_t* fs) {
+void sef_register_block_cfunc(forth_state_t* fs) {
     UNUSED(fs);
 }
 #endif
