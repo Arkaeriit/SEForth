@@ -46,8 +46,6 @@ static void compile_system_forth_words(forth_state_t* fs) {
     PARSE_STRING(fs, string_forth_words);
 #endif
 #if SEF_BLOCK
-    extern const char* memory_blocks;
-    PARSE_STRING(fs, memory_blocks);
     extern const char* block_forth_words;
     PARSE_STRING(fs, block_forth_words);
     PARSE_STRING(fs, ": \\ blk @ 0= if ['] \\ execute else >in @ block-line-len mod >in @ swap - block-line-len + >in ! then ; immediate");
