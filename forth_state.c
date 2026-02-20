@@ -274,7 +274,7 @@ void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry) {
 
 /* ------------------------- Forth memory management ------------------------ */
 
-// Request some bytes from the forth memory and align the index
+// Request some bytes from the forth memory
 void sef_allot(forth_state_t* fs, size_t byte_requested) {
     fs->here.byte += byte_requested;
 #if SEF_STACK_BOUND_CHECKS
