@@ -91,6 +91,11 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 >> Size of the forth state
 £define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_RETURN_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
 
+#if SEF_BLOCK
+>> TODO: document
+£define ___SEF_BLOCK_FILE SEF_BLOCK_FILE
+#endif
+
 #include "public_api.h"
 
 £endif

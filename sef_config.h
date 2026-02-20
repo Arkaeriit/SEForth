@@ -117,3 +117,8 @@
 #define SEF_CATCH_SEGFAULTS 1
 #endif
 
+// TODO: document
+#ifndef SEF_BLOCK_FILE
+#define SEF_BLOCK_FILE 0
+#endif
+
