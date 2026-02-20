@@ -277,11 +277,15 @@ void sef_exec_create(forth_state_t* fs, void* parameter) {
     sef_push_data(fs, (sef_int_t) parameter);
 }
 
+void sef_create(forth_state_t* fs, const char* name, size_t name_len) {
+    sef_register_new_word(fs, name, name_len, WTM_CREATE);
+}
+
 static void create(forth_state_t* fs) {
     parse_name(fs);
     size_t name_len = (size_t) sef_pop_data(fs);
     char* name = (char*) sef_pop_data(fs);
-    sef_register_new_word(fs, name, name_len, WTM_CREATE);
+    sef_create(fs, name, name_len);
 }
 
 /* --------------------------- Control-flow words --------------------------- */

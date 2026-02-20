@@ -21,5 +21,8 @@ void sef_exec_forth_word(forth_state_t* fs, void* parameter);
 // Execute a create word
 void sef_exec_create(forth_state_t* fs, void* parameter);
 
+// Register a new create word
+void sef_create(forth_state_t* fs, const char* name, size_t name_len);
+
 #endif
 
