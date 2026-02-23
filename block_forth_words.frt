@@ -47,7 +47,8 @@ init-block-buffers
 
 variable blk
 0 blk !
-: load ( ... u -- ... ) blk @ >r dup blk ! block block-size blk @ (evaluate) r> blk ! ;
+: restore-blk-if-needed ( -- ) blk @ if blk @ block >source drop ! then ;
+: load ( ... u -- ... ) blk @ >r dup blk ! block block-size blk @ (evaluate) r> blk ! restore-blk-if-needed ;
 : evaluate blk @ >r 0 blk ! evaluate r> blk ! ;
 
 : (empty-buffer) ( buffer -- ) 0 swap 2dup get-block-number ! 2dup get-update-flag ! get-data-ready-flag ! ;
