@@ -83,14 +83,18 @@ void sef_register_c_word(sef_forth_state_t* state,
 £define SEF_BLOCK_SIZE 1024
 
 #if SEF_BLOCK_FILE
-// TODO: document
-void sef_register_block_file(sef_forth_state_t* _fs, const char* filename, int number_of_blocks);
+>> Sets the file with the path `filename` as the file containing blocks. If the
+>> file doesn't exist, it will be created. If it exists but is not big enough
+>> to store the desired number of blocks, it will be made bigger.
+void sef_register_block_file(sef_forth_state_t* fs, const char* filename, int number_of_blocks);
 #else
-// TODO: document
-void sef_write_buffer(sef_forth_state_t* _fs, sef_int_t block_number, const char* data);
+>> This function must be defined by the API user to handle writing the
+>> given data to the block with the given number.
+void sef_write_buffer(sef_forth_state_t* fs, sef_int_t block_number, const char* data);
 
-// TODO: document
-void sef_read_buffer(sef_forth_state_t* _fs, sef_int_t block_number, char* data);
+>> This function must be defined by the API user to handle reading the
+>> content of the block with the given number.
+void sef_read_buffer(sef_forth_state_t* fs, sef_int_t block_number, char* data);
 #endif
 #endif
 

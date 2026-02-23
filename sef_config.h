@@ -68,7 +68,7 @@
 #endif
 
 // Number of block buffer available. They are stored in the memory indexed by
-// HERE.
+// HERE. Only relevant if the block word set is enabled.
 #ifndef SEF_NUMBER_OF_BLOCK_BUFFERS
 #define SEF_NUMBER_OF_BLOCK_BUFFERS 3
 #endif
@@ -117,7 +117,10 @@
 #define SEF_CATCH_SEGFAULTS 1
 #endif
 
-// TODO: document
+// If the block word set is enabled, setting this option to 1 lets the user of
+// the SEForth API provide a file that will be used to store blocks. If it
+// is set to 0, the API user will have to provide the functions to write or read
+// blocks.
 #ifndef SEF_BLOCK_FILE
 #define SEF_BLOCK_FILE 0
 #endif

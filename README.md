@@ -74,8 +74,8 @@ Number of cells in the data stack.
 Number of cells in the return stack.
 * `SEF_CONTROL_FLOW_STACK_SIZE`  
 Number of cells in the control flow stack.
-* `SEF_NUMBER_OF_BLOCK_BUFFERS`
-Number of block buffer available. They are stored in the memory indexed by HERE.
+* `SEF_NUMBER_OF_BLOCK_BUFFERS`  
+Number of block buffer available. They are stored in the memory indexed by HERE. Only relevant if the block word set is enabled.
 * `SEF_CASE_INSENSITIVE`  
 If set to 1, all dictionary searches will be case-insensitive. If set to 0, dictionary searches will be case-sensitive for user-defined words and case-insensitive for system words.
 * `SEF_LOG_LEVEL`  
@@ -86,6 +86,8 @@ If set to 1, the logs controlled by `SEF_LOG_LEVEL` will be printed to `stderr`.
 If set to 1, there will be checks to ensure that none of the stacks can overflow and underflow, and that the memory space addressed by HERE doesn't overflow. If set to 0, those checks are disabled. The checks have some performance impact, but they are very convenient. 
 * `SEF_CATCH_SEGFAULTS`  
 With this option set to 1, segfaults caused by Forth code will be caught and the interpreter will be put back into an idle state if encountered. This relies on static variable and thus, this prevent the interpreter to be used on multiple threads. Furthermore, the system running SEForth needs to support POSIX signals.
+* `SEF_BLOCK_FILE`  
+If the block word set is enabled, setting this option to 1 lets the user of the SEForth API provide a file that will be used to store blocks. If it is set to 0, the API user will have to provide the functions to write or read blocks.
 
 The following configurations are all to enable or disable optional word set. Set them to 1 to enable the word set and to 0 to disable it.
 
@@ -164,6 +166,20 @@ Ask the user for a character.
 Display a character to the user.
 
 Indeed, those function are defined in `libseforth.a`, but they are weak, so they can be overridden.
+
+### Blocks
+
+If `SEF_BLOCK` is set to 1, blocks can be used. But how the blocks are handled by the system is up to the API user.
+
+If `SEF_BLOCK_FILE` is set to 1, the API user will have to provide a file that will be used to store blocks with the following function:
+* `void sef_register_block_file(sef_forth_state_t* fs, const char* filename, int number_of_blocks);`  
+Sets the file with the path `filename` as the file containing blocks. If the file doesn't exist, it will be created. If it exists but is not big enough to store the desired number of blocks, it will be made bigger.
+
+If `SEF_BLOCK_FILE` is set to 0, the API user will have to define the two following functions to handle block reading and writing:
+* `void sef_write_buffer(sef_forth_state_t* fs, sef_int_t block_number, const char* data);`  
+This function must be defined by the API user to handle writing the given data to the block with the given number.
+* `void sef_read_buffer(sef_forth_state_t* fs, sef_int_t block_number, char* data);`  
+This function must be defined by the API user to handle reading the content of the block with the given number.
 
 ## Example of use
 
