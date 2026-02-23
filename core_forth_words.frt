@@ -230,8 +230,8 @@ variable <#-cnt
 : (x.r) ( n -- addr n ) <#-cnt @ - dup 0 > if
     0 do bl hold loop 0
     then s>d #> ;
-: u.r ( u n -- )swap s>d <# #s #> 2drop (x.r) type space ;
-: .r ( n n -- ) swap <# #n #> 2drop (x.r) type space ;
+: u.r ( u n -- )swap s>d <# #s #> 2drop (x.r) type ;
+: .r ( n n -- ) swap <# #n #> 2drop (x.r) type ;
 
 : (>number) ( u1 c-addr1 u1 -- u2 c-addr2 u2 ) dup 0 do
     over c@ (is-digit?) 0= if leave then
