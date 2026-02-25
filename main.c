@@ -48,7 +48,7 @@ static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
 static void repl(sef_forth_state_t* fs) {
     do {
         sef_force_string_interpretation(fs, "(repl)");
-    } while (!sef_asked_bye(fs));
+    } while (!sef_asked_bye(fs)); // TODO: I wonder how I should leave the shell if bye is not there...
 }
 
 int main(int argc, char** argv) {
