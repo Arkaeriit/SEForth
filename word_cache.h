@@ -3,7 +3,7 @@
 
 enum word_in_cache {
     // Words defined in C
-    QUIT,
+    ABORT,
     EXIT,
     IF,
     ELSE,

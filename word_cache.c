@@ -1,7 +1,7 @@
 #include "private_api.h"
 
 const char* const words_to_cache[WORD_IN_CACHE_COUNT] = {
-    [QUIT] = "quit",
+    [ABORT] = "abort",
     [EXIT] = "exit",
     [IF] = "(if)",
     [ELSE] = "(else)",
@@ -36,7 +36,7 @@ void sef_add_word_in_cache(forth_state_t* fs, dictionary_entry_t entry, enum wor
 }
 
 void sef_fill_c_func_in_cache(forth_state_t* fs) {
-    automaticaly_add_word_in_cache(fs, QUIT);
+    automaticaly_add_word_in_cache(fs, ABORT);
     automaticaly_add_word_in_cache(fs, EXIT);
     automaticaly_add_word_in_cache(fs, IF);
     automaticaly_add_word_in_cache(fs, ELSE);
