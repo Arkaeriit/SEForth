@@ -47,6 +47,7 @@ static void parse_a_file(sef_forth_state_t* fs, const char* file_name) {
 
 static void repl(sef_forth_state_t* fs) {
     do {
+        // TODO: find how to use the cahce here
         sef_force_string_interpretation(fs, "(repl)");
     } while (!sef_asked_bye(fs));
 }
