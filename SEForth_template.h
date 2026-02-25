@@ -89,7 +89,7 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 £define ___SEF_CATCH_SEGFAULTS SEF_CATCH_SEGFAULTS
 
 >> Size of the forth state
-£define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_RETURN_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
+£define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_RETURN_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17 + 20))
 
 #if SEF_BLOCK
 >> TODO: document

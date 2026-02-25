@@ -35,6 +35,8 @@ struct forth_state_s {
     sef_int_t exit_code;
     bool bye;
     bool quit;
+    // Word cache
+    dictionary_entry_t word_cache[WORD_IN_CACHE_COUNT];
     // Parser
     sef_int_t input_buffer_size;
     char* input_buffer;
