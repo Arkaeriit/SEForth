@@ -29,6 +29,7 @@ The previous choice of requiring the use of malloc to build state was pretty poo
   - error encountered
   - bye (set to true when the execution should finish)
   - quit (set to true when the execution should fall back in the prompt)
+- Word cache
 - Parser content (some of the parser state, such as a postponing flag, will be stored in the colon sys)
   - input buffer size
   - input buffer (will be a `char*` not owned by the state, no need to copy it)
@@ -40,7 +41,7 @@ The previous choice of requiring the use of malloc to build state was pretty poo
 
 ## Ideas for improvement
 
-Adding a cache of words used by the compiler (such as `EXIT` or the run-time effect of control flow) would be very handy to speed-up compilation and make the system more robust to changes and redefinitions of compiler words.
+The word cache of words used by the compiler (such as `EXIT` or the run-time effect of control flow) is very handy to speed-up compilation and make the system more robust to changes and redefinitions of compiler words.
 
 ## Error checking
 
