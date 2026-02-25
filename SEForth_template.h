@@ -92,8 +92,17 @@ typedef SEF_UNSIGNED_T sef_unsigned_t;
 £define SEF_STATE_SIZE_INT (1 + ((SEF_FORTH_MEMORY_SIZE / sizeof(sef_int_t)) + (SEF_PAD_SIZE / sizeof(sef_int_t)) + SEF_DATA_STACK_SIZE + SEF_RETURN_STACK_SIZE + SEF_CONTROL_FLOW_STACK_SIZE + 17))
 
 #if SEF_BLOCK
->> TODO: document
+>> If the block word set is enabled, setting this option to 1 lets the user of
+>> the SEForth API provide a file that will be used to store blocks. If it is
+>> set to 0, the API user will have to provide the functions to write or read
+>> blocks.
 £define ___SEF_BLOCK_FILE SEF_BLOCK_FILE
+#else
+>> If the block word set is enabled, setting this option to 1 lets the user of
+>> the SEForth API provide a file that will be used to store blocks. If it is
+>> set to 0, the API user will have to provide the functions to write or read
+>> blocks.
+£define ___SEF_BLOCK_FILE 0
 #endif
 
 #include "public_api.h"
