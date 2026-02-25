@@ -73,7 +73,9 @@ void sef_state_init(forth_state_t* fs) {
     sef_register_default_cfunc(fs);
     sef_register_parser_cfunc(fs);
     sef_register_block_cfunc(fs);
+    sef_fill_c_func_in_cache(fs);
     compile_system_forth_words(fs);
+    sef_fill_forth_words_in_cache(fs);
     fs->compiling_system_words = false;
 }
 
