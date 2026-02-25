@@ -11,11 +11,12 @@ static void go_to_block(FILE* f, sef_int_t block_number) {
     fseek(f, block_number * SEF_BLOCK_SIZE, SEEK_SET);
 }
 
-#define BLOCK_FILE_NAME "block-file-data"
-
 static block_file_data* get_block_file_data(forth_state_t* fs) {
-    // TODO: block-file-data should be cached
-    dictionary_entry_t bfd_entry = sef_find_entry(fs, BLOCK_FILE_NAME, strlen(BLOCK_FILE_NAME));
+    dictionary_entry_t bfd_entry = sef_get_word_from_cache(fs, BLOCK_FILE_DATA);
+    if (bfd_entry == sef_get_word_from_cache(fs, ABORT)) {
+        SEF_ERROR_OUT(fs, "Trying to use block file, but block file not registered by API user.\n");
+        return NULL;
+    }
     sef_call_entry(fs, bfd_entry);
 
     return (block_file_data*) sef_pop_data(fs);
@@ -24,6 +25,9 @@ static block_file_data* get_block_file_data(forth_state_t* fs) {
 #define BUFFER_ACTION_BOILERPLATE()                                                  \
     forth_state_t* fs = (forth_state_t*) _fs;                                        \
     block_file_data* bfd = get_block_file_data(fs);                                  \
+    if (bfd == NULL) {                                                               \
+        return;                                                                      \
+    }                                                                                \
     if (block_number > bfd->number_of_blocks) {                                      \
         error_msg(                                                                   \
                 "Trying to write to block %i which is higher than the max of %i.\n", \
@@ -60,13 +64,14 @@ static void add_a_block(block_file_data* bfd) {
 }
 
 void sef_register_block_file(sef_forth_state_t* _fs, const char* filename, int number_of_blocks) {
-    // TODO: Align should be cached
-    sef_force_string_interpretation(_fs, "align");
-
     forth_state_t* fs = (forth_state_t*) _fs;
-    sef_create(fs, BLOCK_FILE_NAME, strlen(BLOCK_FILE_NAME));
+    sef_call_entry(fs, sef_get_word_from_cache(fs, ALIGN));
+
+    sef_create(fs, "", 0);
+    dictionary_entry_t bfd_entry = fs->last_dictionary_entry;
+    sef_add_word_in_cache(fs, bfd_entry, BLOCK_FILE_DATA);
     sef_allot(fs, sizeof(block_file_data));
-    sef_force_string_interpretation(_fs, "align");
+    sef_call_entry(fs, sef_get_word_from_cache(fs, ALIGN));
 
     block_file_data* bfd = get_block_file_data(fs);
     bfd->f = fopen(filename, "r+b");

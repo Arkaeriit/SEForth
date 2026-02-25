@@ -14,12 +14,8 @@ void sef_exec_forth_word(forth_state_t* fs, void* parameter) {
 static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry);
 static void inter_compil_number(forth_state_t* fs, sef_int_t number);
 
-// Add the NULL-terminated word to the current definition. Must be called from
-// compilation context with a run-time word.
-// If not called from compilation context, will call the given word.
-static void add_word_to_current_definition(forth_state_t* fs, const char* word) {
-        dictionary_entry_t entry = sef_find_entry(fs, word, strlen(word));
-        inter_compil_entry(fs, entry);
+static void add_word_from_cache(forth_state_t* fs, enum word_in_cache word) {
+    inter_compil_entry(fs, sef_get_word_from_cache(fs, word));
 }
 
 /* ------------------------- Input source management ------------------------ */
@@ -244,17 +240,12 @@ static void no_name(forth_state_t* fs) {
 }
 
 static void semicolon(forth_state_t* fs) {
-    add_word_to_current_definition(fs, "exit");
+    add_word_from_cache(fs, EXIT);
     leave_compilation(fs);
     sef_int_t magic = sef_pop_data(fs);
     if (magic != COLON_SYS_MAGIC) {
         SEF_ERROR_OUT(fs, "Imbalanced stack when compiling \"%s\".\n", sef_get_entry_name(fs->last_dictionary_entry));
     }
-}
-
-static void literal(forth_state_t* fs) {
-    sef_int_t number = *(++fs->code_pointer);
-    sef_push_data(fs, number);
 }
 
 static void immediate(forth_state_t* fs) {
@@ -298,7 +289,7 @@ static void if_compile_time(forth_state_t* fs) {
     // We push the address of the number to fill in in the control flow stack.
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
     // Then we add the runtime word
-    add_word_to_current_definition(fs, "(if)");
+    add_word_from_cache(fs, IF);
 }
 
 static void else_compile_time(forth_state_t* fs) {
@@ -310,7 +301,7 @@ static void else_compile_time(forth_state_t* fs) {
     // Fill in the empty address with where we are putting (else)
     *empty_cell = (sef_int_t) fs->here.cell;
     debug_msg("Else wrote in if the value 0x%lX.\n", (long) *empty_cell);
-    add_word_to_current_definition(fs, "(else)");
+    add_word_from_cache(fs, ELSE);
 }
 
 static void then(forth_state_t* fs) {
@@ -335,7 +326,7 @@ static void while_compile_time(forth_state_t* fs) {
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
     sef_push_control_flow(fs, begin_address);
-    add_word_to_current_definition(fs, "(while)");
+    add_word_from_cache(fs, WHILE);
 }
 
 static void repeat_compile_time(forth_state_t* fs) {
@@ -346,7 +337,7 @@ static void repeat_compile_time(forth_state_t* fs) {
     inter_compil_number(fs, begin_address);
     // Filling in the blank word from while with repeat address
     *while_empty_cell = (sef_int_t) (fs->here.cell);
-    add_word_to_current_definition(fs, "(repeat)");
+    add_word_from_cache(fs, REPEAT);
 
 }
 
@@ -355,38 +346,13 @@ static void question_do_compile_time(forth_state_t* fs) {
     // Getting address of the closing +loop to bail out there if needed
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
-    add_word_to_current_definition(fs, "(?do)");
-}
-
-static void question_do_run_time(forth_state_t* fs) {
-    // It might be easier to that from Forth...
-    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
-    sef_int_t loop_counter = sef_pop_data(fs);
-    sef_int_t end_value = sef_pop_data(fs);
-    // ?do can jump to the end
-    if (end_value == loop_counter) {
-        fs->code_pointer = (dictionary_entry_t) end_of_loop_pointer;
-        return;
-    }
-    // Otherwise, we prepare the loop-sys
-    sef_push_return(fs, end_of_loop_pointer);
-    sef_push_return(fs, end_value);
-    sef_push_return(fs, loop_counter);
+    add_word_from_cache(fs, QUESTION_DO);
 }
 
 static void do_compile_time(forth_state_t* fs) {
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
-    add_word_to_current_definition(fs, "(do)");
-}
-
-static void do_run_time(forth_state_t* fs) {
-    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
-    sef_int_t loop_counter = sef_pop_data(fs);
-    sef_int_t end_value = sef_pop_data(fs);
-    sef_push_return(fs, end_of_loop_pointer);
-    sef_push_return(fs, end_value);
-    sef_push_return(fs, loop_counter);
+    add_word_from_cache(fs, DO);
 }
 
 static void any_loop_compile_time(forth_state_t* fs) {
@@ -398,49 +364,12 @@ static void any_loop_compile_time(forth_state_t* fs) {
 
 static void plus_loop_compile_time(forth_state_t* fs) {
     any_loop_compile_time(fs);
-    add_word_to_current_definition(fs, "(+loop)");
+    add_word_from_cache(fs, PLUS_LOOP);
 }
 
 static void loop_compile_time(forth_state_t* fs) {
     any_loop_compile_time(fs);
-    add_word_to_current_definition(fs, "(loop)");
-}
-
-// (+loop) takes as argument ( increment-value begining-of-the-loop-pointer )
-static void plus_loop_run_time(forth_state_t* fs) {
-    sef_int_t question_do_address = sef_pop_data(fs);
-    sef_int_t increment = sef_pop_data(fs);
-    sef_int_t old_loop_counter = sef_pop_return(fs);
-    sef_int_t end_value = sef_pop_return(fs);
-    sef_int_t updated_loop_counter = old_loop_counter + increment;
-
-    sef_int_t min_int = ((sef_unsigned_t) ~0 >> 1) + 1;
-    sef_int_t check_sign_before = (old_loop_counter - end_value) + min_int;
-    sef_int_t check_sign_after = check_sign_before + increment;
-    bool overflowed = increment > 0 && check_sign_after < check_sign_before;
-    bool underflowed = increment < 0 && check_sign_after > check_sign_before;
-    if (overflowed || underflowed) {
-        sef_pop_return(fs); // End of loop address
-    } else {
-        sef_push_return(fs, end_value);
-        sef_push_return(fs, updated_loop_counter);
-        fs->code_pointer = (dictionary_entry_t) question_do_address;
-    }
-}
-
-// (loop) takes as argument ( begining-of-the-loop-pointer )
-static void loop_run_time(forth_state_t* fs) {
-    sef_int_t question_do_address = sef_pop_data(fs);
-    sef_int_t loop_counter = sef_pop_return(fs);
-    sef_int_t end_value = sef_pop_return(fs);
-    loop_counter++;
-    if (loop_counter == end_value) {
-        sef_pop_return(fs); // End of loop address
-    } else {
-        sef_push_return(fs, end_value);
-        sef_push_return(fs, loop_counter);
-        fs->code_pointer = (dictionary_entry_t) question_do_address;
-    }
+    add_word_from_cache(fs, LOOP);
 }
 
 static void leave(forth_state_t* fs) {
@@ -459,17 +388,7 @@ static void case_compile_time(forth_state_t* fs) {
 static void of_compile_time(forth_state_t* fs) {
     inter_compil_number(fs, 0);
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
-    add_word_to_current_definition(fs, "(of)");
-}
-
-static void of_run_time(forth_state_t* fs) {
-    dictionary_entry_t endof_pointer = (dictionary_entry_t) sef_pop_data(fs);
-    sef_int_t reference = sef_pop_data(fs);
-    sef_int_t element = sef_pop_data(fs);
-    if (reference != element) {
-        sef_push_data(fs, element);
-        fs->code_pointer = endof_pointer;
-    }
+    add_word_from_cache(fs, OF);
 }
 
 static void endof_compile_time(forth_state_t* fs) {
@@ -480,14 +399,9 @@ static void endof_compile_time(forth_state_t* fs) {
     sef_push_control_flow(fs, (sef_int_t) (fs->here.cell - 1));
     sef_push_control_flow(fs, number_of_cases+1);
     // Runtime effect
-    add_word_to_current_definition(fs, "(endof)");
+    add_word_from_cache(fs, ENDOF);
     // Filling in the address for the of word
     *of_pointer = (sef_int_t) (fs->here.cell - 1);
-}
-
-static void endof_run_time(forth_state_t* fs) {
-    dictionary_entry_t endcase_pointer = (dictionary_entry_t) sef_pop_data(fs);
-    fs->code_pointer = endcase_pointer;
 }
 
 static void endcase(forth_state_t* fs) {
@@ -498,7 +412,7 @@ static void endcase(forth_state_t* fs) {
         *endcase_pointer = fs->here.cell;
     }
     // The runtime is the same as drop
-    add_word_to_current_definition(fs, "drop");
+    add_word_from_cache(fs, DROP);
 }
 
 /* -------------------------------- Postpone -------------------------------- */
@@ -553,27 +467,9 @@ static void postpone_compile_time(forth_state_t* fs) {
     dictionary_entry_t entry = sef_find_entry(fs, name, name_len);
     if (entry != NULL) {
         inter_compil_number(fs, (sef_int_t) entry);
-        add_word_to_current_definition(fs, "(postpone)");
+        add_word_from_cache(fs, POSTPONE);
     } else {
         SEF_ERROR_OUT(fs, "Error can't parse '%.*s' with POSTPONE.\n", name_len, name);
-    }
-}
-
-// Takes from the stack one entry.
-// If it is immediate, execute it with state as compiling.
-// If it is not, add it to the current definition.
-static void postpone_runtime(forth_state_t* fs) {
-    dictionary_entry_t entry = (dictionary_entry_t) sef_pop_data(fs);
-    sef_int_t tags = *(sef_get_word_tag_field(entry));
-    if (tags & WTM_IMMEDIATE) {
-        bool old_state = fs->compiling;
-        fs->compiling = true;
-        sef_call_entry(fs, entry);
-        if (fs->compiling) {
-            fs->compiling = old_state;
-        }
-    } else {
-        *fs->here.cell++ = (sef_int_t) entry;
     }
 }
 
@@ -596,7 +492,6 @@ struct c_func_s all_default_parser_c_func[] = {
     {":", colon, false},
     {";", semicolon, true},
     {":noname", no_name, false},
-    {"(literal)", literal, false},
     {"immediate", immediate, false},
     {"does>", does, false},
     {"create", create, false},
@@ -608,19 +503,13 @@ struct c_func_s all_default_parser_c_func[] = {
     {"while", while_compile_time, true},
     {"repeat", repeat_compile_time, true},
     {"do", do_compile_time, true},
-    {"(do)", do_run_time, false},
     {"?do", question_do_compile_time, true},
-    {"(?do)", question_do_run_time, false},
     {"+loop", plus_loop_compile_time, true},
-    {"(+loop)", plus_loop_run_time, false},
     {"loop", loop_compile_time, true},
-    {"(loop)", loop_run_time, false},
     {"leave", leave, false},
     {"case", case_compile_time, true},
     {"of", of_compile_time, true},
-    {"(of)", of_run_time, false},
     {"endof", endof_compile_time, true},
-    {"(endof)", endof_run_time, false},
     {"endcase", endcase, true},
 
     {"refill", refill, false},
@@ -628,7 +517,6 @@ struct c_func_s all_default_parser_c_func[] = {
     {"restore-input", sef_pop_input_source, false},
 
     {"postpone", postpone_compile_time, true},
-    {"(postpone)", postpone_runtime, false},
 };
 
 void sef_register_parser_cfunc(forth_state_t* fs) {
@@ -656,8 +544,7 @@ static void inter_compil_entry(forth_state_t* fs, dictionary_entry_t entry) {
 // Handle compilation of interpretation of a number.
 static void inter_compil_number(forth_state_t* fs, sef_int_t number) {
     if (fs->compiling) {
-        // TODO: replace all finds as here with a cache
-        add_word_to_current_definition(fs, "(literal)");
+        add_word_from_cache(fs, PAREN_LITERAL);
         *fs->here.cell = number;
         sef_allot_cell(fs);
     } else {
@@ -685,7 +572,7 @@ static void inter_compil_step(forth_state_t* fs) {
     if (number_size) {
         inter_compil_number(fs, read_number);
         if (number_size == 2) {
-            inter_compil_entry(fs, sef_find_entry(fs, "s>d", 3));
+            add_word_from_cache(fs, S_TO_D);
         }
         return;
     }

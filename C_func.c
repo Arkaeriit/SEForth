@@ -276,6 +276,109 @@ static void repeat_runtime(forth_state_t* fs) {
     fs->code_pointer = begin_address;
 }
 
+static void question_do_run_time(forth_state_t* fs) {
+    // It might be easier to that from Forth...
+    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_data(fs);
+    sef_int_t end_value = sef_pop_data(fs);
+    // ?do can jump to the end
+    if (end_value == loop_counter) {
+        fs->code_pointer = (dictionary_entry_t) end_of_loop_pointer;
+        return;
+    }
+    // Otherwise, we prepare the loop-sys
+    sef_push_return(fs, end_of_loop_pointer);
+    sef_push_return(fs, end_value);
+    sef_push_return(fs, loop_counter);
+}
+
+static void do_run_time(forth_state_t* fs) {
+    sef_int_t end_of_loop_pointer = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_data(fs);
+    sef_int_t end_value = sef_pop_data(fs);
+    sef_push_return(fs, end_of_loop_pointer);
+    sef_push_return(fs, end_value);
+    sef_push_return(fs, loop_counter);
+}
+
+// (+loop) takes as argument ( increment-value begining-of-the-loop-pointer )
+static void plus_loop_run_time(forth_state_t* fs) {
+    sef_int_t question_do_address = sef_pop_data(fs);
+    sef_int_t increment = sef_pop_data(fs);
+    sef_int_t old_loop_counter = sef_pop_return(fs);
+    sef_int_t end_value = sef_pop_return(fs);
+    sef_int_t updated_loop_counter = old_loop_counter + increment;
+
+    sef_int_t min_int = ((sef_unsigned_t) ~0 >> 1) + 1;
+    sef_int_t check_sign_before = (old_loop_counter - end_value) + min_int;
+    sef_int_t check_sign_after = check_sign_before + increment;
+    bool overflowed = increment > 0 && check_sign_after < check_sign_before;
+    bool underflowed = increment < 0 && check_sign_after > check_sign_before;
+    if (overflowed || underflowed) {
+        sef_pop_return(fs); // End of loop address
+    } else {
+        sef_push_return(fs, end_value);
+        sef_push_return(fs, updated_loop_counter);
+        fs->code_pointer = (dictionary_entry_t) question_do_address;
+    }
+}
+
+// (loop) takes as argument ( begining-of-the-loop-pointer )
+static void loop_run_time(forth_state_t* fs) {
+    sef_int_t question_do_address = sef_pop_data(fs);
+    sef_int_t loop_counter = sef_pop_return(fs);
+    sef_int_t end_value = sef_pop_return(fs);
+    loop_counter++;
+    if (loop_counter == end_value) {
+        sef_pop_return(fs); // End of loop address
+    } else {
+        sef_push_return(fs, end_value);
+        sef_push_return(fs, loop_counter);
+        fs->code_pointer = (dictionary_entry_t) question_do_address;
+    }
+}
+
+static void of_run_time(forth_state_t* fs) {
+    dictionary_entry_t endof_pointer = (dictionary_entry_t) sef_pop_data(fs);
+    sef_int_t reference = sef_pop_data(fs);
+    sef_int_t element = sef_pop_data(fs);
+    if (reference != element) {
+        sef_push_data(fs, element);
+        fs->code_pointer = endof_pointer;
+    }
+}
+
+static void endof_run_time(forth_state_t* fs) {
+    dictionary_entry_t endcase_pointer = (dictionary_entry_t) sef_pop_data(fs);
+    fs->code_pointer = endcase_pointer;
+}
+
+// Compilation helpers
+
+// (literal)
+static void literal(forth_state_t* fs) {
+    sef_int_t number = *(++fs->code_pointer);
+    sef_push_data(fs, number);
+}
+
+// Takes from the stack one entry.
+// If it is immediate, execute it with state as compiling.
+// If it is not, add it to the current definition.
+static void postpone_run_time(forth_state_t* fs) {
+    dictionary_entry_t entry = (dictionary_entry_t) sef_pop_data(fs);
+    sef_int_t tags = *(sef_get_word_tag_field(entry));
+    if (tags & WTM_IMMEDIATE) {
+        bool old_state = fs->compiling;
+        fs->compiling = true;
+        sef_call_entry(fs, entry);
+        if (fs->compiling) {
+            fs->compiling = old_state;
+        }
+    } else {
+        *fs->here.cell++ = (sef_int_t) entry;
+    }
+}
+
 // Memory management
 
 // cells
@@ -720,10 +823,19 @@ struct c_func_s all_default_c_func[] = {
     {"rshift", rshift},
     {"2/", two_slash},
     // Flow control
-    {"(if)", if_runtine}, // TODO: if a cache is made for this kind of words (used in the parser), I could stop take new name and use name shadowing instead.
-    {"(else)", else_runtime},
-    {"(while)", while_runtime},
-    {"(repeat)", repeat_runtime},
+    {"if", if_runtine},
+    {"else", else_runtime},
+    {"while", while_runtime},
+    {"repeat", repeat_runtime},
+    {"do", do_run_time},
+    {"?do", question_do_run_time},
+    {"+loop", plus_loop_run_time},
+    {"loop", loop_run_time},
+    {"of", of_run_time},
+    {"endof", endof_run_time},
+    // Compilation helpers
+    {"(literal)", literal},
+    {"postpone", postpone_run_time},
     // Memory management
     {"allot", allot},
     {"cells", cells},

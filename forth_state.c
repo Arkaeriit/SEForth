@@ -68,12 +68,15 @@ void sef_state_init(forth_state_t* fs) {
     fs->bye = false;
     fs->quit = false;
     fs->exit_code = 0;
+    memset(fs->word_cache, 0, sizeof(fs->word_cache));
     reset_parser(fs);
     fs->compiling_system_words = true;
     sef_register_default_cfunc(fs);
+    sef_fill_c_func_in_cache(fs);
     sef_register_parser_cfunc(fs);
     sef_register_block_cfunc(fs);
     compile_system_forth_words(fs);
+    sef_fill_forth_words_in_cache(fs);
     fs->compiling_system_words = false;
 }
 

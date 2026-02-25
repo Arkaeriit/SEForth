@@ -10,6 +10,12 @@
 #define UNUSED(x) (void)(x)
 
 #include "SEForth.h"
+
+struct forth_state_s;
+typedef struct forth_state_s forth_state_t;
+typedef sef_int_t* dictionary_entry_t;
+
+#include "word_cache.h"
 #include "forth_state.h"
 #include "stdlib.h"
 #include "sef_io.h"
