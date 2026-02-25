@@ -52,24 +52,26 @@ static void repl(sef_forth_state_t* fs) {
 }
 
 int main(int argc, char** argv) {
-    static sef_forth_state_t fs;
-    sef_init(&fs);
+    sef_forth_state_t* fs = malloc(sizeof(sef_forth_state_t));
+    sef_init(fs);
 
 #if SEF_ARG_AND_EXIT_CODE
     if (argc > 1) {
-        sef_feed_arguments(&fs, argc - 1, argv + 1); // First argument is skipped as it will be handled from the C side.
+        sef_feed_arguments(fs, argc - 1, argv + 1); // First argument is skipped as it will be handled from the C side.
     }
 #endif
 
     if (argc > 1) {
-        parse_a_file(&fs, argv[1]);
-        if (!sef_ready_to_run(&fs) && !sef_asked_bye(&fs)) {
-            repl(&fs);
+        parse_a_file(fs, argv[1]);
+        if (!sef_ready_to_run(fs) && !sef_asked_bye(fs)) {
+            repl(fs);
         }
     } else {
-        repl(&fs);
+        repl(fs);
     }
 
-    return sef_exit_code(&fs);
+    int exit_code = sef_exit_code(fs);
+    free(fs);
+    return exit_code;
 }
 
