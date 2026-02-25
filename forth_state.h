@@ -12,8 +12,7 @@
 struct forth_state_s;
 typedef bool (*input_source_refill_t)(struct forth_state_s* state, void* input_source);
 
-typedef sef_int_t* dictionary_entry_t;
-typedef struct forth_state_s {
+struct forth_state_s {
     // Memory spaces
     uint8_t forth_memory[SEF_FORTH_MEMORY_SIZE];
     uint8_t pad[SEF_PAD_SIZE];
@@ -44,7 +43,7 @@ typedef struct forth_state_s {
     input_source_refill_t input_source_refill;
     sef_int_t source_id;
     bool compiling_system_words;
-} forth_state_t;
+};
 
 void sef_state_init(forth_state_t* fs);
 
