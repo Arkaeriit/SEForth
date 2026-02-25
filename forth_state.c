@@ -26,8 +26,6 @@ static void compile_system_forth_words(forth_state_t* fs) {
     // The pre-processor would corrupt comments definitions
     PARSE_STRING(fs, ": ( [char] ) parse 2drop ; immediate");
     PARSE_STRING(fs, ": \\ 10 parse 2drop ; immediate");
-    extern const char* shell;
-    PARSE_STRING(fs, shell);
 #if SEF_FILE_ACCESS || SEF_BLOCK
     extern const char* linked_list;
     PARSE_STRING(fs, linked_list);
@@ -36,6 +34,8 @@ static void compile_system_forth_words(forth_state_t* fs) {
     extern const char* tools_forth_words;
     PARSE_STRING(fs, tools_forth_words);
 #endif
+    extern const char* shell;
+    PARSE_STRING(fs, shell);
 #if SEF_ARG_AND_EXIT_CODE
     sef_push_data(fs, (sef_int_t) &fs->exit_code); // Push the address of the exit code to map it to the word EXIT-CODE.
     extern const char* arg_and_exit_code_forth_words;
