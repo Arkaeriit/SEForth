@@ -59,3 +59,17 @@ void sef_fill_forth_words_in_cache(forth_state_t* fs) {
     automaticaly_add_word_in_cache(fs, REPL);
 }
 
+dictionary_entry_t sef_get_word_from_cache(forth_state_t* fs, enum word_in_cache word) {
+    if (fs->word_cache[word] == 0) { // Cache is memset to 0
+        if (word == ABORT) {
+            error_msg("Can't find abort in cache, searching in dictionary.\n");
+            return sef_find_entry(fs, "abort", strlen("abort"));
+        } else {
+            error_msg("Can't find word #%i in cache, searching abort.\n", word);
+            return sef_get_word_from_cache(fs, ABORT);
+        }
+    } else {
+        return fs->word_cache[word];
+    }
+}
+
