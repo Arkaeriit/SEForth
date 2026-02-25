@@ -30,7 +30,7 @@ typedef struct forth_state_s {
     sef_int_t return_stack_index;
     sef_int_t control_flow_stack_index;
     // Internal variables
-    bool compiling;
+    sef_int_t compiling;
     sef_int_t base;
     sef_int_t* code_pointer;
     sef_int_t exit_code;

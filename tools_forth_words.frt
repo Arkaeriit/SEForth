@@ -1,1 +1,1 @@
-: bye ( -- ) 1 >bye c! quit ;
+: bye ( -- ) bye quit ;
