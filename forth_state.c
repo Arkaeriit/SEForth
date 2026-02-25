@@ -66,6 +66,7 @@ void sef_state_init(forth_state_t* fs) {
     fs->base = 10;
     fs->code_pointer = NULL;
     fs->bye = false;
+    fs->quit = false;
     fs->exit_code = 0;
     reset_parser(fs);
     fs->compiling_system_words = true;
