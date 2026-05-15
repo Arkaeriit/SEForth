@@ -7,6 +7,11 @@ typedef struct {
     sef_int_t number_of_blocks;
 } block_file_data;
 
+static void run_cached_word(forth_state_t* fs, enum word_in_cache word) {
+    sef_call_entry(fs, sef_get_word_from_cache(fs, word));
+    sef_run(fs);
+}
+
 static void go_to_block(FILE* f, sef_int_t block_number) {
     fseek(f, block_number * SEF_BLOCK_SIZE, SEEK_SET);
 }
@@ -65,13 +70,13 @@ static void add_a_block(block_file_data* bfd) {
 
 void sef_register_block_file(sef_forth_state_t* _fs, const char* filename, int number_of_blocks) {
     forth_state_t* fs = (forth_state_t*) _fs;
-    sef_call_entry(fs, sef_get_word_from_cache(fs, ALIGN));
+    run_cached_word(fs, ALIGN);
 
     sef_create(fs, "", 0);
     dictionary_entry_t bfd_entry = fs->last_dictionary_entry;
     sef_add_word_in_cache(fs, bfd_entry, BLOCK_FILE_DATA);
     sef_allot(fs, sizeof(block_file_data));
-    sef_call_entry(fs, sef_get_word_from_cache(fs, ALIGN));
+    run_cached_word(fs, ALIGN);
 
     block_file_data* bfd = get_block_file_data(fs);
     bfd->f = fopen(filename, "r+b");
