@@ -171,13 +171,13 @@ loop 2drop ;
 : s" ( "parse string -- c-addr u ) [char] " parse state @ if ['] (s") compile, dup ,
     0 ?do dup c@ c, char+ loop drop align then ; immediate
 : ." ( "parse string" -- ) postpone s" state @ if postpone type else type then ; immediate \ "
-: abort" ( parse until " -- ) postpone s" state @ if postpone type postpone cr postpone abort else type cr abort then ; immediate \ "
+: abort" ( parse until " x -- ) postpone s" state @ if postpone rot postpone if postpone type postpone cr postpone abort postpone else postpone 2drop postpone then else rot if type cr abort else 2drop then then ; immediate \ "
 : .( [char] ) parse type ; immediate
 
 false value escaped
 0 value escaped-str-addr
 
-: parse-a-char ( "parse a single char" -- c ) source >in @ <= if abort" Unterminated string." then
+: parse-a-char ( "parse a single char" -- c ) source >in @ <= abort" Unterminated string."
     >in @ + c@ 1 >in +! ;
 \ Write a char in the space being filled in by s\" "
 : c\, ( c -- ) c, 1 escaped-str-addr +! ;

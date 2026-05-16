@@ -10,4 +10,4 @@
 : add-new-node ( node -- node ) align here swap , ;
 : create-new-list ( -- node ) 0 add-new-node ;
 : exec-on-list ( node xt -- ) swap begin 2dup cell+ swap execute @ dup 0= until 2drop ;
-: get-node-at-index ( node u -- node-content ) 0 ?do @ dup 0= if abort" Trying to get index lager than list size." then loop cell+ ;
+: get-node-at-index ( node u -- node-content ) 0 ?do @ dup 0= abort" Trying to get index lager than list size." loop cell+ ;
