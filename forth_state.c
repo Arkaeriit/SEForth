@@ -211,7 +211,7 @@ static void _sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
 void sef_call_entry(forth_state_t* fs, dictionary_entry_t entry)
 #endif
 {
-    debug_msg("Calling %s\n", sef_get_entry_name(entry));
+    debug_msg("Calling % *s% *s%s\n", fs->return_stack_index, "", fs->return_stack_index, "", sef_get_entry_name(entry));
     sef_int_t word_tags = *(sef_get_word_tag_field(entry));
     void* parameters = sef_get_entry_parameter(entry);
 
