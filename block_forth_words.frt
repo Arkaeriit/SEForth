@@ -58,7 +58,7 @@ variable blk
 
 64 constant block-line-len
 : list ( u -- ) block block-size block-line-len / 0 do
-    i 2 .r dup block-line-len type cr block-line-len +
+    i 2 .r space dup block-line-len type cr block-line-len +
 loop drop ;
 
 variable scr
